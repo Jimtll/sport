@@ -446,9 +446,22 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   /* Profile bar : scroll avec le contenu (non figé) */
   .profile-bar{position:static;top:auto}
 
-  /* SEULE la nav est figée en haut sur mobile (sans padding extra) */
-  .nav{position:sticky;top:0;z-index:200;padding-top:0;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,0.3);margin-top:0}
+  /* SEULE la nav est figée en haut sur mobile (fix iOS sticky) */
+  .nav{
+    position:-webkit-sticky !important;
+    position:sticky !important;
+    top:0 !important;
+    z-index:200;
+    padding-top:env(safe-area-inset-top,0);
+    background:var(--surface);
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
+    margin-top:0;
+    will-change:transform;
+  }
   .nav-btn{padding:11px 14px}
+  /* Force body to be the scrolling context */
+  html,body{height:auto;overflow-x:hidden}
+  .app{overflow:visible}
 
   /* Nav tabs : plus compacts mais touchables */
   .nav-btn{padding:13px 12px;font-size:0.78rem}
@@ -764,6 +777,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
     <button class="btn btn-secondary btn-sm" onclick="changeYear(1)">Année suiv. →</button>
     <span class="cal-sep"></span>
     <button class="btn btn-ghost btn-sm" onclick="goToCurrentWeek()">🎯 Cette semaine</button>
+    <button class="btn btn-ghost btn-sm" id="toggle-past-btn" onclick="togglePastMonths()">📜 Voir l'historique</button>
   </div>
 
   <div class="cal-legend" id="cal-legend"></div>
@@ -775,7 +789,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
       <h3 id="week-editor-title">Semaine</h3>
       <div class="btn-group">
         <button class="btn btn-secondary btn-sm" onclick="generateWeek()">⚡ Générer auto</button>
-        <button class="btn btn-secondary btn-sm" onclick="duplicatePreviousWeek()">📋 Copier précéd.</button>
+        <button class="btn btn-secondary btn-sm" onclick="openCopyWeekModal()">📋 Copier une semaine</button>
         <button class="btn btn-secondary btn-sm" onclick="clearWeek()">🗑 Vider</button>
         <button class="btn btn-secondary btn-sm" onclick="copyWeekForClaude()">💬 Copier pour Claude</button>
         <button class="btn btn-primary btn-sm" onclick="analyzeWeek()">🤖 Analyser</button>
@@ -2288,6 +2302,15 @@ function saveWeekPlan(weekKey, plan){
 
 function changeYear(delta){ calYear+=delta; renderCalendar(); }
 
+let showPastMonths = false; // par défaut on cache les mois passés
+
+function togglePastMonths(){
+  showPastMonths = !showPastMonths;
+  const btn = document.getElementById('toggle-past-btn');
+  if(btn) btn.textContent = showPastMonths ? '🔮 Masquer le passé' : '📜 Voir l\'historique';
+  renderCalendar();
+}
+
 function goToCurrentWeek(){
   const today = new Date();
   calYear = today.getFullYear();
@@ -2310,7 +2333,20 @@ function renderCalendar(){
   const plannings = getPlannings();
 
   let html = '';
+  // Filtrer mois passés (sauf si toggle activé)
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  let hiddenCount = 0;
   for(let m=0;m<12;m++){
+    // Masque les mois passés si on n'est pas en mode historique
+    if(!showPastMonths && calYear===currentYear && m < currentMonth){
+      hiddenCount++;
+      continue;
+    }
+    // Masque tous les mois de l'année passée si on n'est pas en mode historique
+    if(!showPastMonths && calYear < currentYear){
+      hiddenCount = 12; break;
+    }
     html += `<div class="cal-month"><div class="cal-month-name">${months[m]}</div>`;
     html += `<div class="cal-week-header">${dayNames.map(d=>`<div>${d}</div>`).join('')}</div>`;
     // Premier lundi affiché (peut être en mois précédent)
@@ -2347,6 +2383,10 @@ function renderCalendar(){
       cursor.setDate(cursor.getDate()+7);
     }
     html += `</div>`;
+  }
+  // Petite indication si des mois sont cachés
+  if(hiddenCount>0){
+    html = `<div style="grid-column:1/-1;padding:10px 14px;background:var(--surface);border:1px dashed var(--border);border-radius:8px;font-size:0.78rem;color:var(--muted);text-align:center;margin-bottom:8px">📜 ${hiddenCount} mois passés masqués · <a href="#" onclick="togglePastMonths();return false" style="color:var(--acc)">Voir l'historique</a></div>` + html;
   }
   document.getElementById('cal-months').innerHTML = html;
 }
@@ -2461,6 +2501,70 @@ function duplicatePreviousWeek(){
   const prev = all[prevKey];
   if(!prev){ alert('La semaine précédente est vide'); return; }
   saveWeekPlan(selectedWeekKey, JSON.parse(JSON.stringify(prev)));
+  renderWeekEditor();
+  renderCalendar();
+}
+
+// Modal copie semaine — n'importe laquelle
+function openCopyWeekModal(){
+  if(!selectedWeekKey) return;
+  const all = getPlannings();
+  // Liste des semaines avec données (filtre semaines non vides)
+  const weeks = Object.entries(all)
+    .filter(([k,plan]) => k!==selectedWeekKey && plan.days?.some(d=>d.type!=='rest' || d.climbing))
+    .sort((a,b)=>b[0].localeCompare(a[0])); // récentes en premier
+
+  let html = `
+    <div class="modal-overlay show" id="copy-week-modal" onclick="if(event.target===this)closeCopyWeekModal()">
+      <div class="modal" style="max-width:560px">
+        <button class="modal-close" onclick="closeCopyWeekModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-title">📋 Copier d'une autre semaine</div>
+          <div class="modal-meta">Cible : <span class="badge badge-acc">${selectedWeekKey}</span></div>
+        </div>
+        <div style="padding:16px 24px 24px">`;
+  if(!weeks.length){
+    html += `<div class="empty-state"><div class="icon">📅</div><p>Aucune autre semaine planifiée à copier.</p></div>`;
+  } else {
+    html += `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:12px">Sélectionne la semaine à copier vers <strong>${selectedWeekKey}</strong> :</div>
+    <div style="max-height:50vh;overflow-y:auto">`;
+    weeks.forEach(([key,plan])=>{
+      const [yr,wk] = key.split('-W');
+      const monday = getMondayOfWeek(parseInt(yr), parseInt(wk));
+      const sunday = new Date(monday); sunday.setUTCDate(monday.getUTCDate()+6);
+      const sessCount = plan.days.filter(d=>d.type!=='rest').length;
+      const climbCount = plan.days.filter(d=>d.climbing).length;
+      const types = [...new Set(plan.days.filter(d=>d.type!=='rest').map(d=>SESSION_TYPES[d.type]?.emoji))].join('');
+      html += `
+        <div onclick="copyFromWeek('${key}')" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;cursor:pointer;background:var(--surface2);border:1px solid var(--border);margin-bottom:6px;transition:all 0.15s" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:0.88rem">Semaine ${wk} <span style="font-weight:400;color:var(--muted);font-size:0.72rem">· ${monday.getUTCDate()}/${monday.getUTCMonth()+1} → ${sunday.getUTCDate()}/${sunday.getUTCMonth()+1}/${yr}</span></div>
+            <div style="font-size:0.72rem;color:var(--muted2);margin-top:2px">${sessCount} séance${sessCount>1?'s':''}${climbCount?' + '+climbCount+' 🧗':''} ${types?'· '+types:''}</div>
+          </div>
+          <div style="font-size:0.85rem;color:var(--acc)">→</div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div></div></div>`;
+  // Inject + show
+  const existing = document.getElementById('copy-week-modal');
+  if(existing) existing.remove();
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeCopyWeekModal(){
+  const m = document.getElementById('copy-week-modal');
+  if(m) m.remove();
+}
+
+function copyFromWeek(sourceKey){
+  const all = getPlannings();
+  const source = all[sourceKey];
+  if(!source){ alert('Semaine source introuvable'); return; }
+  if(!confirm(`Copier le planning de ${sourceKey} vers ${selectedWeekKey} ?\n\nCela remplacera le contenu actuel de la semaine cible.`)) return;
+  saveWeekPlan(selectedWeekKey, JSON.parse(JSON.stringify(source)));
+  closeCopyWeekModal();
   renderWeekEditor();
   renderCalendar();
 }
