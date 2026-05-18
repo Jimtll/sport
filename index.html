@@ -472,23 +472,23 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 
   /* Nav fixed sur mobile (sticky bugué en PWA iOS) — JS gère le show/hide */
   .nav{
+    position:relative !important;
+    top:auto !important;
     z-index:200;
     background:var(--surface);
     margin-top:0;
     will-change:transform;
   }
   .nav.nav-stuck{
-    position:fixed;
-    top:0;
+    position:fixed !important;
+    top:0 !important;
     left:0;
     right:0;
     padding-top:env(safe-area-inset-top,0);
     box-shadow:0 2px 8px rgba(0,0,0,0.4);
   }
   .nav-sentinel{height:1px;width:100%}
-  .nav-sentinel.stuck-mode{height:calc(48px + env(safe-area-inset-top,0))}
   .nav-btn{padding:11px 14px}
-  /* IMPORTANT : ne PAS mettre overflow-x:hidden sur html/body (casse sticky) */
   html,body{height:auto}
   .app{overflow:visible}
 
@@ -4448,24 +4448,40 @@ async function autoBootstrapSync(){
 // NAV STICKY MOBILE — IntersectionObserver fallback (sticky bugué en PWA iOS)
 // ══════════════════════════════════════════════
 (function setupStickyNav(){
-  if(window.innerWidth > 640) return; // desktop : on garde sticky CSS natif (configuré ailleurs)
   const sentinel = document.getElementById('nav-sentinel');
   const nav = document.getElementById('main-nav');
   if(!sentinel || !nav) return;
+
+  function applyStuck(stuck){
+    if(window.innerWidth > 640){
+      // Desktop : on n'utilise pas le mécanisme JS
+      nav.classList.remove('nav-stuck');
+      sentinel.style.height = '1px';
+      return;
+    }
+    if(stuck){
+      // Réserve la hauteur du nav pour éviter le saut de contenu
+      const h = nav.getBoundingClientRect().height;
+      sentinel.style.height = h+'px';
+      nav.classList.add('nav-stuck');
+    } else {
+      sentinel.style.height = '1px';
+      nav.classList.remove('nav-stuck');
+    }
+  }
+
   const observer = new IntersectionObserver(([entry])=>{
     const stuck = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-    nav.classList.toggle('nav-stuck', stuck);
-    sentinel.classList.toggle('stuck-mode', stuck);
-  }, {threshold:0, rootMargin:'0px 0px 0px 0px'});
+    applyStuck(stuck);
+  }, {threshold:0});
   observer.observe(sentinel);
+
+  // Re-évalue au resize/rotation
+  window.addEventListener('resize',()=>{
+    const r = sentinel.getBoundingClientRect();
+    applyStuck(r.top < 0);
+  });
 })();
-window.addEventListener('resize',()=>{
-  // Re-run if user rotates or resizes
-  if(window.innerWidth > 640){
-    document.getElementById('main-nav')?.classList.remove('nav-stuck');
-    document.getElementById('nav-sentinel')?.classList.remove('stuck-mode');
-  }
-});
 
 // ══════════════════════════════════════════════
 // SERVICE WORKER — garantit que la dernière version est toujours servie
