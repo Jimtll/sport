@@ -470,21 +470,26 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   /* Profile bar : scroll avec le contenu (non figé) */
   .profile-bar{position:static;top:auto}
 
-  /* SEULE la nav est figée en haut sur mobile (fix iOS sticky) */
+  /* Nav fixed sur mobile (sticky bugué en PWA iOS) — JS gère le show/hide */
   .nav{
-    position:-webkit-sticky !important;
-    position:sticky !important;
-    top:0 !important;
     z-index:200;
-    padding-top:env(safe-area-inset-top,0);
     background:var(--surface);
-    box-shadow:0 2px 8px rgba(0,0,0,0.3);
     margin-top:0;
     will-change:transform;
   }
+  .nav.nav-stuck{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    padding-top:env(safe-area-inset-top,0);
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  .nav-sentinel{height:1px;width:100%}
+  .nav-sentinel.stuck-mode{height:calc(48px + env(safe-area-inset-top,0))}
   .nav-btn{padding:11px 14px}
-  /* Force body to be the scrolling context */
-  html,body{height:auto;overflow-x:hidden}
+  /* IMPORTANT : ne PAS mettre overflow-x:hidden sur html/body (casse sticky) */
+  html,body{height:auto}
   .app{overflow:visible}
 
   /* Nav tabs : plus compacts mais touchables */
@@ -736,7 +741,8 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
 </div>
 
 <!-- NAV -->
-<nav class="nav">
+<div class="nav-sentinel" id="nav-sentinel"></div>
+<nav class="nav" id="main-nav">
   <button class="nav-btn active" onclick="goPage('dashboard')">🏠 Dashboard</button>
   <button class="nav-btn" onclick="goPage('calendrier')">📆 Calendrier</button>
   <button class="nav-btn" onclick="goPage('programme')">📅 Programme</button>
@@ -4439,28 +4445,65 @@ async function autoBootstrapSync(){
 })();
 
 // ══════════════════════════════════════════════
+// NAV STICKY MOBILE — IntersectionObserver fallback (sticky bugué en PWA iOS)
+// ══════════════════════════════════════════════
+(function setupStickyNav(){
+  if(window.innerWidth > 640) return; // desktop : on garde sticky CSS natif (configuré ailleurs)
+  const sentinel = document.getElementById('nav-sentinel');
+  const nav = document.getElementById('main-nav');
+  if(!sentinel || !nav) return;
+  const observer = new IntersectionObserver(([entry])=>{
+    const stuck = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+    nav.classList.toggle('nav-stuck', stuck);
+    sentinel.classList.toggle('stuck-mode', stuck);
+  }, {threshold:0, rootMargin:'0px 0px 0px 0px'});
+  observer.observe(sentinel);
+})();
+window.addEventListener('resize',()=>{
+  // Re-run if user rotates or resizes
+  if(window.innerWidth > 640){
+    document.getElementById('main-nav')?.classList.remove('nav-stuck');
+    document.getElementById('nav-sentinel')?.classList.remove('stuck-mode');
+  }
+});
+
+// ══════════════════════════════════════════════
 // SERVICE WORKER — garantit que la dernière version est toujours servie
 // ══════════════════════════════════════════════
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('./sw.js').then(reg=>{
-      // Check pour update à chaque chargement
+      // Check pour update à chaque chargement + toutes les 60s
       reg.update();
-      // Si un nouveau SW est en attente d'activation, on l'active
+      setInterval(()=>reg.update(), 60000);
       reg.addEventListener('updatefound', ()=>{
         const newSW = reg.installing;
         newSW.addEventListener('statechange', ()=>{
           if(newSW.state === 'installed' && navigator.serviceWorker.controller){
-            // Nouvelle version disponible : on prévient l'utilisateur
-            console.log('🆕 Nouvelle version dispo — reload pour appliquer');
+            // Nouvelle version dispo : banner + reload auto
+            showUpdateBanner();
             newSW.postMessage('SKIP_WAITING');
-            // Auto-reload si pas de modification utilisateur en cours
-            setTimeout(()=>{ if(!document.querySelector('.modal-overlay.show')) location.reload(); }, 1500);
           }
         });
       });
     }).catch(err=>console.warn('SW registration failed:', err));
   });
+  // Quand le SW prend le contrôle (après skipWaiting), reload
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(refreshing) return;
+    refreshing = true;
+    location.reload();
+  });
+}
+
+function showUpdateBanner(){
+  if(document.getElementById('update-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:99px;font-size:0.85rem;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(16,185,129,0.4);animation:fadeIn 0.3s';
+  banner.textContent = '🆕 Nouvelle version chargée…';
+  document.body.appendChild(banner);
 }
 </script>
 </body>
