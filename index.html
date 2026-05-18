@@ -446,18 +446,19 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   /* Profile bar : scroll avec le contenu (non figé) */
   .profile-bar{position:static;top:auto}
 
-  /* SEULE la nav est figée en haut sur mobile */
-  .nav{position:sticky;top:0;z-index:200;padding-top:env(safe-area-inset-top,0);background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+  /* SEULE la nav est figée en haut sur mobile (sans padding extra) */
+  .nav{position:sticky;top:0;z-index:200;padding-top:0;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,0.3);margin-top:0}
+  .nav-btn{padding:11px 14px}
 
   /* Nav tabs : plus compacts mais touchables */
   .nav-btn{padding:13px 12px;font-size:0.78rem}
 
-  /* Profile bar : profils côte-à-côte (2 colonnes) */
-  .profile-bar{padding:8px 12px;gap:6px;flex-direction:column;align-items:stretch}
+  /* Profile bar : profils côte-à-côte (2 colonnes), padding réduit */
+  .profile-bar{padding:6px 12px 2px;gap:4px;flex-direction:column;align-items:stretch}
   .profile-bar-label{display:none}
   .profile-cards{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
   .profile-sep{display:none}
-  .profile-bar-stats{justify-content:space-between;width:100%;padding-top:4px;border-top:1px solid var(--border);font-size:0.7rem}
+  .profile-bar-stats{justify-content:space-between;width:100%;padding:3px 0 0;border-top:1px solid var(--border);font-size:0.68rem;margin-bottom:0}
   .profile-card{padding:6px 8px;min-height:44px;gap:6px}
   .profile-avatar{width:26px;height:26px;font-size:0.85rem}
   .profile-info{gap:0;min-width:0;flex:1}
