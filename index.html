@@ -3632,8 +3632,22 @@ function updateJournalStats(){
 
 // ══════════════════════════════════════════════
 // CLOUD SYNC — GitHub Gist comme backend
+// Option A : 1 fichier Gist par profil → push isolé, zéro conflit
 // ══════════════════════════════════════════════
-const GIST_FILE = 'sportduo-data.json';
+const GIST_FILES = {
+  lui: 'sportduo-lui.json',
+  alexandra: 'sportduo-alexandra.json',
+};
+const GIST_LEGACY_FILE = 'sportduo-data.json'; // compat ancien format
+
+// Classifie une clé localStorage par profil
+function classifyKey(spKey){
+  if(spKey === 'sp_profile') return null; // sélecteur d'UI, per-device
+  if(spKey.endsWith('_lui')) return 'lui';
+  if(spKey.endsWith('_alex') || spKey.endsWith('_alexandra')) return 'alexandra';
+  return null; // ignore le reste (claude_api_key, gist_*, etc.)
+}
+
 const cloud = {
   get token(){ return localStorage.getItem('gist_token'); },
   set token(v){ v ? localStorage.setItem('gist_token', v) : localStorage.removeItem('gist_token'); },
@@ -3662,28 +3676,36 @@ const cloud = {
 
   async findOrCreateGist(){
     if(this.gistId) return this.gistId;
-    // Cherche un gist existant avec notre fichier
+    // Cherche un gist existant avec un de nos fichiers (nouveau OU ancien format)
     const gists = await this._api('/gists?per_page=100');
-    const existing = gists.find(g => g.files && g.files[GIST_FILE]);
+    const existing = gists.find(g => g.files && (
+      g.files[GIST_FILES.lui] ||
+      g.files[GIST_FILES.alexandra] ||
+      g.files[GIST_LEGACY_FILE]
+    ));
     if(existing){ this.gistId = existing.id; return existing.id; }
-    // Créer un nouveau gist privé
+    // Création d'un nouveau gist privé avec les 2 fichiers profils
     const created = await this._api('/gists', {
       method:'POST',
       body: JSON.stringify({
-        description:'SportDuo — mes données perso',
+        description:'SportDuo — données par profil',
         public:false,
-        files:{ [GIST_FILE]:{ content:'{}' } }
+        files:{
+          [GIST_FILES.lui]: { content:'{}' },
+          [GIST_FILES.alexandra]: { content:'{}' }
+        }
       })
     });
     this.gistId = created.id;
     return created.id;
   },
 
-  collectData(){
-    const data = { _updatedAt:Date.now(), _device:navigator.platform };
+  collectDataForProfile(profile){
+    const data = { _updatedAt:Date.now(), _device:navigator.platform, _profile:profile };
     for(let i=0; i<localStorage.length; i++){
       const k = localStorage.key(i);
-      if(k && k.startsWith('sp_')) data[k] = localStorage.getItem(k);
+      if(!k || !k.startsWith('sp_')) continue;
+      if(classifyKey(k) === profile) data[k] = localStorage.getItem(k);
     }
     return data;
   },
@@ -3693,9 +3715,14 @@ const cloud = {
     setSyncStatus('syncing');
     try {
       const id = await this.findOrCreateGist();
+      const profile = state.pid;
+      const fileName = GIST_FILES[profile];
+      if(!fileName){ setSyncStatus('synced'); return false; }
+      const data = this.collectDataForProfile(profile);
+      // PATCH ne touche QUE le fichier de ce profil → pas de conflit avec l'autre
       await this._api(`/gists/${id}`, {
         method:'PATCH',
-        body: JSON.stringify({ files:{ [GIST_FILE]:{ content:JSON.stringify(this.collectData()) } } })
+        body: JSON.stringify({ files:{ [fileName]:{ content:JSON.stringify(data) } } })
       });
       localStorage.setItem('gist_last_push', Date.now().toString());
       setSyncStatus('synced');
@@ -3714,20 +3741,40 @@ const cloud = {
     try {
       const id = await this.findOrCreateGist();
       const gist = await this._api(`/gists/${id}`);
-      const content = gist.files[GIST_FILE]?.content || '{}';
-      const data = JSON.parse(content);
-      if(!data._updatedAt){
-        setSyncStatus('synced'); updateSyncModalUI();
-        return false; // gist vide → on garde les données locales
+      let restored = 0;
+      // Restore chaque fichier profil
+      for(const [profile, fileName] of Object.entries(GIST_FILES)){
+        const file = gist.files[fileName];
+        if(!file) continue;
+        try {
+          const data = JSON.parse(file.content || '{}');
+          if(!data._updatedAt) continue;
+          Object.keys(data).forEach(k=>{
+            if(k.startsWith('sp_') && data[k]!=null){
+              localStorage.setItem(k, data[k]);
+              restored++;
+            }
+          });
+        } catch(e){ console.warn('Parse failed for '+fileName, e); }
       }
-      // Restaure les clés sp_*
-      Object.keys(data).forEach(k=>{
-        if(k.startsWith('sp_') && data[k]!=null) localStorage.setItem(k, data[k]);
-      });
+      // Compat ancien format (un seul fichier)
+      if(restored === 0 && gist.files[GIST_LEGACY_FILE]){
+        try {
+          const data = JSON.parse(gist.files[GIST_LEGACY_FILE].content || '{}');
+          if(data._updatedAt){
+            Object.keys(data).forEach(k=>{
+              if(k.startsWith('sp_') && data[k]!=null){
+                localStorage.setItem(k, data[k]);
+                restored++;
+              }
+            });
+          }
+        } catch(e){ console.warn('Legacy parse failed', e); }
+      }
       localStorage.setItem('gist_last_pull', Date.now().toString());
       setSyncStatus('synced');
       updateSyncModalUI();
-      return true;
+      return restored > 0;
     } catch(e){
       console.warn('Pull failed:', e);
       setSyncStatus('error', e.message);
@@ -3807,7 +3854,7 @@ async function connectGistSync(){
   try {
     // Tente de trouver un gist existant pour proposer pull, sinon push immédiat
     const gists = await cloud._api('/gists?per_page=100');
-    const existing = gists.find(g => g.files && g.files[GIST_FILE]);
+    const existing = gists.find(g => g.files && (g.files[GIST_FILES.lui] || g.files[GIST_FILES.alexandra] || g.files[GIST_LEGACY_FILE]));
     if(existing){
       cloud.gistId = existing.id;
       const wantPull = confirm('🎉 Données existantes trouvées sur ton Gist !\n\nVeux-tu les restaurer ici (RECOMMANDÉ si nouvel appareil) ?\n\n→ OK = remplacer les données locales par celles du cloud\n→ Annuler = garder les données locales et écraser le cloud');
