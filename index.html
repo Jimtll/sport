@@ -2,11 +2,23 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planning Sport — Duo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SportDuo">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1117">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmMTExNyIgcng9IjQwIi8+PHRleHQgeD0iOTAiIHk9IjEzMCIgZm9udC1zaXplPSIxMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPvCfkqo8L3RleHQ+PC9zdmc+">
+<title>SportDuo · Planning</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+input,textarea,select,button{font-family:inherit;-webkit-appearance:none;appearance:none}
+input,textarea{font-size:16px !important} /* anti-zoom iOS sur focus */
+button{cursor:pointer;touch-action:manipulation}
+.modal,.cal-week-row,.day-card,.ex-item,.week-day,.picker-ex-item{touch-action:manipulation}
 :root{
   --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--surface3:#2a2f45;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
@@ -27,7 +39,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
 /* ── TOPBAR ── */
 .app{display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:60px;position:sticky;top:0;z-index:200}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:env(safe-area-inset-top,0) max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));display:flex;align-items:center;gap:12px;height:calc(60px + env(safe-area-inset-top,0));position:sticky;top:0;z-index:200}
+@supports (padding:max(0px)){.topbar{padding-top:env(safe-area-inset-top,0)}}
 .topbar-logo{font-weight:800;font-size:1.05rem;color:var(--acc);letter-spacing:-0.02em;white-space:nowrap;transition:color 0.3s}
 .topbar-sub{font-size:0.75rem;color:var(--muted);white-space:nowrap}
 .topbar-sep{flex:1}
@@ -51,7 +64,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .sync-tutorial a{color:var(--acc);font-weight:600}
 
 /* ── PROFILE SWITCHER ── */
-.profile-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px;position:sticky;top:60px;z-index:190}
+.profile-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px;position:sticky;top:calc(60px + env(safe-area-inset-top,0));z-index:190;flex-wrap:wrap}
 .profile-bar-label{font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);white-space:nowrap}
 .profile-cards{display:flex;gap:8px;flex-wrap:wrap}
 .profile-card{display:flex;align-items:center;gap:9px;padding:7px 14px;border-radius:99px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);transition:all 0.2s;user-select:none}
@@ -72,13 +85,13 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .pbs span{color:var(--acc);font-weight:700;transition:color 0.3s}
 
 /* ── NAV ── */
-.nav{display:flex;gap:2px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:113px;z-index:180}
+.nav{display:flex;gap:2px;padding:0 max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:calc(113px + env(safe-area-inset-top,0));z-index:180;-webkit-overflow-scrolling:touch}
 .nav::-webkit-scrollbar{display:none}
-.nav-btn{padding:12px 16px;font-size:0.8rem;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.15s}
+.nav-btn{padding:14px 16px;font-size:0.82rem;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.15s;min-height:44px}
 .nav-btn:hover{color:var(--text)}
 .nav-btn.active{color:var(--acc);border-bottom-color:var(--acc)}
 
-.content{flex:1;padding:28px 24px 60px;max-width:1200px;width:100%;margin:0 auto}
+.content{flex:1;padding:24px max(16px,env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom,0)) max(16px,env(safe-area-inset-left));max-width:1200px;width:100%;margin:0 auto}
 .page{display:none}.page.active{display:block}
 
 /* ── TITLES ── */
@@ -410,6 +423,118 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .goal-icon{font-size:2rem}
 .goal-title{font-weight:800;font-size:1rem}
 .goal-sub{font-size:0.78rem;color:var(--muted2);margin-top:2px}
+
+/* ── OPTIMISATIONS MOBILE (iPhone 17, etc.) ── */
+@media (max-width:640px){
+  /* Topbar : logo plus court, sub-text caché */
+  .topbar{gap:8px;padding-left:12px;padding-right:12px}
+  .topbar-logo{font-size:0.95rem}
+  .topbar-sub{display:none}
+  .sync-btn .sync-text{display:none}
+  .sync-btn{padding:8px 10px;min-width:44px;min-height:36px}
+  .back-btn{padding:8px 10px;min-height:36px;font-size:0.72rem}
+
+  /* Nav tabs : plus compacts mais touchables */
+  .nav-btn{padding:13px 12px;font-size:0.78rem}
+
+  /* Profile bar : profils en flex column si nécessaire */
+  .profile-bar{padding:8px 12px;gap:8px}
+  .profile-bar-label{display:none}
+  .profile-cards{flex:1;flex-wrap:wrap}
+  .profile-bar-stats{flex-basis:100%;justify-content:space-between;padding-top:4px;border-top:1px solid var(--border);margin-top:2px}
+  .profile-card{padding:8px 12px;min-height:44px}
+  .profile-info{gap:0}
+  .profile-meta{font-size:0.62rem;line-height:1.2}
+
+  /* Content padding réduit */
+  .content{padding:16px 12px calc(40px + env(safe-area-inset-bottom,0))}
+
+  /* Titres + sub : plus serrés */
+  h2{font-size:1.2rem}
+  .section-sub{font-size:0.78rem;margin-bottom:16px}
+
+  /* Stats grid : 2 cols sur mobile */
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat{padding:12px 10px}
+  .stat-val{font-size:1.3rem}
+  .stat-label{font-size:0.62rem}
+
+  /* Goal banner */
+  .goal-banner{padding:12px 14px;gap:10px}
+  .goal-icon{font-size:1.5rem}
+  .goal-title{font-size:0.92rem}
+  .goal-sub{font-size:0.7rem}
+
+  /* Boutons : min 44px touchable */
+  .btn{min-height:38px;padding:10px 14px}
+  .btn-sm{min-height:36px;padding:8px 12px;font-size:0.78rem}
+
+  /* Cards padding réduit */
+  .card{padding:14px}
+  .card-sm{padding:12px 14px}
+
+  /* Programme grid : 2 cols sur mobile */
+  .program-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .day-card{padding:10px;min-height:80px}
+  .day-pick-btn{width:28px;height:28px;font-size:0.9rem}
+
+  /* Calendar : 2 mois sur petit écran */
+  .cal-month{padding:8px 10px}
+  .cal-day{height:28px;font-size:0.75rem;min-height:28px}
+  .cal-week-row{padding:3px;gap:1px}
+
+  /* Modale plein écran sur mobile */
+  .modal-overlay{padding:0;align-items:stretch}
+  .modal{max-height:100vh !important;height:100vh;border-radius:0;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+  .modal-header{padding:16px 16px 12px}
+  .modal-title{font-size:1.05rem}
+  .modal-body{grid-template-columns:1fr;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .modal-left,.modal-right{padding:14px 16px}
+  .modal-close{top:10px;right:10px;width:38px;height:38px;font-size:1rem}
+  .exercise-photo-wrap{min-height:280px}
+  .video-wrap{min-height:340px;height:auto;padding:10px}
+  .hero-body{width:200px;height:320px}
+
+  /* Editor de semaine : 1 col par jour, scroll natif */
+  .week-days-grid{grid-template-columns:1fr;gap:10px}
+  .week-day{min-height:auto;padding:12px}
+
+  /* Logger inputs : plus gros */
+  .logger-row input{font-size:16px;min-height:40px;padding:8px 12px}
+  .logger-row{gap:6px}
+  .logger-set-label{min-width:50px;font-size:0.72rem}
+
+  /* Listes ex */
+  .ex-item{padding:12px;gap:10px}
+  .ex-num{width:26px;height:26px;font-size:0.72rem}
+  .ex-name{font-size:0.85rem}
+
+  /* Body anatomie */
+  .body-anatomy{height:260px}
+
+  /* Picker modal */
+  .picker-ex-item{padding:11px 12px;min-height:44px}
+
+  /* Inputs/selects globaux : 16px pour éviter zoom iOS */
+  input[type=number],input[type=text],input[type=password],input[type=range],select,textarea{font-size:16px}
+
+  /* Charts plus petits */
+  .chart-wrap{height:180px}
+}
+
+/* iPhone landscape */
+@media (max-width:900px) and (orientation:landscape){
+  .modal{height:100vh}
+  .body-anatomy{height:200px}
+}
+
+/* Améliore le scroll partout */
+body{-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+
+/* Désactive sélection texte sur les boutons/tabs */
+.btn,.nav-btn,.profile-card,.day-card,.tab,.pill,.muscle-tab,.cal-week-row,.sync-btn,.back-btn{
+  -webkit-user-select:none;user-select:none
+}
 </style>
 
 <!-- ═══════ MODULE BODY-HIGHLIGHTER ═══════ -->
