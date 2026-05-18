@@ -4157,6 +4157,31 @@ async function autoBootstrapSync(){
   // Pull auto au démarrage
   setTimeout(autoBootstrapSync, 800);
 })();
+
+// ══════════════════════════════════════════════
+// SERVICE WORKER — garantit que la dernière version est toujours servie
+// ══════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      // Check pour update à chaque chargement
+      reg.update();
+      // Si un nouveau SW est en attente d'activation, on l'active
+      reg.addEventListener('updatefound', ()=>{
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', ()=>{
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
+            // Nouvelle version disponible : on prévient l'utilisateur
+            console.log('🆕 Nouvelle version dispo — reload pour appliquer');
+            newSW.postMessage('SKIP_WAITING');
+            // Auto-reload si pas de modification utilisateur en cours
+            setTimeout(()=>{ if(!document.querySelector('.modal-overlay.show')) location.reload(); }, 1500);
+          }
+        });
+      });
+    }).catch(err=>console.warn('SW registration failed:', err));
+  });
+}
 </script>
 </body>
 </html>
