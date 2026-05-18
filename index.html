@@ -321,11 +321,35 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .week-ex-chip button{background:none;border:none;color:var(--red);font-size:0.85rem;cursor:pointer;padding:0;line-height:1}
 .week-ex-chip button:hover{color:#fca5a5}
 .week-day-add{font-size:0.7rem;padding:4px;border:1px dashed var(--border2);border-radius:5px;background:none;color:var(--muted);cursor:pointer;margin-top:auto}
-.climb-toggle{display:flex;align-items:center;gap:6px;font-size:0.7rem;cursor:pointer;padding:3px 6px;border-radius:5px;background:rgba(132,204,22,0.06);border:1px solid transparent;transition:all 0.15s}
-.climb-toggle:hover{background:rgba(132,204,22,0.12);border-color:rgba(132,204,22,0.3)}
-.climb-toggle input{margin:0;cursor:pointer;accent-color:#84cc16}
+.climb-toggle{display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(132,204,22,0.08);border:1px solid transparent;transition:all 0.15s;align-self:flex-start;white-space:nowrap}
+.climb-toggle:hover{background:rgba(132,204,22,0.15);border-color:rgba(132,204,22,0.3)}
+.climb-toggle input{margin:0;cursor:pointer;accent-color:#84cc16;width:14px;height:14px}
 .week-day.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3)}
-.week-day.has-climbing .climb-toggle{background:rgba(132,204,22,0.15);color:#84cc16;font-weight:700}
+.week-day.has-climbing .climb-toggle{background:rgba(132,204,22,0.18);color:#84cc16;font-weight:700}
+.climb-log-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(132,204,22,0.15);border:1px solid rgba(132,204,22,0.4);color:#a3e635;font-weight:700;align-self:flex-start;margin-left:6px;white-space:nowrap}
+.climb-log-btn:hover{background:#84cc16;color:#0f1117}
+
+/* Modal escalade — cartes par niveau */
+.climb-level-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center;transition:all 0.15s}
+.climb-level-card.has-count{transform:scale(1.02)}
+.climb-level-name{font-size:0.7rem;font-weight:700;margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;padding:3px 6px;border-radius:4px;color:#fff;display:inline-block;min-width:60px}
+.climb-counter{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}
+.climb-counter button{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.climb-counter button:hover{background:var(--acc);border-color:var(--acc);color:#fff}
+.climb-counter button:disabled{opacity:0.3;cursor:not-allowed}
+.climb-counter .climb-count{font-size:1.2rem;font-weight:800;min-width:30px;font-variant-numeric:tabular-nums}
+@media (max-width:640px){
+  #climb-levels-grid{grid-template-columns:repeat(2,1fr) !important;gap:6px}
+  .climb-level-card{padding:8px 6px}
+  .climb-level-name{font-size:0.62rem;padding:2px 5px;min-width:0}
+  .climb-counter button{width:28px;height:28px;font-size:1rem}
+  .climb-counter .climb-count{font-size:1rem}
+}
+@media (max-width:640px){
+  .climb-toggle{font-size:0.66rem;padding:2px 6px;gap:3px}
+  .climb-toggle input{width:12px;height:12px}
+  .climb-log-btn{font-size:0.64rem;padding:2px 6px}
+}
 .cal-day-dot.climb-dot{background:none !important;font-size:6px !important;bottom:-1px !important;width:auto !important;height:auto !important;line-height:1}
 .week-day-add:hover{color:var(--acc);border-color:var(--acc)}
 .week-summary{margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:0.78rem;color:var(--muted2);display:flex;gap:14px;flex-wrap:wrap}
@@ -1113,6 +1137,35 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
         </div>
         <div id="claude-response" style="margin-top:12px;font-size:0.85rem;line-height:1.6;white-space:pre-wrap"></div>
       </details>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODALE ESCALADE ═══════ -->
+<div class="modal-overlay" id="climbing-modal" onclick="if(event.target===this)closeClimbingModal()">
+  <div class="modal" style="max-width:600px">
+    <button class="modal-close" onclick="closeClimbingModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-title">🧗 Séance d'escalade</div>
+      <div class="modal-meta"><span id="climbing-date"></span></div>
+    </div>
+    <div style="padding:18px 20px 22px">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:14px">
+        Combien de blocs as-tu réussis à chaque niveau ? (Touche les niveaux que tu n'as pas faits, laisse à 0)
+      </div>
+      <div id="climb-levels-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px"></div>
+      <div id="climb-summary" style="text-align:center;padding:10px;background:rgba(132,204,22,0.1);border:1px solid rgba(132,204,22,0.3);border-radius:8px;font-weight:700;color:#a3e635;margin-bottom:14px">0 blocs au total</div>
+      <div class="field">
+        <label>Notes (style, ressenti, fatigue…)</label>
+        <textarea id="climb-notes" rows="2" placeholder="Ex: bonne séance overhang, dalle technique propre…"></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="saveClimbingSession()">💾 Enregistrer</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeClimbingModal()">Annuler</button>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:0.7rem;color:var(--muted);margin-bottom:8px">📜 5 dernières séances</div>
+      <div id="climb-history-list"></div>
     </div>
   </div>
 </div>
@@ -2427,10 +2480,13 @@ function renderWeekEditor(){
         ${Object.entries(SESSION_TYPES).map(([k,v])=>`<option value="${k}" ${day.type===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
       </select>
       <div class="session-color-bar" style="background:${sessType.color}"></div>
-      <label class="climb-toggle">
-        <input type="checkbox" ${hasClimbing?'checked':''} onchange="toggleClimbingDay(${i}, this.checked)">
-        <span>🧗 + Escalade</span>
-      </label>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+        <label class="climb-toggle">
+          <input type="checkbox" ${hasClimbing?'checked':''} onchange="toggleClimbingDay(${i}, this.checked)">
+          <span>🧗 Escalade</span>
+        </label>
+        ${hasClimbing?`<button class="climb-log-btn" onclick="openClimbingModal()">📝 Logger</button>`:''}
+      </div>
       <div class="week-day-exercises">
         ${(day.exercises||[]).map(exId=>{
           const ex = EXERCISES.find(e=>e.id===exId);
@@ -2465,6 +2521,106 @@ function toggleClimbingDay(dayIdx, checked){
   saveWeekPlan(selectedWeekKey, plan);
   renderWeekEditor();
   renderCalendar();
+}
+
+// ══════════════════════════════════════════════
+// SUIVI ESCALADE — log par niveau (1-8)
+// ══════════════════════════════════════════════
+const CLIMB_LEVELS = [1,2,3,4,5,6,7,8];
+const CLIMB_COLORS = {
+  1:'#86efac', // vert clair (débutant)
+  2:'#fbbf24', // jaune
+  3:'#fb923c', // orange
+  4:'#60a5fa', // bleu
+  5:'#ef4444', // rouge
+  6:'#1f2937', // noir
+  7:'#94a3b8', // blanc/gris
+  8:'#a855f7', // violet
+};
+let currentClimbCounts = {};
+
+function openClimbingModal(){
+  currentClimbCounts = {};
+  document.getElementById('climbing-date').textContent = new Date().toLocaleDateString('fr', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('climb-notes').value = '';
+  renderClimbLevels();
+  updateClimbSummary();
+  renderClimbHistory();
+  document.getElementById('climbing-modal').classList.add('show');
+}
+
+function closeClimbingModal(){
+  document.getElementById('climbing-modal').classList.remove('show');
+}
+
+function renderClimbLevels(){
+  const html = CLIMB_LEVELS.map(lvl=>{
+    const count = currentClimbCounts[lvl]||0;
+    const color = CLIMB_COLORS[lvl];
+    const textColor = (lvl===6) ? '#fff' : ((lvl===7) ? '#000' : '#000');
+    return `<div class="climb-level-card ${count>0?'has-count':''}" style="border-color:${color}">
+      <div class="climb-level-name" style="background:${color};color:${textColor}">Niv ${lvl}</div>
+      <div class="climb-counter">
+        <button onclick="changeClimbCount(${lvl},-1)" ${count===0?'disabled':''}>−</button>
+        <span class="climb-count" id="climb-c-${lvl}">${count}</span>
+        <button onclick="changeClimbCount(${lvl},1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('climb-levels-grid').innerHTML = html;
+}
+
+function changeClimbCount(level, delta){
+  currentClimbCounts[level] = Math.max(0, (currentClimbCounts[level]||0) + delta);
+  if(navigator.vibrate) navigator.vibrate(15);
+  renderClimbLevels();
+  updateClimbSummary();
+}
+
+function updateClimbSummary(){
+  const total = Object.values(currentClimbCounts).reduce((s,c)=>s+c, 0);
+  const maxLvl = Math.max(0, ...Object.entries(currentClimbCounts).filter(([_,c])=>c>0).map(([l])=>parseInt(l)));
+  document.getElementById('climb-summary').innerHTML = total>0
+    ? `🧗 <strong>${total}</strong> blocs · max <strong>Niv ${maxLvl}</strong>`
+    : '0 blocs au total';
+}
+
+function saveClimbingSession(){
+  const blocks = Object.entries(currentClimbCounts)
+    .filter(([_,c]) => c>0)
+    .map(([l,c]) => ({level:parseInt(l), count:c}));
+  if(!blocks.length){ alert('Ajoute au moins un bloc'); return; }
+  const total = blocks.reduce((s,b)=>s+b.count, 0);
+  const maxLevel = Math.max(...blocks.map(b=>b.level));
+  const session = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    blocks, total, maxLevel,
+    notes: document.getElementById('climb-notes').value||''
+  };
+  const all = state.climbing;
+  all.unshift(session);
+  state.setClimbing(all);
+  closeClimbingModal();
+  // Refresh UI partout
+  if(typeof renderWeekEditor==='function') renderWeekEditor();
+  if(typeof renderDashboard==='function') renderDashboard();
+  alert(`✓ Séance enregistrée : ${total} blocs (max niv ${maxLevel})`);
+}
+
+function renderClimbHistory(){
+  const sessions = state.climbing.slice(0,5);
+  const el = document.getElementById('climb-history-list');
+  if(!sessions.length){ el.innerHTML='<div style="font-size:0.78rem;color:var(--muted)">Aucune séance enregistrée</div>'; return; }
+  el.innerHTML = sessions.map(s=>{
+    const d = new Date(s.date).toLocaleDateString('fr');
+    const lvlBadges = s.blocks.map(b=>`<span style="background:${CLIMB_COLORS[b.level]};color:${b.level===6?'#fff':'#000'};padding:1px 6px;border-radius:99px;font-size:0.65rem;font-weight:700;margin-right:3px">N${b.level}×${b.count}</span>`).join('');
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.75rem">
+      <span style="color:var(--muted);min-width:65px">${d}</span>
+      <div style="flex:1">${lvlBadges}</div>
+      <span style="font-weight:700;color:#a3e635">${s.total} blocs</span>
+    </div>`;
+  }).join('');
 }
 
 function setDayType(dayIdx, type){
@@ -3289,6 +3445,14 @@ let state = {
   // Sélection hebdo : jour planifié pour aujourd'hui
   get plannedDay(){ return LS('plannedDay_'+this.profile); },
   setPlannedDay(idx){ SS('plannedDay_'+this.profile,idx); },
+  // Escalade : log par séance avec niveaux 1-8
+  get climbing(){ return LS('climbing_'+this.profile)||[]; },
+  setClimbing(v){ SS('climbing_'+this.profile, v); },
+  totalBlocks(){ return this.climbing.reduce((s,c)=>s+(c.total||0),0); },
+  maxLevel(){ return this.climbing.reduce((m,c)=>{
+    const max = Math.max(...(c.blocks||[]).map(b=>b.level||0));
+    return Math.max(m, max);
+  }, 0); },
 };
 
 let currentMuscle = 'Tous';
@@ -3402,6 +3566,18 @@ function renderDashboard(){
   const fmt = n => n>=1000 ? (n/1000).toFixed(1)+'k' : Math.round(n).toString();
   document.getElementById('dash-volume').textContent = fmt(totalVol);
   document.getElementById('dash-volume-week').textContent = fmt(weekVol);
+  // Stat escalade (sous-texte)
+  const climbTotal = state.totalBlocks();
+  const climbMax = state.maxLevel();
+  if(climbTotal>0){
+    const dashWeekEl = document.getElementById('dash-volume-week');
+    if(dashWeekEl && !document.getElementById('dash-climb-info')){
+      dashWeekEl.parentElement.insertAdjacentHTML('beforeend',
+        `<div id="dash-climb-info" style="font-size:0.62rem;color:#a3e635;margin-top:6px;border-top:1px solid var(--border);padding-top:6px">🧗 ${climbTotal} blocs · max N${climbMax}</div>`);
+    } else if(document.getElementById('dash-climb-info')){
+      document.getElementById('dash-climb-info').innerHTML = `🧗 ${climbTotal} blocs · max N${climbMax}`;
+    }
+  }
 
   // Split + plan custom du Calendrier
   const splitKey = state.splits[state.pid];
