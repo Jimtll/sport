@@ -269,6 +269,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .cal-day.is-today{background:var(--acc);color:#fff;font-weight:700}
 .cal-day.has-session{font-weight:700}
 .cal-day-dot{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%}
+.cal-day .cal-day-dot:nth-of-type(2){left:65%}
+.cal-day .cal-day-dot:nth-of-type(1):has(+ .cal-day-dot){left:35%}
 
 /* Éditeur de semaine */
 .week-editor{border:2px solid var(--acc-glow)}
@@ -287,6 +289,12 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .week-ex-chip button{background:none;border:none;color:var(--red);font-size:0.85rem;cursor:pointer;padding:0;line-height:1}
 .week-ex-chip button:hover{color:#fca5a5}
 .week-day-add{font-size:0.7rem;padding:4px;border:1px dashed var(--border2);border-radius:5px;background:none;color:var(--muted);cursor:pointer;margin-top:auto}
+.climb-toggle{display:flex;align-items:center;gap:6px;font-size:0.7rem;cursor:pointer;padding:3px 6px;border-radius:5px;background:rgba(132,204,22,0.06);border:1px solid transparent;transition:all 0.15s}
+.climb-toggle:hover{background:rgba(132,204,22,0.12);border-color:rgba(132,204,22,0.3)}
+.climb-toggle input{margin:0;cursor:pointer;accent-color:#84cc16}
+.week-day.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3)}
+.week-day.has-climbing .climb-toggle{background:rgba(132,204,22,0.15);color:#84cc16;font-weight:700}
+.cal-day-dot.climb-dot{background:none !important;font-size:6px !important;bottom:-1px !important;width:auto !important;height:auto !important;line-height:1}
 .week-day-add:hover{color:var(--acc);border-color:var(--acc)}
 .week-summary{margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:0.78rem;color:var(--muted2);display:flex;gap:14px;flex-wrap:wrap}
 .week-summary strong{color:var(--text)}
@@ -2092,8 +2100,12 @@ function renderCalendar(){
         const isToday = d.getDate()===today.getDate() && d.getMonth()===today.getMonth() && d.getFullYear()===today.getFullYear();
         const sess = weekPlan?.days?.[dow];
         const hasSession = sess && sess.type !== 'rest';
+        const hasClimbing = sess && sess.climbing;
         const color = hasSession ? SESSION_TYPES[sess.type]?.color : null;
-        cells.push(`<div class="cal-day ${inMonth?'in-month':''} ${isToday?'is-today':''} ${hasSession?'has-session':''}" style="${hasSession&&!isToday?`color:${color}`:''}">${d.getDate()}${hasSession&&!isToday?`<span class="cal-day-dot" style="background:${color}"></span>`:''}</div>`);
+        const dots = [];
+        if(hasSession) dots.push(`<span class="cal-day-dot" style="background:${color}"></span>`);
+        if(hasClimbing) dots.push(`<span class="cal-day-dot climb-dot">🧗</span>`);
+        cells.push(`<div class="cal-day ${inMonth?'in-month':''} ${isToday?'is-today':''} ${hasSession?'has-session':''}" style="${hasSession&&!isToday?`color:${color}`:''}">${d.getDate()}${!isToday?dots.join(''):''}</div>`);
       }
       if(!touchesMonth) break;
       const isCurrent = todayISO >= cursor.toISOString().slice(0,10) && new Date(cursor.getTime()+6*86400000).toISOString().slice(0,10) >= todayISO;
@@ -2131,7 +2143,8 @@ function renderWeekEditor(){
     const day = plan.days[i] || {type:'rest',exercises:[]};
     const date = new Date(monday); date.setUTCDate(monday.getUTCDate()+i);
     const sessType = SESSION_TYPES[day.type] || SESSION_TYPES.rest;
-    html += `<div class="week-day">
+    const hasClimbing = !!day.climbing;
+    html += `<div class="week-day ${hasClimbing?'has-climbing':''}">
       <div class="week-day-header">
         <div class="week-day-name">${days[i].substr(0,3)}</div>
         <div class="week-day-date">${date.getUTCDate()}/${date.getUTCMonth()+1}</div>
@@ -2140,6 +2153,10 @@ function renderWeekEditor(){
         ${Object.entries(SESSION_TYPES).map(([k,v])=>`<option value="${k}" ${day.type===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
       </select>
       <div class="session-color-bar" style="background:${sessType.color}"></div>
+      <label class="climb-toggle">
+        <input type="checkbox" ${hasClimbing?'checked':''} onchange="toggleClimbingDay(${i}, this.checked)">
+        <span>🧗 + Escalade</span>
+      </label>
       <div class="week-day-exercises">
         ${(day.exercises||[]).map(exId=>{
           const ex = EXERCISES.find(e=>e.id===exId);
@@ -2156,14 +2173,24 @@ function renderWeekEditor(){
 function renderWeekSummary(){
   if(!selectedWeekKey) return;
   const plan = getWeekPlan(selectedWeekKey);
-  const total = plan.days.filter(d=>d.type!=='rest').length;
+  const muscu = plan.days.filter(d=>d.type!=='rest').length;
+  const climbingDays = plan.days.filter(d=>d.climbing).length;
   const totalEx = plan.days.reduce((s,d)=>s+(d.exercises?.length||0),0);
   const types = [...new Set(plan.days.filter(d=>d.type!=='rest').map(d=>d.type))];
   document.getElementById('week-summary').innerHTML = `
-    <span><strong>${total}</strong> séances</span>
+    <span><strong>${muscu}</strong> séances muscu</span>
+    <span><strong>${climbingDays}</strong> 🧗 escalade</span>
     <span><strong>${totalEx}</strong> exercices au total</span>
-    <span><strong>${types.length}</strong> types : ${types.map(t=>SESSION_TYPES[t]?.emoji+SESSION_TYPES[t]?.label).join(' · ')||'—'}</span>
+    <span>${types.map(t=>SESSION_TYPES[t]?.emoji+SESSION_TYPES[t]?.label).join(' · ')||'—'}</span>
   `;
+}
+
+function toggleClimbingDay(dayIdx, checked){
+  const plan = getWeekPlan(selectedWeekKey);
+  plan.days[dayIdx].climbing = !!checked;
+  saveWeekPlan(selectedWeekKey, plan);
+  renderWeekEditor();
+  renderCalendar();
 }
 
 function setDayType(dayIdx, type){
@@ -2378,7 +2405,8 @@ function analyzeWeek(){
     const pulls = types.filter(t=>['pull','back'].includes(t)).length;
     if(pulls>=2) bullets.push({t:'good',i:'✓',m:`${pulls} séances Pull/Dos : aligné avec ton objectif Dos·Épaules·Grip.`});
     else if(sessCount>0 && pulls===0) bullets.push({t:'warn',i:'⚠',m:`Aucune séance Pull/Dos cette semaine. Priorité à ton objectif !`});
-    if(types.includes('climbing')) bullets.push({t:'good',i:'✓',m:`Escalade incluse : excellent pour le grip et le dos fonctionnel.`});
+    const climbingCount = plan.days.filter(d=>d.climbing || d.type==='climbing').length;
+    if(climbingCount>0) bullets.push({t:'good',i:'✓',m:`${climbingCount} séance${climbingCount>1?'s':''} d'escalade : excellent pour le grip et le dos fonctionnel.`});
   } else {
     const glutes = types.filter(t=>['glutes','legs','lower'].includes(t)).length;
     if(glutes>=2) bullets.push({t:'good',i:'✓',m:`${glutes} séances bas du corps : aligné avec ton objectif Fessiers.`});
@@ -2429,15 +2457,16 @@ function copyWeekForClaude(){
     const d = plan.days[i] || {type:'rest',exercises:[]};
     const date = new Date(monday); date.setUTCDate(monday.getUTCDate()+i);
     const dateStr = `${date.getUTCDate()}/${date.getUTCMonth()+1}`;
+    const climb = d.climbing ? ' + 🧗 ESCALADE (soir)' : '';
     if(d.type==='rest'){
-      text += `${days[i]} ${dateStr} : Repos\n`;
+      text += `${days[i]} ${dateStr} : ${d.climbing?'🧗 Escalade':'Repos'}\n`;
     } else {
       const sessName = SESSION_TYPES[d.type]?.label || d.type;
       const exs = (d.exercises||[]).map(id=>{
         const ex = EXERCISES.find(e=>e.id===id);
         return ex ? `${ex.name} (${ex.sets})` : null;
       }).filter(Boolean);
-      text += `${days[i]} ${dateStr} : ${sessName}\n`;
+      text += `${days[i]} ${dateStr} : ${sessName}${climb}\n`;
       exs.forEach(e=>text += `  • ${e}\n`);
       if(!exs.length) text += `  (aucun exercice ajouté)\n`;
     }
@@ -2908,6 +2937,7 @@ function goPage(id){
   });
   if(id==='progression') renderProgressCharts();
   if(id==='dashboard') renderDashboard();
+  if(id==='programme') refreshProgramUI();
   if(id==='calendrier'){
     if(!selectedWeekKey) selectedWeekKey = getISOWeek(new Date());
     renderCalendar();
@@ -2960,10 +2990,10 @@ function renderDashboard(){
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
       const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-      label = sess.emoji+' '+sess.label;
-      sub = d.type==='rest' ? 'Repos' : `${(d.exercises||[]).length} exo${(d.exercises||[]).length>1?'s':''}`;
+      label = sess.emoji+' '+sess.label + (d.climbing?' + 🧗':'');
+      sub = d.type==='rest' ? (d.climbing?'🧗 seule':'Repos') : `${(d.exercises||[]).length} exo${(d.exercises||[]).length>1?'s':''}${d.climbing?' + 🧗':''}`;
       color = sess.color;
-      isRest = d.type==='rest';
+      isRest = d.type==='rest' && !d.climbing;
     } else {
       label = tplDay.l; sub = tplDay.s||'—'; color = tplDay.c||'var(--muted)'; isRest = tplDay.rest;
     }
@@ -3075,11 +3105,11 @@ function refreshProgramUI(){
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
       const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-      label = sess.emoji+' '+sess.label;
-      sub = d.type==='rest' ? 'Récupération' : `${(d.exercises||[]).length} exercice${(d.exercises||[]).length>1?'s':''}`;
+      label = sess.emoji+' '+sess.label + (d.climbing?' + 🧗':'');
+      sub = d.type==='rest' ? (d.climbing?'🧗 Escalade seule':'Récupération') : `${(d.exercises||[]).length} exercice${(d.exercises||[]).length>1?'s':''}${d.climbing?' + escalade':''}`;
       color = sess.color;
-      isRest = d.type==='rest';
-      isClimb = d.type==='climbing';
+      isRest = d.type==='rest' && !d.climbing;
+      isClimb = d.type==='climbing' || d.climbing;
     } else {
       label = tplDay.l;
       sub = tplDay.s || '—';
