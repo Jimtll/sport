@@ -33,6 +33,22 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .topbar-sep{flex:1}
 .back-btn{font-size:0.78rem;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:var(--radius-xs);border:1px solid var(--border);transition:all 0.15s}
 .back-btn:hover{color:var(--text);border-color:var(--border2)}
+.sync-btn{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--muted);background:none;padding:6px 12px;border-radius:var(--radius-xs);border:1px solid var(--border);cursor:pointer;transition:all 0.15s}
+.sync-btn:hover{color:var(--text);border-color:var(--border2)}
+.sync-btn.synced{color:var(--green);border-color:rgba(16,185,129,0.3)}
+.sync-btn.syncing{color:var(--blue);border-color:rgba(59,130,246,0.3)}
+.sync-btn.error{color:var(--red);border-color:rgba(239,68,68,0.3)}
+.sync-btn.syncing .sync-icon{animation:spin 1s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.sync-status-line{display:flex;align-items:center;gap:8px;font-size:0.85rem;margin-bottom:14px;padding:10px 14px;border-radius:var(--radius-sm);background:var(--surface2)}
+.sync-status-line.ok{background:var(--green-dim);color:#34d399}
+.sync-status-line.warn{background:rgba(251,191,36,0.12);color:var(--yellow)}
+.sync-status-line.err{background:var(--red-dim);color:#fca5a5}
+.sync-tutorial{background:var(--surface2);padding:14px 18px;border-radius:var(--radius-sm);font-size:0.82rem;line-height:1.6;margin-bottom:14px}
+.sync-tutorial ol{margin-left:18px}
+.sync-tutorial li{margin-bottom:4px}
+.sync-tutorial code{background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px;font-family:'SF Mono',monospace;font-size:0.82em}
+.sync-tutorial a{color:var(--acc);font-weight:600}
 
 /* ── PROFILE SWITCHER ── */
 .profile-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px;position:sticky;top:60px;z-index:190}
@@ -494,6 +510,10 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <div class="topbar-logo">💪 SportDuo</div>
   <div class="topbar-sub" id="topbar-sub">Prise de masse · Intermédiaire</div>
   <div class="topbar-sep"></div>
+  <button class="sync-btn" id="sync-btn" onclick="openSyncModal()" title="Sync cloud GitHub Gist">
+    <span class="sync-icon" id="sync-icon">☁️</span>
+    <span class="sync-text" id="sync-text">Sync</span>
+  </button>
   <a href="../index.html" class="back-btn">← Dashboard</a>
 </div>
 
@@ -923,6 +943,64 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
         </div>
         <div id="claude-response" style="margin-top:12px;font-size:0.85rem;line-height:1.6;white-space:pre-wrap"></div>
       </details>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODALE SYNC CLOUD ═══════ -->
+<div class="modal-overlay" id="sync-modal" onclick="if(event.target===this)closeSyncModal()">
+  <div class="modal" style="max-width:640px">
+    <button class="modal-close" onclick="closeSyncModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-title">☁️ Sync cloud via GitHub Gist</div>
+      <div class="modal-meta">Tes données synchronisées sur tous tes appareils, sans Firebase</div>
+    </div>
+    <div style="padding:18px 24px 24px">
+      <div class="sync-status-line" id="sync-status-line">⚪ Statut : non configuré</div>
+
+      <div id="sync-not-configured">
+        <div class="sync-tutorial">
+          <strong>Comment configurer (1× par appareil) :</strong>
+          <ol>
+            <li>Va sur <a href="https://github.com/settings/tokens/new?scopes=gist&description=SportDuo" target="_blank">github.com/settings/tokens</a> (lien direct avec les bonnes options pré-remplies)</li>
+            <li>Mets une <strong>Expiration</strong> longue (ex. 1 year ou No expiration)</li>
+            <li>Vérifie que <code>gist</code> est bien coché dans les scopes</li>
+            <li>Clique <strong>Generate token</strong> en bas</li>
+            <li>Copie le token (commence par <code>ghp_…</code>) — il ne s'affiche qu'une fois !</li>
+            <li>Colle-le ci-dessous</li>
+          </ol>
+        </div>
+        <label>Personal Access Token GitHub</label>
+        <input type="password" id="gist-token-input" placeholder="ghp_…" autocomplete="off">
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary" onclick="connectGistSync()">🔌 Connecter</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeSyncModal()">Annuler</button>
+        </div>
+      </div>
+
+      <div id="sync-configured" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div class="card-sm">
+            <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase">Dernier push</div>
+            <div id="sync-last-push" style="font-weight:700;font-size:0.85rem">—</div>
+          </div>
+          <div class="card-sm">
+            <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase">Dernier pull</div>
+            <div id="sync-last-pull" style="font-weight:700;font-size:0.85rem">—</div>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;font-size:0.78rem;color:var(--muted)">
+          Tes données vivent ici : <a id="gist-link" href="#" target="_blank" style="color:var(--acc)">voir mon Gist</a>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm" onclick="manualPush()">⬆️ Push maintenant</button>
+          <button class="btn btn-secondary btn-sm" onclick="manualPull()">⬇️ Pull du cloud</button>
+          <button class="btn btn-danger btn-sm" onclick="disconnectSync()">🔌 Déconnecter</button>
+        </div>
+        <div class="sync-tutorial" style="margin-top:14px">
+          <strong>Auto-sync activé :</strong> chaque modification (workout loggé, semaine planifiée, mensuration…) déclenche automatiquement un push après 3 secondes. Sur un nouvel appareil, recolle ton token : tes données seront restaurées.
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2826,7 +2904,10 @@ const FOODS = [
 // STATE
 // ══════════════════════════════════════════════
 const LS = key => JSON.parse(localStorage.getItem('sp_'+key)||'null');
-const SS = (key,val) => localStorage.setItem('sp_'+key, JSON.stringify(val));
+const SS = (key,val) => {
+  localStorage.setItem('sp_'+key, JSON.stringify(val));
+  if(typeof scheduleSync==='function') scheduleSync();
+};
 
 let state = {
   profile: LS('profile')||'lui',
@@ -3550,12 +3631,236 @@ function updateJournalStats(){
 }
 
 // ══════════════════════════════════════════════
+// CLOUD SYNC — GitHub Gist comme backend
+// ══════════════════════════════════════════════
+const GIST_FILE = 'sportduo-data.json';
+const cloud = {
+  get token(){ return localStorage.getItem('gist_token'); },
+  set token(v){ v ? localStorage.setItem('gist_token', v) : localStorage.removeItem('gist_token'); },
+  get gistId(){ return localStorage.getItem('gist_id'); },
+  set gistId(v){ v ? localStorage.setItem('gist_id', v) : localStorage.removeItem('gist_id'); },
+  get lastPush(){ return localStorage.getItem('gist_last_push'); },
+  get lastPull(){ return localStorage.getItem('gist_last_pull'); },
+
+  async _api(path, opts={}){
+    if(!this.token) throw new Error('Pas de token');
+    const res = await fetch('https://api.github.com'+path, {
+      ...opts,
+      headers:{
+        'Authorization':`token ${this.token}`,
+        'Accept':'application/vnd.github+json',
+        'Content-Type':'application/json',
+        ...(opts.headers||{})
+      }
+    });
+    if(!res.ok){
+      const err = await res.text();
+      throw new Error(`API ${res.status}: ${err.slice(0,150)}`);
+    }
+    return res.json();
+  },
+
+  async findOrCreateGist(){
+    if(this.gistId) return this.gistId;
+    // Cherche un gist existant avec notre fichier
+    const gists = await this._api('/gists?per_page=100');
+    const existing = gists.find(g => g.files && g.files[GIST_FILE]);
+    if(existing){ this.gistId = existing.id; return existing.id; }
+    // Créer un nouveau gist privé
+    const created = await this._api('/gists', {
+      method:'POST',
+      body: JSON.stringify({
+        description:'SportDuo — mes données perso',
+        public:false,
+        files:{ [GIST_FILE]:{ content:'{}' } }
+      })
+    });
+    this.gistId = created.id;
+    return created.id;
+  },
+
+  collectData(){
+    const data = { _updatedAt:Date.now(), _device:navigator.platform };
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith('sp_')) data[k] = localStorage.getItem(k);
+    }
+    return data;
+  },
+
+  async push(){
+    if(!this.token) return false;
+    setSyncStatus('syncing');
+    try {
+      const id = await this.findOrCreateGist();
+      await this._api(`/gists/${id}`, {
+        method:'PATCH',
+        body: JSON.stringify({ files:{ [GIST_FILE]:{ content:JSON.stringify(this.collectData()) } } })
+      });
+      localStorage.setItem('gist_last_push', Date.now().toString());
+      setSyncStatus('synced');
+      updateSyncModalUI();
+      return true;
+    } catch(e){
+      console.warn('Push failed:', e);
+      setSyncStatus('error', e.message);
+      return false;
+    }
+  },
+
+  async pull(){
+    if(!this.token) return false;
+    setSyncStatus('syncing');
+    try {
+      const id = await this.findOrCreateGist();
+      const gist = await this._api(`/gists/${id}`);
+      const content = gist.files[GIST_FILE]?.content || '{}';
+      const data = JSON.parse(content);
+      if(!data._updatedAt){
+        setSyncStatus('synced'); updateSyncModalUI();
+        return false; // gist vide → on garde les données locales
+      }
+      // Restaure les clés sp_*
+      Object.keys(data).forEach(k=>{
+        if(k.startsWith('sp_') && data[k]!=null) localStorage.setItem(k, data[k]);
+      });
+      localStorage.setItem('gist_last_pull', Date.now().toString());
+      setSyncStatus('synced');
+      updateSyncModalUI();
+      return true;
+    } catch(e){
+      console.warn('Pull failed:', e);
+      setSyncStatus('error', e.message);
+      return false;
+    }
+  },
+
+  disconnect(){
+    this.token = null;
+    this.gistId = null;
+    localStorage.removeItem('gist_last_push');
+    localStorage.removeItem('gist_last_pull');
+    setSyncStatus('off');
+    updateSyncModalUI();
+  }
+};
+
+// Debounced auto-sync : déclenché après chaque SS()
+let syncTimer = null;
+function scheduleSync(){
+  if(!cloud.token) return;
+  if(syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(()=>cloud.push(), 3000);
+}
+
+// Note : SS() (défini plus haut) appelle scheduleSync() automatiquement
+
+function setSyncStatus(status, errMsg){
+  const btn = document.getElementById('sync-btn');
+  const icon = document.getElementById('sync-icon');
+  const text = document.getElementById('sync-text');
+  if(!btn) return;
+  btn.classList.remove('synced','syncing','error');
+  if(status==='synced'){ btn.classList.add('synced'); icon.textContent='☁️'; text.textContent='Synced'; }
+  else if(status==='syncing'){ btn.classList.add('syncing'); icon.textContent='↻'; text.textContent='Sync…'; }
+  else if(status==='error'){ btn.classList.add('error'); icon.textContent='⚠️'; text.textContent='Erreur'; btn.title='Sync error: '+errMsg; }
+  else { icon.textContent='☁️'; text.textContent='Sync'; btn.title='Configurer la sync cloud'; }
+}
+
+function openSyncModal(){
+  updateSyncModalUI();
+  document.getElementById('sync-modal').classList.add('show');
+}
+function closeSyncModal(){
+  document.getElementById('sync-modal').classList.remove('show');
+}
+
+function updateSyncModalUI(){
+  const isConnected = !!cloud.token;
+  document.getElementById('sync-not-configured').style.display = isConnected ? 'none' : 'block';
+  document.getElementById('sync-configured').style.display = isConnected ? 'block' : 'none';
+  const status = document.getElementById('sync-status-line');
+  if(isConnected){
+    status.className = 'sync-status-line ok';
+    status.textContent = '✓ Connecté à ton Gist GitHub — auto-sync activé';
+    const fmt = ts => ts ? new Date(parseInt(ts)).toLocaleString('fr') : '—';
+    document.getElementById('sync-last-push').textContent = fmt(cloud.lastPush);
+    document.getElementById('sync-last-pull').textContent = fmt(cloud.lastPull);
+    if(cloud.gistId){
+      const link = document.getElementById('gist-link');
+      link.href = `https://gist.github.com/${cloud.gistId}`;
+    }
+  } else {
+    status.className = 'sync-status-line';
+    status.textContent = '⚪ Non configuré — colle un token GitHub pour activer la sync';
+  }
+}
+
+async function connectGistSync(){
+  const token = document.getElementById('gist-token-input').value.trim();
+  if(!token.startsWith('ghp_') && !token.startsWith('github_pat_')){
+    alert('Le token doit commencer par ghp_ ou github_pat_. Réessaie depuis github.com/settings/tokens.');
+    return;
+  }
+  cloud.token = token;
+  setSyncStatus('syncing');
+  try {
+    // Tente de trouver un gist existant pour proposer pull, sinon push immédiat
+    const gists = await cloud._api('/gists?per_page=100');
+    const existing = gists.find(g => g.files && g.files[GIST_FILE]);
+    if(existing){
+      cloud.gistId = existing.id;
+      const wantPull = confirm('🎉 Données existantes trouvées sur ton Gist !\n\nVeux-tu les restaurer ici (RECOMMANDÉ si nouvel appareil) ?\n\n→ OK = remplacer les données locales par celles du cloud\n→ Annuler = garder les données locales et écraser le cloud');
+      if(wantPull){ await cloud.pull(); }
+      else { await cloud.push(); }
+    } else {
+      // Pas de gist existant → on push tout de suite
+      await cloud.push();
+    }
+    updateSyncModalUI();
+    setTimeout(()=>{ if(confirm('Sync activée ! Recharger la page pour appliquer ?')) location.reload(); }, 500);
+  } catch(e){
+    alert('Échec de connexion : '+e.message+'\nVérifie que le token a bien la permission `gist`.');
+    cloud.token = null;
+    setSyncStatus('off');
+  }
+}
+
+async function manualPush(){ await cloud.push(); }
+async function manualPull(){
+  if(!confirm('Pull du cloud va remplacer tes données locales par celles du Gist. Continuer ?')) return;
+  const ok = await cloud.pull();
+  if(ok) setTimeout(()=>location.reload(), 300);
+}
+function disconnectSync(){
+  if(!confirm('Déconnecter la sync ? Tes données locales et le Gist resteront, mais ne se synchroniseront plus.')) return;
+  cloud.disconnect();
+}
+
+// Pull auto au démarrage si token présent (avec petite delay pour laisser init finir)
+async function autoBootstrapSync(){
+  if(!cloud.token) return;
+  setSyncStatus('syncing');
+  try {
+    await cloud.pull();
+    // Si pull modifie les données, rafraîchir l'UI
+    switchProfile(state.profile);
+  } catch(e){
+    console.warn('Auto-pull failed:', e);
+    setSyncStatus('error', e.message);
+  }
+}
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
 (function init(){
   switchProfile(state.profile);
   calc1RM();
   updateTimerDisplay();
+  setSyncStatus(cloud.token ? 'synced' : 'off');
+  // Pull auto au démarrage
+  setTimeout(autoBootstrapSync, 800);
 })();
 </script>
 </body>
