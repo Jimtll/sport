@@ -1337,8 +1337,10 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
         <div class="btn-group">
           <button class="btn btn-primary btn-sm" onclick="manualPush()">⬆️ Push maintenant</button>
           <button class="btn btn-secondary btn-sm" onclick="manualPull()">⬇️ Pull du cloud</button>
+          <button class="btn btn-secondary btn-sm" onclick="askNotifications()">🔔 Activer notifs</button>
           <button class="btn btn-danger btn-sm" onclick="disconnectSync()">🔌 Déconnecter</button>
         </div>
+        <div id="notif-status" style="font-size:0.72rem;color:var(--muted);margin-top:6px"></div>
         <div class="sync-tutorial" style="margin-top:14px">
           <strong>Auto-sync activé :</strong> chaque modification (workout loggé, semaine planifiée, mensuration…) déclenche automatiquement un push après 3 secondes. Sur un nouvel appareil, recolle ton token : tes données seront restaurées.
         </div>
@@ -3302,6 +3304,7 @@ function calcEpley(weight, reps){
 let restTimer = null;
 let restTimerEnd = 0;
 let restTimerDuration = 0;
+let restNotifTimeout = null;
 
 function getRecommendedRest(exId, weight){
   const ex = EXERCISES.find(e=>e.id===exId);
@@ -3341,6 +3344,10 @@ function startRestTimer(seconds, label){
   document.getElementById('rest-timer-label').textContent = label || 'Repos';
   tickRestTimer();
   restTimer = setInterval(tickRestTimer, 200);
+  // Notification timer indépendant — fonctionne même si l'app passe en arrière-plan
+  restNotifTimeout = setTimeout(()=>{
+    showRestDoneNotification('⏱ Repos terminé !', label||'Tu peux reprendre 💪');
+  }, seconds*1000);
   if(navigator.vibrate) navigator.vibrate(30);
 }
 
@@ -3353,13 +3360,12 @@ function tickRestTimer(){
   const bar = document.getElementById('rest-timer-bar');
   if(left <= 10 && left > 0) bar.classList.add('almost-done');
   if(left === 0){
-    // Timer terminé
+    // Timer terminé — la notif est déjà schedulée via setTimeout indépendant
     bar.classList.add('done');
     bar.classList.remove('almost-done');
     document.getElementById('rest-timer-label').textContent = 'Repos terminé !';
     document.getElementById('rest-timer-time').textContent = '✓ GO';
     if(navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
-    playTimerSound();
     clearInterval(restTimer);
     restTimer = null;
     setTimeout(stopRestTimer, 3000);
@@ -3377,28 +3383,47 @@ function skipRestTimer(){ stopRestTimer(true); }
 
 function stopRestTimer(hide=true){
   if(restTimer){ clearInterval(restTimer); restTimer = null; }
+  if(restNotifTimeout){ clearTimeout(restNotifTimeout); restNotifTimeout = null; }
   if(hide){
     const bar = document.getElementById('rest-timer-bar');
     if(bar) bar.classList.remove('visible','done','almost-done');
   }
 }
 
-function playTimerSound(){
+// Notifications iOS — fonctionne en arrière-plan (PWA installée)
+async function ensureNotifPermission(){
+  if(!('Notification' in window)) return false;
+  if(Notification.permission === 'granted') return true;
+  if(Notification.permission === 'denied') return false;
   try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    // Triple bip ascendant
-    [523, 659, 784].forEach((freq, i)=>{
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = freq;
-      o.type = 'sine';
-      const start = ctx.currentTime + i*0.18;
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.exponentialRampToValueAtTime(0.4, start+0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, start+0.18);
-      o.start(start); o.stop(start+0.2);
+    const result = await Notification.requestPermission();
+    return result === 'granted';
+  } catch(e){ return false; }
+}
+
+function showRestDoneNotification(title, body){
+  // Silence absolu : vibration + notif système (qui peut éventuellement jouer un son système)
+  // On NE joue PAS de son JS
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const options = {
+    body: body || 'Tu peux attaquer la série suivante 💪',
+    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2Y5NzMxNiIgcng9IjQwIi8+PHRleHQgeD0iOTYiIHk9IjEzMCIgZm9udC1zaXplPSIxMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPuKMmTwvdGV4dD48L3N2Zz4=',
+    badge: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHRleHQgeD0iMTIiIHk9IjE4IiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7im4o8L3RleHQ+PC9zdmc+',
+    vibrate: [200, 100, 200, 100, 300],
+    tag: 'rest-timer',
+    requireInteraction: false,
+    silent: false // laisse iOS décider du son système (couplé au mode silencieux du tel)
+  };
+  // Préférer le SW pour fiabilité PWA en arrière-plan
+  if(navigator.serviceWorker && navigator.serviceWorker.ready){
+    navigator.serviceWorker.ready.then(reg=>{
+      reg.showNotification(title||'⏱ Repos terminé !', options).catch(()=>{
+        try { new Notification(title||'⏱ Repos terminé !', options); } catch(e){}
+      });
     });
-  } catch(e){}
+  } else {
+    try { new Notification(title||'⏱ Repos terminé !', options); } catch(e){}
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -3584,7 +3609,7 @@ function celebratePR(exerciseName, prs){
     setTimeout(()=>confetti({particleCount:60, angle:120, spread:55, origin:{x:1, y:0.5}}), 400);
   }
   if(navigator.vibrate) navigator.vibrate([100,80,150,80,200]);
-  playTimerSound();
+  // Pas de son JS, juste vibration tactile
   // Auto-hide
   setTimeout(()=>toast.classList.remove('visible'), 5500);
 }
@@ -3645,6 +3670,10 @@ function toggleSetDone(btn, exId){
     const restSec = getRecommendedRest(exId, w);
     const ex = EXERCISES.find(e=>e.id===exId);
     startRestTimer(restSec, `Repos · ${ex?.name||'série'}`);
+    // Demande la permission notif au 1er ✓ (lazy)
+    if('Notification' in window && Notification.permission === 'default'){
+      ensureNotifPermission();
+    }
   } else {
     // On démarque → stoppe le timer
     stopRestTimer(true);
@@ -4829,6 +4858,26 @@ async function connectGistSync(){
 }
 
 async function manualPush(){ await cloud.push(); }
+
+async function askNotifications(){
+  if(!('Notification' in window)){
+    alert('Ton navigateur ne supporte pas les notifications.');
+    return;
+  }
+  if(Notification.permission === 'denied'){
+    alert('Les notifications ont été refusées. Va dans Réglages iOS → Notifications → SportDuo pour les autoriser.');
+    return;
+  }
+  const granted = await ensureNotifPermission();
+  const status = document.getElementById('notif-status');
+  if(granted){
+    if(status) status.innerHTML = '✓ <span style="color:var(--green)">Notifications activées</span> — tu seras prévenu quand le repos est terminé même si l\'app n\'est pas au premier plan.';
+    // Test notification
+    showRestDoneNotification('🔔 Notifications activées', 'Tu recevras un ping à la fin de chaque temps de repos');
+  } else {
+    if(status) status.innerHTML = '✗ <span style="color:var(--red)">Notifications refusées</span>';
+  }
+}
 async function manualPull(){
   if(!confirm('Pull du cloud va remplacer tes données locales par celles du Gist. Continuer ?')) return;
   const ok = await cloud.pull();
