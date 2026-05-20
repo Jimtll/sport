@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 7 — fix overlays stuck visible at init
-const CACHE_NAME = 'sportduo-cache-v7';
+// VERSION 8 — tabs Escalade + Course à pied
+const CACHE_NAME = 'sportduo-cache-v8';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

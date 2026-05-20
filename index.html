@@ -852,6 +852,8 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <!-- <button class="nav-btn" onclick="goPage('rm')">🔢 Calcul 1RM</button> -->
   <button class="nav-btn" onclick="goPage('nutrition')">🥗 Nutrition</button>
   <button class="nav-btn" onclick="goPage('progression')">📈 Progression</button>
+  <button class="nav-btn" onclick="goPage('escalade')">🧗 Escalade</button>
+  <button class="nav-btn" onclick="goPage('course')">🏃 Course</button>
   <button class="nav-btn" onclick="goPage('journal')">📓 Journal</button>
   <button class="nav-btn" onclick="goPage('duo')">👫 Duo</button>
 </nav>
@@ -1198,6 +1200,26 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <div class="session-log" id="journal-list"></div>
 </div>
 
+<!-- ═══════ ESCALADE — Page dédiée ═══════ -->
+<div class="page" id="page-escalade">
+  <h2>🧗 Escalade</h2>
+  <p class="section-sub">Suivi de tes séances et progression niveau par niveau</p>
+  <div style="margin-bottom:14px">
+    <button class="btn btn-primary" onclick="openClimbingModal()">+ 📝 Logger une séance</button>
+  </div>
+  <div id="escalade-content"></div>
+</div>
+
+<!-- ═══════ COURSE À PIED — Page dédiée ═══════ -->
+<div class="page" id="page-course">
+  <h2>🏃 Course à pied</h2>
+  <p class="section-sub">Distance, allure et type de séance — running et trail</p>
+  <div style="margin-bottom:14px">
+    <button class="btn btn-primary" onclick="openRunningModal()">+ 📝 Logger une sortie</button>
+  </div>
+  <div id="course-content"></div>
+</div>
+
 <!-- ═══════ DUO — Comparatif ═══════ -->
 <div class="page" id="page-duo">
   <h2>👫 Duo</h2>
@@ -1303,6 +1325,59 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
       <div class="divider"></div>
       <div style="font-size:0.7rem;color:var(--muted);margin-bottom:8px">📜 5 dernières séances</div>
       <div id="climb-history-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODALE COURSE À PIED ═══════ -->
+<div class="modal-overlay" id="running-modal" onclick="if(event.target===this)closeRunningModal()">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-close" onclick="closeRunningModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-title">🏃 Sortie running</div>
+      <div class="modal-meta" id="running-date"></div>
+    </div>
+    <div style="padding:18px 22px 22px">
+      <div class="field">
+        <label>Type de séance</label>
+        <select id="run-type">
+          <option value="easy">🟢 Endurance fondamentale (footing)</option>
+          <option value="tempo">🟡 Tempo / Seuil</option>
+          <option value="interval">🔴 Intervalles / VMA / Fractionné</option>
+          <option value="long">🔵 Sortie longue</option>
+          <option value="race">🏆 Compétition / Test</option>
+          <option value="trail">🏔 Trail</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Distance (km)</label>
+          <input type="number" id="run-distance" placeholder="5.2" step="0.1" min="0" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label>Durée</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="number" id="run-min" placeholder="min" min="0" inputmode="numeric" style="flex:1">
+            <span style="color:var(--muted)">:</span>
+            <input type="number" id="run-sec" placeholder="sec" min="0" max="59" inputmode="numeric" style="flex:1">
+          </div>
+        </div>
+      </div>
+      <div id="run-pace-preview" style="text-align:center;padding:10px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:8px;font-weight:700;color:#60a5fa;margin-bottom:14px;display:none">
+        Allure : <span id="run-pace-val">—</span>/km
+      </div>
+      <div class="field">
+        <label>D+ (dénivelé positif en m, optionnel)</label>
+        <input type="number" id="run-elevation" placeholder="0" min="0" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="run-notes" rows="2" placeholder="Météo, ressenti, lieu, parcours…"></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="saveRunningSession()">💾 Enregistrer</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeRunningModal()">Annuler</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3605,6 +3680,293 @@ function renderDuo(){
   }, 50);
 }
 
+// ══════════════════════════════════════════════
+// ESCALADE — Page dédiée
+// ══════════════════════════════════════════════
+function renderEscalade(){
+  const sessions = state.climbing;
+  const totalBlocks = state.totalBlocks();
+  const maxLvl = state.maxLevel();
+  const now = new Date();
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
+  const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth()-1);
+  const weekSessions = sessions.filter(s=>new Date(s.date)>=weekAgo);
+  const monthSessions = sessions.filter(s=>new Date(s.date)>=monthAgo);
+  const weekBlocks = weekSessions.reduce((s,c)=>s+(c.total||0),0);
+
+  let html = `
+    <div class="stat-grid" style="margin-bottom:16px">
+      <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Blocs cumulés</div><div class="stat-val" style="color:#a3e635">${totalBlocks}</div><div class="stat-sub">${sessions.length} séance${sessions.length>1?'s':''}</div></div>
+      <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Niveau max</div><div class="stat-val" style="color:#a3e635">N${maxLvl||'—'}</div><div class="stat-sub">all-time</div></div>
+      <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Cette semaine</div><div class="stat-val" style="color:#a3e635">${weekBlocks}</div><div class="stat-sub">${weekSessions.length} séance${weekSessions.length>1?'s':''}</div></div>
+      <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Ce mois</div><div class="stat-val" style="color:#a3e635">${monthSessions.reduce((s,c)=>s+(c.total||0),0)}</div><div class="stat-sub">${monthSessions.length} séance${monthSessions.length>1?'s':''}</div></div>
+    </div>`;
+
+  if(!sessions.length){
+    html += `<div class="card"><div class="empty-state"><div class="icon">🧗</div><p>Aucune séance enregistrée.<br>Touche <strong>+ 📝 Logger une séance</strong> au-dessus pour démarrer.</p></div></div>`;
+  } else {
+    // Graphique évolution
+    html += `<div class="card" style="margin-bottom:16px">
+      <h3>📈 Évolution des blocs (12 dernières séances)</h3>
+      <div class="chart-wrap" style="height:200px"><canvas id="escalade-chart"></canvas></div>
+    </div>`;
+    // Répartition par niveau (cumulé)
+    const levelTotals = {};
+    sessions.forEach(s=>(s.blocks||[]).forEach(b=>{
+      levelTotals[b.level] = (levelTotals[b.level]||0) + (b.count||0);
+    }));
+    html += `<div class="card" style="margin-bottom:16px">
+      <h3>🎯 Répartition par niveau (cumulé)</h3>
+      <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:10px">
+        ${CLIMB_LEVELS.map(lvl=>{
+          const c = levelTotals[lvl]||0;
+          const col = CLIMB_COLORS[lvl];
+          const txtCol = lvl===6?'#fff':(lvl===7?'#000':'#000');
+          return `<div style="text-align:center">
+            <div style="background:${col};color:${txtCol};padding:4px 0;border-radius:6px 6px 0 0;font-size:0.6rem;font-weight:700">N${lvl}</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-top:none;padding:6px 0;border-radius:0 0 6px 6px;font-weight:800;font-size:0.85rem">${c}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+    // Liste séances
+    html += `<div class="card">
+      <h3>📜 Historique complet</h3>
+      <div style="max-height:60vh;overflow-y:auto">
+        ${sessions.map(s=>{
+          const d = new Date(s.date).toLocaleDateString('fr',{weekday:'short',day:'numeric',month:'short'});
+          const lvlBadges = (s.blocks||[]).map(b=>`<span style="background:${CLIMB_COLORS[b.level]};color:${b.level===6?'#fff':'#000'};padding:2px 7px;border-radius:99px;font-size:0.66rem;font-weight:700;margin-right:3px">N${b.level}×${b.count}</span>`).join('');
+          return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-weight:700;font-size:0.85rem">${d}</span>
+              <span style="color:#a3e635;font-weight:800">${s.total} blocs</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px">${lvlBadges}</div>
+            ${s.notes?`<div style="font-size:0.72rem;color:var(--muted);font-style:italic">"${s.notes}"</div>`:''}
+            <button class="btn btn-ghost btn-sm" onclick="deleteClimbingSession(${s.id})" style="margin-top:6px;font-size:0.7rem">🗑 Supprimer</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('escalade-content').innerHTML = html;
+  // Chart
+  if(sessions.length){
+    setTimeout(()=>{
+      const ctx = document.getElementById('escalade-chart');
+      if(!ctx) return;
+      const last12 = sessions.slice(0,12).reverse();
+      const labels = last12.map(s=>{ const d=new Date(s.date); return `${d.getDate()}/${d.getMonth()+1}`; });
+      const data = last12.map(s=>s.total||0);
+      if(window._climbChart) window._climbChart.destroy();
+      window._climbChart = new Chart(ctx, {
+        type:'bar',
+        data:{labels, datasets:[{label:'Blocs', data, backgroundColor:'#84cc16', borderRadius:6}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b',font:{size:10}}},y:{ticks:{color:'#64748b',font:{size:10}}}}}
+      });
+    }, 50);
+  }
+}
+
+function deleteClimbingSession(id){
+  if(!confirm('Supprimer cette séance ?')) return;
+  state.setClimbing(state.climbing.filter(s=>s.id!==id));
+  renderEscalade();
+}
+
+// ══════════════════════════════════════════════
+// COURSE À PIED — Page + Modale
+// ══════════════════════════════════════════════
+const RUN_TYPES = {
+  easy:    {label:'Endurance', emoji:'🟢', color:'#22c55e'},
+  tempo:   {label:'Tempo/Seuil', emoji:'🟡', color:'#fbbf24'},
+  interval:{label:'Intervalles', emoji:'🔴', color:'#ef4444'},
+  long:    {label:'Sortie longue', emoji:'🔵', color:'#3b82f6'},
+  race:    {label:'Compétition', emoji:'🏆', color:'#f59e0b'},
+  trail:   {label:'Trail', emoji:'🏔', color:'#84cc16'}
+};
+
+function formatPace(secPerKm){
+  if(!secPerKm || !isFinite(secPerKm)) return '—';
+  const m = Math.floor(secPerKm/60), s = Math.round(secPerKm%60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function formatDuration(seconds){
+  if(!seconds) return '—';
+  const h = Math.floor(seconds/3600), m = Math.floor((seconds%3600)/60), s = seconds%60;
+  if(h>0) return `${h}h${String(m).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function openRunningModal(){
+  document.getElementById('running-date').textContent = new Date().toLocaleDateString('fr',{weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('run-type').value = 'easy';
+  document.getElementById('run-distance').value = '';
+  document.getElementById('run-min').value = '';
+  document.getElementById('run-sec').value = '';
+  document.getElementById('run-elevation').value = '';
+  document.getElementById('run-notes').value = '';
+  document.getElementById('run-pace-preview').style.display = 'none';
+  document.getElementById('running-modal').classList.add('show');
+  // Listener live update pace
+  ['run-distance','run-min','run-sec'].forEach(id=>{
+    document.getElementById(id).oninput = updateRunPace;
+  });
+}
+
+function closeRunningModal(){
+  document.getElementById('running-modal').classList.remove('show');
+}
+
+function updateRunPace(){
+  const dist = parseFloat(document.getElementById('run-distance').value) || 0;
+  const min = parseInt(document.getElementById('run-min').value) || 0;
+  const sec = parseInt(document.getElementById('run-sec').value) || 0;
+  const dur = min*60 + sec;
+  const box = document.getElementById('run-pace-preview');
+  if(dist > 0 && dur > 0){
+    const pace = dur / dist;
+    document.getElementById('run-pace-val').textContent = formatPace(pace);
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function saveRunningSession(){
+  const dist = parseFloat(document.getElementById('run-distance').value) || 0;
+  const min = parseInt(document.getElementById('run-min').value) || 0;
+  const sec = parseInt(document.getElementById('run-sec').value) || 0;
+  const duration = min*60 + sec;
+  if(dist <= 0 || duration <= 0){
+    alert('Entre une distance et une durée valides');
+    return;
+  }
+  const session = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    type: document.getElementById('run-type').value,
+    distance: dist,
+    duration,
+    elevation: parseInt(document.getElementById('run-elevation').value) || 0,
+    notes: document.getElementById('run-notes').value || ''
+  };
+  const all = state.running;
+  all.unshift(session);
+  state.setRunning(all);
+  closeRunningModal();
+  renderCourse();
+  if(typeof renderDashboard==='function') renderDashboard();
+  alert(`✓ Sortie enregistrée : ${dist} km en ${formatDuration(duration)} (${formatPace(duration/dist)}/km)`);
+}
+
+function renderCourse(){
+  const runs = state.running;
+  const totalKm = state.totalKm();
+  const longest = state.longestRun();
+  const bestP = state.bestPace();
+  const now = new Date();
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
+  const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth()-1);
+  const weekRuns = runs.filter(r=>new Date(r.date)>=weekAgo);
+  const monthRuns = runs.filter(r=>new Date(r.date)>=monthAgo);
+  const weekKm = weekRuns.reduce((s,r)=>s+(r.distance||0),0);
+
+  let html = `
+    <div class="stat-grid" style="margin-bottom:16px">
+      <div class="stat blue"><div class="stat-label">Distance cumulée</div><div class="stat-val">${totalKm.toFixed(1)}</div><div class="stat-sub">km · ${runs.length} sortie${runs.length>1?'s':''}</div></div>
+      <div class="stat green"><div class="stat-label">Plus longue</div><div class="stat-val">${longest.toFixed(1)}</div><div class="stat-sub">km</div></div>
+      <div class="stat purple"><div class="stat-label">Meilleure allure</div><div class="stat-val">${formatPace(bestP)}</div><div class="stat-sub">min/km</div></div>
+      <div class="stat acc"><div class="stat-label">Cette semaine</div><div class="stat-val">${weekKm.toFixed(1)}</div><div class="stat-sub">km · ${weekRuns.length} sortie${weekRuns.length>1?'s':''}</div></div>
+    </div>`;
+
+  if(!runs.length){
+    html += `<div class="card"><div class="empty-state"><div class="icon">🏃</div><p>Aucune sortie enregistrée.<br>Touche <strong>+ 📝 Logger une sortie</strong> au-dessus pour démarrer.</p></div></div>`;
+  } else {
+    html += `<div class="card" style="margin-bottom:16px">
+      <h3>📈 Distance cumulée par semaine (8 dernières)</h3>
+      <div class="chart-wrap" style="height:200px"><canvas id="course-chart"></canvas></div>
+    </div>`;
+    // Répartition par type
+    const typeStats = {};
+    runs.forEach(r=>{
+      if(!typeStats[r.type]) typeStats[r.type] = {count:0, km:0};
+      typeStats[r.type].count++;
+      typeStats[r.type].km += r.distance||0;
+    });
+    html += `<div class="card" style="margin-bottom:16px">
+      <h3>🎯 Répartition par type</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">
+        ${Object.entries(RUN_TYPES).map(([k,v])=>{
+          const s = typeStats[k] || {count:0,km:0};
+          return `<div style="text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 4px">
+            <div style="font-size:1.1rem">${v.emoji}</div>
+            <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;font-weight:700">${v.label}</div>
+            <div style="font-weight:800;color:${v.color};font-size:0.9rem">${s.km.toFixed(1)}<small style="font-size:0.6rem;color:var(--muted)">km</small></div>
+            <div style="font-size:0.62rem;color:var(--muted)">${s.count} ×</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+    // Historique
+    html += `<div class="card">
+      <h3>📜 Historique</h3>
+      <div style="max-height:60vh;overflow-y:auto">
+        ${runs.map(r=>{
+          const d = new Date(r.date).toLocaleDateString('fr',{weekday:'short',day:'numeric',month:'short'});
+          const t = RUN_TYPES[r.type] || RUN_TYPES.easy;
+          const pace = r.duration && r.distance ? r.duration/r.distance : 0;
+          return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:1.2rem">${t.emoji}</span>
+                <div>
+                  <div style="font-weight:700;font-size:0.85rem">${r.distance.toFixed(1)} km · ${formatDuration(r.duration)}</div>
+                  <div style="font-size:0.7rem;color:var(--muted)">${d} · ${t.label}</div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:800;color:#60a5fa">${formatPace(pace)}/km</div>
+                ${r.elevation>0?`<div style="font-size:0.65rem;color:var(--muted)">↗ ${r.elevation} m D+</div>`:''}
+              </div>
+            </div>
+            ${r.notes?`<div style="font-size:0.72rem;color:var(--muted);font-style:italic;margin-top:4px">"${r.notes}"</div>`:''}
+            <button class="btn btn-ghost btn-sm" onclick="deleteRunningSession(${r.id})" style="margin-top:6px;font-size:0.7rem">🗑 Supprimer</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  document.getElementById('course-content').innerHTML = html;
+  if(runs.length){
+    setTimeout(()=>{
+      const ctx = document.getElementById('course-chart');
+      if(!ctx) return;
+      // 8 dernières semaines
+      const buckets = [];
+      for(let i=7;i>=0;i--){
+        const start = new Date(now); start.setDate(now.getDate() - (i+1)*7);
+        const end = new Date(now); end.setDate(now.getDate() - i*7);
+        const km = runs.filter(r=>{ const d=new Date(r.date); return d>=start && d<end; }).reduce((s,r)=>s+(r.distance||0),0);
+        buckets.push({label:`S-${i}`, km});
+      }
+      if(window._runChart) window._runChart.destroy();
+      window._runChart = new Chart(ctx, {
+        type:'bar',
+        data:{labels:buckets.map(b=>b.label), datasets:[{label:'km', data:buckets.map(b=>b.km), backgroundColor:'#3b82f6', borderRadius:6}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#64748b',font:{size:10}}},y:{ticks:{color:'#64748b',font:{size:10}}}}}
+      });
+    }, 50);
+  }
+}
+
+function deleteRunningSession(id){
+  if(!confirm('Supprimer cette sortie ?')) return;
+  state.setRunning(state.running.filter(r=>r.id!==id));
+  renderCourse();
+}
+
 function celebratePR(exerciseName, prs){
   const toast = document.getElementById('pr-toast');
   const title = document.getElementById('pr-toast-title');
@@ -3928,6 +4290,22 @@ let state = {
     const max = Math.max(...(c.blocks||[]).map(b=>b.level||0));
     return Math.max(m, max);
   }, 0); },
+  // Course à pied : log par sortie
+  get running(){ return LS('running_'+this.profile)||[]; },
+  setRunning(v){ SS('running_'+this.profile, v); },
+  totalKm(){ return this.running.reduce((s,r)=>s+(r.distance||0),0); },
+  longestRun(){ return this.running.reduce((m,r)=>Math.max(m, r.distance||0), 0); },
+  bestPace(){
+    // Allure mini (donc meilleure) sur séances tempo/interval/race
+    let best = Infinity;
+    this.running.filter(r=>['tempo','interval','race'].includes(r.type)).forEach(r=>{
+      if(r.distance>0 && r.duration>0){
+        const pace = r.duration/r.distance; // sec per km
+        if(pace < best) best = pace;
+      }
+    });
+    return best === Infinity ? 0 : best;
+  },
 };
 
 let currentMuscle = 'Tous';
@@ -4009,6 +4387,8 @@ function goPage(id){
   if(id==='dashboard') renderDashboard();
   if(id==='programme') refreshProgramUI();
   if(id==='duo') renderDuo();
+  if(id==='escalade') renderEscalade();
+  if(id==='course') renderCourse();
   if(id==='calendrier'){
     if(!selectedWeekKey) selectedWeekKey = getISOWeek(new Date());
     renderCalendar();
