@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 6 — silent rest timer + system notifications
-const CACHE_NAME = 'sportduo-cache-v6';
+// VERSION 7 — fix overlays stuck visible at init
+const CACHE_NAME = 'sportduo-cache-v7';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
