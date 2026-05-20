@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 8 — tabs Escalade + Course à pied
-const CACHE_NAME = 'sportduo-cache-v8';
+// VERSION 9 — running toggle in calendar
+const CACHE_NAME = 'sportduo-cache-v9';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

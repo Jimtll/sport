@@ -330,6 +330,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .climb-log-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(132,204,22,0.15);border:1px solid rgba(132,204,22,0.4);color:#a3e635;font-weight:700;align-self:flex-start;margin-left:6px;white-space:nowrap}
 .climb-log-btn:hover{background:#84cc16;color:#0f1117}
 
+/* Run toggle — équivalent bleu */
+.run-toggle{display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(59,130,246,0.08);border:1px solid transparent;transition:all 0.15s;align-self:flex-start;white-space:nowrap}
+.run-toggle:hover{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3)}
+.run-toggle input{margin:0;cursor:pointer;accent-color:#3b82f6;width:14px;height:14px}
+.week-day.has-running{border-color:#3b82f6;box-shadow:inset 0 0 0 1px rgba(59,130,246,0.3)}
+.week-day.has-running.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3),inset 0 0 0 2px rgba(59,130,246,0.3)}
+.week-day.has-running .run-toggle{background:rgba(59,130,246,0.18);color:#60a5fa;font-weight:700}
+.run-log-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);color:#60a5fa;font-weight:700;align-self:flex-start;margin-left:6px;white-space:nowrap}
+.run-log-btn:hover{background:#3b82f6;color:#0f1117}
+
 /* Modal escalade — cartes par niveau */
 .climb-level-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center;transition:all 0.15s}
 .climb-level-card.has-count{transform:scale(1.02)}
@@ -347,9 +357,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   .climb-counter .climb-count{font-size:1rem}
 }
 @media (max-width:640px){
-  .climb-toggle{font-size:0.66rem;padding:2px 6px;gap:3px}
-  .climb-toggle input{width:12px;height:12px}
-  .climb-log-btn{font-size:0.64rem;padding:2px 6px}
+  .climb-toggle,.run-toggle{font-size:0.66rem;padding:2px 6px;gap:3px}
+  .climb-toggle input,.run-toggle input{width:12px;height:12px}
+  .climb-log-btn,.run-log-btn{font-size:0.64rem;padding:2px 6px}
 }
 .cal-day-dot.climb-dot{background:none !important;font-size:6px !important;bottom:-1px !important;width:auto !important;height:auto !important;line-height:1}
 .week-day-add:hover{color:var(--acc);border-color:var(--acc)}
@@ -2638,10 +2648,12 @@ function renderCalendar(){
         const sess = weekPlan?.days?.[dow];
         const hasSession = sess && sess.type !== 'rest';
         const hasClimbing = sess && sess.climbing;
+        const hasRunning = sess && sess.running;
         const color = hasSession ? SESSION_TYPES[sess.type]?.color : null;
         const dots = [];
         if(hasSession) dots.push(`<span class="cal-day-dot" style="background:${color}"></span>`);
         if(hasClimbing) dots.push(`<span class="cal-day-dot climb-dot">🧗</span>`);
+        if(hasRunning) dots.push(`<span class="cal-day-dot run-dot">🏃</span>`);
         cells.push(`<div class="cal-day ${inMonth?'in-month':''} ${isToday?'is-today':''} ${hasSession?'has-session':''}" style="${hasSession&&!isToday?`color:${color}`:''}">${d.getDate()}${!isToday?dots.join(''):''}</div>`);
       }
       if(!touchesMonth) break;
@@ -2685,7 +2697,8 @@ function renderWeekEditor(){
     const date = new Date(monday); date.setUTCDate(monday.getUTCDate()+i);
     const sessType = SESSION_TYPES[day.type] || SESSION_TYPES.rest;
     const hasClimbing = !!day.climbing;
-    html += `<div class="week-day ${hasClimbing?'has-climbing':''}">
+    const hasRunning = !!day.running;
+    html += `<div class="week-day ${hasClimbing?'has-climbing':''} ${hasRunning?'has-running':''}">
       <div class="week-day-header">
         <div class="week-day-name">${days[i].substr(0,3)}</div>
         <div class="week-day-date">${date.getUTCDate()}/${date.getUTCMonth()+1}</div>
@@ -2700,6 +2713,13 @@ function renderWeekEditor(){
           <span>🧗 Escalade</span>
         </label>
         ${hasClimbing?`<button class="climb-log-btn" onclick="openClimbingModal()">📝 Logger</button>`:''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+        <label class="run-toggle">
+          <input type="checkbox" ${hasRunning?'checked':''} onchange="toggleRunningDay(${i}, this.checked)">
+          <span>🏃 Course</span>
+        </label>
+        ${hasRunning?`<button class="run-log-btn" onclick="openRunningModal()">📝 Logger</button>`:''}
       </div>
       <div class="week-day-exercises">
         ${(day.exercises||[]).map(exId=>{
@@ -2719,12 +2739,14 @@ function renderWeekSummary(){
   const plan = getWeekPlan(selectedWeekKey);
   const muscu = plan.days.filter(d=>d.type!=='rest').length;
   const climbingDays = plan.days.filter(d=>d.climbing).length;
+  const runningDays = plan.days.filter(d=>d.running).length;
   const totalEx = plan.days.reduce((s,d)=>s+(d.exercises?.length||0),0);
   const types = [...new Set(plan.days.filter(d=>d.type!=='rest').map(d=>d.type))];
   document.getElementById('week-summary').innerHTML = `
     <span><strong>${muscu}</strong> séances muscu</span>
     <span><strong>${climbingDays}</strong> 🧗 escalade</span>
-    <span><strong>${totalEx}</strong> exercices au total</span>
+    <span><strong>${runningDays}</strong> 🏃 course</span>
+    <span><strong>${totalEx}</strong> exercices</span>
     <span>${types.map(t=>SESSION_TYPES[t]?.emoji+SESSION_TYPES[t]?.label).join(' · ')||'—'}</span>
   `;
 }
@@ -2732,6 +2754,14 @@ function renderWeekSummary(){
 function toggleClimbingDay(dayIdx, checked){
   const plan = getWeekPlan(selectedWeekKey);
   plan.days[dayIdx].climbing = !!checked;
+  saveWeekPlan(selectedWeekKey, plan);
+  renderWeekEditor();
+  renderCalendar();
+}
+
+function toggleRunningDay(dayIdx, checked){
+  const plan = getWeekPlan(selectedWeekKey);
+  plan.days[dayIdx].running = !!checked;
   saveWeekPlan(selectedWeekKey, plan);
   renderWeekEditor();
   renderCalendar();
@@ -4453,10 +4483,15 @@ function renderDashboard(){
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
       const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-      label = sess.emoji+' '+sess.label + (d.climbing?' + 🧗':'');
-      sub = d.type==='rest' ? (d.climbing?'🧗 seule':'Repos') : `${(d.exercises||[]).length} exo${(d.exercises||[]).length>1?'s':''}${d.climbing?' + 🧗':''}`;
+      const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'');
+      label = sess.emoji+' '+sess.label + extras;
+      const sp = [];
+      if(d.type!=='rest') sp.push(`${(d.exercises||[]).length} exo${(d.exercises||[]).length>1?'s':''}`);
+      if(d.climbing) sp.push('🧗');
+      if(d.running) sp.push('🏃');
+      sub = sp.length ? sp.join(' + ') : 'Repos';
       color = sess.color;
-      isRest = d.type==='rest' && !d.climbing;
+      isRest = d.type==='rest' && !d.climbing && !d.running;
     } else {
       label = tplDay.l; sub = tplDay.s||'—'; color = tplDay.c||'var(--muted)'; isRest = tplDay.rest;
     }
@@ -4568,10 +4603,15 @@ function refreshProgramUI(){
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
       const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-      label = sess.emoji+' '+sess.label + (d.climbing?' + 🧗':'');
-      sub = d.type==='rest' ? (d.climbing?'🧗 Escalade seule':'Récupération') : `${(d.exercises||[]).length} exercice${(d.exercises||[]).length>1?'s':''}${d.climbing?' + escalade':''}`;
+      const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'');
+      label = sess.emoji+' '+sess.label + extras;
+      const subParts = [];
+      if(d.type!=='rest') subParts.push(`${(d.exercises||[]).length} exo${(d.exercises||[]).length>1?'s':''}`);
+      if(d.climbing) subParts.push('🧗');
+      if(d.running) subParts.push('🏃');
+      sub = subParts.length ? subParts.join(' + ') : 'Récupération';
       color = sess.color;
-      isRest = d.type==='rest' && !d.climbing;
+      isRest = d.type==='rest' && !d.climbing && !d.running;
       isClimb = d.type==='climbing' || d.climbing;
     } else {
       label = tplDay.l;
