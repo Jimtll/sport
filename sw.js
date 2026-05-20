@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 12 — dynamic profiles + GitHub-gated onboarding (welcome flow)
-const CACHE_NAME = 'sportduo-cache-v12';
+// VERSION 13 — multi-profile sync, dynamic Duo (empty state if <2 profiles)
+const CACHE_NAME = 'sportduo-cache-v13';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

@@ -1648,6 +1648,8 @@ function migrateLegacyProfiles(){
   if(list.length){
     localStorage.setItem('sp_profileList', JSON.stringify(list));
     if(!localStorage.getItem('sp_profile')) localStorage.setItem('sp_profile', JSON.stringify(list[0].id));
+    // Flag pour déclencher un push complet au prochain init (sinon les profils non-actifs restent invisibles côté Gist)
+    localStorage.setItem('sp_needsFullPush', '1');
     console.log('[Migration] '+list.length+' profil(s) auto-créé(s) depuis données legacy');
   }
 }
@@ -3159,74 +3161,90 @@ function getProfileStats(profile){
 }
 
 function renderDuo(){
-  const lui = getProfileStats('lui');
-  const alex = getProfileStats('alexandra');
+  const list = state.profileList;
   const fmt = n => n>=1000 ? (n/1000).toFixed(1)+'k' : Math.round(n).toString();
 
-  // Liste de stats à comparer : higher is better sauf cas contraire
+  // Si <2 profils : empty state encourageant à en créer un 2ème
+  if(list.length < 2){
+    document.getElementById('duo-content').innerHTML = `
+      <div class="card">
+        <div class="empty-state">
+          <div class="icon">👫</div>
+          <p style="font-weight:700;font-size:1.05rem;margin-bottom:8px">Mode Duo</p>
+          <p style="line-height:1.5">Le mode Duo permet de comparer <strong>2 profils côte à côte</strong> — pratique pour suivre la progression à plusieurs (couple, coloc, défi entre amis).</p>
+          <p style="margin-top:10px;color:var(--muted2)">Tu n'as ${list.length===0?'aucun':'qu\\'un seul'} profil pour l'instant. Crée un 2ème profil pour activer le comparatif.</p>
+          <button class="btn btn-primary" onclick="openProfileEditor(null)" style="margin-top:16px">+ Nouveau profil</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Prend les 2 premiers profils de la liste
+  const p1 = list[0], p2 = list[1];
+  const s1 = getProfileStats(p1.id);
+  const s2 = getProfileStats(p2.id);
+
   const rows = [
-    {label:'Séances cette semaine', lui:lui.sessWeek, alex:alex.sessWeek, fmt:n=>n},
-    {label:'Séances depuis le début', lui:lui.sessTotal, alex:alex.sessTotal, fmt:n=>n},
-    {label:'Volume cette semaine', lui:lui.weekVolume, alex:alex.weekVolume, fmt:n=>fmt(n)+' kg'},
-    {label:'Volume cumulé', lui:lui.totalVolume, alex:alex.totalVolume, fmt:n=>fmt(n)+' kg'},
-    {label:'Meilleur 1RM estimé', lui:lui.bestRM, alex:alex.bestRM, fmt:n=>n+' kg'},
-    {label:'PRs battus', lui:lui.prs, alex:alex.prs, fmt:n=>n+' 🏆'},
-    {label:'🧗 Blocs cette semaine', lui:lui.climbWeek, alex:alex.climbWeek, fmt:n=>n},
-    {label:'🧗 Blocs cumulés', lui:lui.climbBlocks, alex:alex.climbBlocks, fmt:n=>n},
-    {label:'🧗 Niveau max atteint', lui:lui.climbMaxLevel, alex:alex.climbMaxLevel, fmt:n=>n>0?(CLIMB_NAMES[n]||('N'+n)):'—'},
+    {label:'Séances cette semaine', a:s1.sessWeek, b:s2.sessWeek, fmt:n=>n},
+    {label:'Séances cumulées', a:s1.sessTotal, b:s2.sessTotal, fmt:n=>n},
+    {label:'Volume cette semaine', a:s1.weekVolume, b:s2.weekVolume, fmt:n=>fmt(n)+' kg'},
+    {label:'Volume cumulé', a:s1.totalVolume, b:s2.totalVolume, fmt:n=>fmt(n)+' kg'},
+    {label:'Meilleur 1RM estimé', a:s1.bestRM, b:s2.bestRM, fmt:n=>n+' kg'},
+    {label:'PRs battus', a:s1.prs, b:s2.prs, fmt:n=>n+' 🏆'},
+    {label:'🧗 Blocs cette semaine', a:s1.climbWeek, b:s2.climbWeek, fmt:n=>n},
+    {label:'🧗 Blocs cumulés', a:s1.climbBlocks, b:s2.climbBlocks, fmt:n=>n},
+    {label:'🧗 Niveau max atteint', a:s1.climbMaxLevel, b:s2.climbMaxLevel, fmt:n=>n>0?(CLIMB_NAMES[n]||('N'+n)):'—'},
   ];
 
-  let luiHtml = '', alexHtml = '';
-  let luiWins = 0, alexWins = 0;
+  let aHtml = '', bHtml = '';
+  let aWins = 0, bWins = 0;
   rows.forEach(r=>{
-    const luiWin = r.lui > r.alex;
-    const alexWin = r.alex > r.lui;
-    if(luiWin) luiWins++;
-    if(alexWin) alexWins++;
-    luiHtml += `<div class="duo-stat-row ${luiWin?'winner':''}">
-      <span class="duo-stat-label">${r.label}</span>
-      <span class="duo-stat-val">${r.fmt(r.lui)}</span>
-    </div>`;
-    alexHtml += `<div class="duo-stat-row ${alexWin?'winner':''}">
-      <span class="duo-stat-label">${r.label}</span>
-      <span class="duo-stat-val">${r.fmt(r.alex)}</span>
-    </div>`;
+    const aWin = r.a > r.b;
+    const bWin = r.b > r.a;
+    if(aWin) aWins++;
+    if(bWin) bWins++;
+    aHtml += `<div class="duo-stat-row ${aWin?'winner':''}"><span class="duo-stat-label">${r.label}</span><span class="duo-stat-val">${r.fmt(r.a)}</span></div>`;
+    bHtml += `<div class="duo-stat-row ${bWin?'winner':''}"><span class="duo-stat-label">${r.label}</span><span class="duo-stat-val">${r.fmt(r.b)}</span></div>`;
   });
 
-  const html = `
+  const themeA = p1.goalBannerClass === 'alex' ? 'alex' : 'lui';
+  const themeB = p2.goalBannerClass === 'alex' ? 'alex' : 'lui';
+  const colorA = themeA==='alex' ? '#f472b6' : '#f97316';
+  const colorB = themeB==='alex' ? '#f472b6' : '#f97316';
+
+  document.getElementById('duo-content').innerHTML = `
     <div class="duo-grid">
-      <div class="duo-col lui" style="position:relative">
-        ${luiWins > alexWins ? '<div class="duo-winner-label">🏆 En tête</div>' : ''}
+      <div class="duo-col ${themeA}" style="position:relative">
+        ${aWins > bWins ? '<div class="duo-winner-label">🏆 En tête</div>' : ''}
         <div class="duo-col-header">
-          <div class="duo-col-avatar">🧔</div>
+          <div class="duo-col-avatar">${p1.avatar||'💪'}</div>
           <div>
-            <div class="duo-col-name">Moi</div>
-            <div class="duo-col-sub">${lui.lastWeight ? lui.lastWeight.toFixed(1)+' kg' : '74 kg'} · Dos · Épaules · Grip</div>
+            <div class="duo-col-name">${p1.name}</div>
+            <div class="duo-col-sub">${(s1.lastWeight||p1.poids).toFixed(1)} kg · ${p1.goal}</div>
           </div>
         </div>
-        ${luiHtml}
+        ${aHtml}
       </div>
-      <div class="duo-col alex" style="position:relative">
-        ${alexWins > luiWins ? '<div class="duo-winner-label">🏆 En tête</div>' : ''}
+      <div class="duo-col ${themeB}" style="position:relative">
+        ${bWins > aWins ? '<div class="duo-winner-label">🏆 En tête</div>' : ''}
         <div class="duo-col-header">
-          <div class="duo-col-avatar">👩</div>
+          <div class="duo-col-avatar">${p2.avatar||'💪'}</div>
           <div>
-            <div class="duo-col-name">Alexandra</div>
-            <div class="duo-col-sub">${alex.lastWeight ? alex.lastWeight.toFixed(1)+' kg' : '57 kg'} · Fessiers · Core · Dos</div>
+            <div class="duo-col-name">${p2.name}</div>
+            <div class="duo-col-sub">${(s2.lastWeight||p2.poids).toFixed(1)} kg · ${p2.goal}</div>
           </div>
         </div>
-        ${alexHtml}
+        ${bHtml}
       </div>
     </div>
-    <div class="duo-vs">— ${luiWins===alexWins?'Égalité parfaite ⚖️':(luiWins>alexWins?`Lui mène ${luiWins} à ${alexWins} 💪`:`Alex mène ${alexWins} à ${luiWins} 💪`)} —</div>
+    <div class="duo-vs">— ${aWins===bWins?'Égalité parfaite ⚖️':(aWins>bWins?`${p1.name} mène ${aWins} à ${bWins} 💪`:`${p2.name} mène ${bWins} à ${aWins} 💪`)} —</div>
+    ${list.length>2?`<div style="text-align:center;font-size:0.78rem;color:var(--muted);margin-top:10px">${list.length-2} autre(s) profil(s) non affiché(s) · seuls les 2 premiers de la liste sont comparés</div>`:''}
     <div class="card" style="margin-top:14px">
       <h3>📊 Volume sur 7 jours</h3>
       <div class="chart-wrap" style="height:200px"><canvas id="duo-chart"></canvas></div>
     </div>
   `;
-  document.getElementById('duo-content').innerHTML = html;
 
-  // Graphique comparatif sur 7 jours
   setTimeout(()=>{
     const ctx = document.getElementById('duo-chart');
     if(!ctx) return;
@@ -3236,19 +3254,17 @@ function renderDuo(){
       const d = new Date(now); d.setDate(now.getDate()-i);
       days.push({date:d, key:d.toISOString().slice(0,10)});
     }
-    const dayVol = (profile, key)=>{
-      const ws = JSON.parse(localStorage.getItem('sp_workouts_'+profile)||'[]');
+    const dayVol = (pid, key)=>{
+      const ws = JSON.parse(localStorage.getItem('sp_workouts_'+pid)||'[]');
       return ws.filter(w=>w.date.slice(0,10)===key).reduce((s,w)=>s+(w.volume||0),0);
     };
     const labels = days.map(d=>d.date.toLocaleDateString('fr',{weekday:'short'}));
-    const luiData = days.map(d=>dayVol('lui', d.key));
-    const alexData = days.map(d=>dayVol('alexandra', d.key));
     if(window._duoChart) window._duoChart.destroy();
     window._duoChart = new Chart(ctx, {
       type:'bar',
       data:{labels, datasets:[
-        {label:'Moi', data:luiData, backgroundColor:'#f97316', borderRadius:6},
-        {label:'Alexandra', data:alexData, backgroundColor:'#f472b6', borderRadius:6}
+        {label:p1.name, data:days.map(d=>dayVol(p1.id, d.key)), backgroundColor:colorA, borderRadius:6},
+        {label:p2.name, data:days.map(d=>dayVol(p2.id, d.key)), backgroundColor:colorB, borderRadius:6}
       ]},
       options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{x:{ticks:{color:'#64748b',font:{size:10}}},y:{ticks:{color:'#64748b',font:{size:9}}}}}
     });
@@ -4630,18 +4646,24 @@ function updateJournalStats(){
 // CLOUD SYNC — GitHub Gist comme backend
 // Option A : 1 fichier Gist par profil → push isolé, zéro conflit
 // ══════════════════════════════════════════════
-const GIST_FILES = {
-  lui: 'sportduo-lui.json',
-  alexandra: 'sportduo-alexandra.json',
-};
-const GIST_LEGACY_FILE = 'sportduo-data.json'; // compat ancien format
+// Mapping fichiers Gist par profil (dynamique selon les profils existants)
+const GIST_LEGACY_FILES = ['sportduo-data.json','sportduo-lui.json','sportduo-alexandra.json'];
+const GIST_PROFILES_FILE = 'sportduo-profiles.json'; // métadonnées (liste des profils)
+function gistFileForProfile(id){ return `sportduo-${id}.json`; }
 
-// Classifie une clé localStorage par profil
+// Classifie une clé localStorage par profil (suffixe _<id>)
 function classifyKey(spKey){
-  if(spKey === 'sp_profile') return null; // sélecteur d'UI, per-device
+  if(spKey === 'sp_profile' || spKey === 'sp_profileList') return null; // global/UI
+  if(!spKey.startsWith('sp_')) return null;
+  // Match against any profile in the current list
+  const profiles = JSON.parse(localStorage.getItem('sp_profileList')||'[]');
+  for(const p of profiles){
+    if(spKey.endsWith('_'+p.id)) return p.id;
+  }
+  // Fallback pour legacy
   if(spKey.endsWith('_lui')) return 'lui';
-  if(spKey.endsWith('_alex') || spKey.endsWith('_alexandra')) return 'alexandra';
-  return null; // ignore le reste (claude_api_key, gist_*, etc.)
+  if(spKey.endsWith('_alexandra') || spKey.endsWith('_alex')) return 'alexandra';
+  return null;
 }
 
 const cloud = {
@@ -4672,24 +4694,17 @@ const cloud = {
 
   async findOrCreateGist(){
     if(this.gistId) return this.gistId;
-    // Cherche un gist existant avec un de nos fichiers (nouveau OU ancien format)
+    // Cherche un gist existant qui contient un fichier sportduo-*.json
     const gists = await this._api('/gists?per_page=100');
-    const existing = gists.find(g => g.files && (
-      g.files[GIST_FILES.lui] ||
-      g.files[GIST_FILES.alexandra] ||
-      g.files[GIST_LEGACY_FILE]
-    ));
+    const existing = gists.find(g => g.files && Object.keys(g.files).some(f=>f.startsWith('sportduo-')));
     if(existing){ this.gistId = existing.id; return existing.id; }
-    // Création d'un nouveau gist privé avec les 2 fichiers profils
+    // Création d'un nouveau gist privé avec le placeholder profiles
     const created = await this._api('/gists', {
       method:'POST',
       body: JSON.stringify({
         description:'SportDuo — données par profil',
         public:false,
-        files:{
-          [GIST_FILES.lui]: { content:'{}' },
-          [GIST_FILES.alexandra]: { content:'{}' }
-        }
+        files:{ [GIST_PROFILES_FILE]: { content:'{"profiles":[]}' } }
       })
     });
     this.gistId = created.id;
@@ -4706,19 +4721,30 @@ const cloud = {
     return data;
   },
 
-  async push(){
+  // Push : par défaut tous les profils (pour cohérence cloud)
+  // Si onlyActive=true, ne push QUE le profil actif (perf, déclenché par auto-sync)
+  async push(onlyActive=false){
     if(!this.token) return false;
     setSyncStatus('syncing');
     try {
       const id = await this.findOrCreateGist();
-      const profile = state.pid;
-      const fileName = GIST_FILES[profile];
-      if(!fileName){ setSyncStatus('synced'); return false; }
-      const data = this.collectDataForProfile(profile);
-      // PATCH ne touche QUE le fichier de ce profil → pas de conflit avec l'autre
+      const profiles = state.profileList;
+      if(!profiles.length){ setSyncStatus('synced'); return false; }
+      const files = {};
+      // Fichier metadata avec la liste des profils
+      files[GIST_PROFILES_FILE] = { content: JSON.stringify({
+        _updatedAt: Date.now(),
+        _device: navigator.platform,
+        profiles
+      }) };
+      // Fichier par profil (tous ou juste l'actif)
+      const toPush = onlyActive ? profiles.filter(p=>p.id===state.pid) : profiles;
+      toPush.forEach(p=>{
+        files[gistFileForProfile(p.id)] = { content: JSON.stringify(this.collectDataForProfile(p.id)) };
+      });
       await this._api(`/gists/${id}`, {
         method:'PATCH',
-        body: JSON.stringify({ files:{ [fileName]:{ content:JSON.stringify(data) } } })
+        body: JSON.stringify({ files })
       });
       localStorage.setItem('gist_last_push', Date.now().toString());
       setSyncStatus('synced');
@@ -4738,10 +4764,20 @@ const cloud = {
       const id = await this.findOrCreateGist();
       const gist = await this._api(`/gists/${id}`);
       let restored = 0;
-      // Restore chaque fichier profil
-      for(const [profile, fileName] of Object.entries(GIST_FILES)){
-        const file = gist.files[fileName];
-        if(!file) continue;
+      // 1) D'abord la liste des profils (métadonnées)
+      const profilesFile = gist.files[GIST_PROFILES_FILE];
+      if(profilesFile){
+        try {
+          const meta = JSON.parse(profilesFile.content || '{}');
+          if(Array.isArray(meta.profiles) && meta.profiles.length){
+            localStorage.setItem('sp_profileList', JSON.stringify(meta.profiles));
+            restored++;
+          }
+        } catch(e){ console.warn('Parse profiles list failed', e); }
+      }
+      // 2) Pour chaque fichier sportduo-<id>.json présent, on restaure ses clés
+      const profileFiles = Object.entries(gist.files).filter(([f])=>f.startsWith('sportduo-') && f.endsWith('.json') && f !== GIST_PROFILES_FILE);
+      for(const [fname, file] of profileFiles){
         try {
           const data = JSON.parse(file.content || '{}');
           if(!data._updatedAt) continue;
@@ -4751,21 +4787,7 @@ const cloud = {
               restored++;
             }
           });
-        } catch(e){ console.warn('Parse failed for '+fileName, e); }
-      }
-      // Compat ancien format (un seul fichier)
-      if(restored === 0 && gist.files[GIST_LEGACY_FILE]){
-        try {
-          const data = JSON.parse(gist.files[GIST_LEGACY_FILE].content || '{}');
-          if(data._updatedAt){
-            Object.keys(data).forEach(k=>{
-              if(k.startsWith('sp_') && data[k]!=null){
-                localStorage.setItem(k, data[k]);
-                restored++;
-              }
-            });
-          }
-        } catch(e){ console.warn('Legacy parse failed', e); }
+        } catch(e){ console.warn('Parse failed for '+fname, e); }
       }
       localStorage.setItem('gist_last_pull', Date.now().toString());
       setSyncStatus('synced');
@@ -4927,7 +4949,7 @@ async function welcomeConnectToken(){
   try {
     // Tente de récupérer un Gist existant (utilisateur revient sur un autre appareil)
     const gists = await cloud._api('/gists?per_page=100');
-    const existing = gists.find(g => g.files && (g.files[GIST_FILES.lui] || g.files[GIST_FILES.alexandra] || g.files[GIST_LEGACY_FILE] || Object.keys(g.files).some(f=>f.startsWith('sportduo-'))));
+    const existing = gists.find(g => g.files && Object.keys(g.files).some(f=>f.startsWith('sportduo-')));
     if(existing){
       cloud.gistId = existing.id;
       toast('Données existantes trouvées · restauration...','info');
@@ -5096,7 +5118,8 @@ let syncTimer = null;
 function scheduleSync(){
   if(!cloud.token) return;
   if(syncTimer) clearTimeout(syncTimer);
-  syncTimer = setTimeout(()=>cloud.push(), 3000);
+  // Auto-sync : ne push QUE le profil actif (économise des appels API)
+  syncTimer = setTimeout(()=>cloud.push(true), 3000);
 }
 
 // Note : SS() (défini plus haut) appelle scheduleSync() automatiquement
@@ -5153,7 +5176,7 @@ async function connectGistSync(){
   try {
     // Tente de trouver un gist existant pour proposer pull, sinon push immédiat
     const gists = await cloud._api('/gists?per_page=100');
-    const existing = gists.find(g => g.files && (g.files[GIST_FILES.lui] || g.files[GIST_FILES.alexandra] || g.files[GIST_LEGACY_FILE]));
+    const existing = gists.find(g => g.files && Object.keys(g.files).some(f=>f.startsWith('sportduo-')));
     if(existing){
       cloud.gistId = existing.id;
       const wantPull = await confirmDialog(
@@ -5177,7 +5200,10 @@ async function connectGistSync(){
   }
 }
 
-async function manualPush(){ await cloud.push(); }
+async function manualPush(){
+  const ok = await cloud.push(false); // false = push TOUS les profils
+  if(ok) toast(`✓ ${state.profileList.length} profil(s) poussé(s)`,'success');
+}
 
 async function askNotifications(){
   if(!('Notification' in window)){
@@ -5214,11 +5240,18 @@ async function autoBootstrapSync(){
   if(!cloud.token) return;
   setSyncStatus('syncing');
   try {
-    await cloud.pull();
-    // Si pull modifie les données, rafraîchir l'UI
-    switchProfile(state.profile);
+    // Si on vient de migrer (flag set), on push d'abord pour pousser TOUS les profils sur le Gist
+    if(localStorage.getItem('sp_needsFullPush') === '1'){
+      console.log('[Sync] Push initial complet (post-migration)');
+      await cloud.push(false); // false = push tous les profils
+      localStorage.removeItem('sp_needsFullPush');
+      toast(`✓ ${state.profileList.length} profil(s) sync cloud`, 'success', 2500);
+    } else {
+      await cloud.pull();
+      if(state.profile) switchProfile(state.profile);
+    }
   } catch(e){
-    console.warn('Auto-pull failed:', e);
+    console.warn('Auto-bootstrap failed:', e);
     setSyncStatus('error', e.message);
   }
 }
