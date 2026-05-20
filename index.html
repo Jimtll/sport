@@ -2770,17 +2770,28 @@ function toggleRunningDay(dayIdx, checked){
 // ══════════════════════════════════════════════
 // SUIVI ESCALADE — log par niveau (1-8)
 // ══════════════════════════════════════════════
-const CLIMB_LEVELS = [1,2,3,4,5,6,7,8];
+const CLIMB_LEVELS = [1,2,3,4,5,6,7,8,9,10,11];
 const CLIMB_COLORS = {
-  1:'#86efac', // vert clair (débutant)
-  2:'#fbbf24', // jaune
-  3:'#fb923c', // orange
-  4:'#60a5fa', // bleu
-  5:'#ef4444', // rouge
-  6:'#1f2937', // noir
-  7:'#94a3b8', // blanc/gris
-  8:'#a855f7', // violet
+  1:'#22c55e', // vert
+  2:'#7dd3fc', // bleu clair
+  3:'#2563eb', // bleu foncé
+  4:'#a855f7', // violet
+  5:'#ec4899', // rose
+  6:'#ef4444', // rouge
+  7:'#f97316', // orange
+  8:'#eab308', // jaune
+  9:'#f8fafc', // blanc
+  10:'#94a3b8',// gris
+  11:'#0f172a' // noir
 };
+const CLIMB_NAMES = {
+  1:'Vert', 2:'Bleu clair', 3:'Bleu foncé', 4:'Violet', 5:'Rose',
+  6:'Rouge', 7:'Orange', 8:'Jaune', 9:'Blanc', 10:'Gris', 11:'Noir'
+};
+// Couleurs claires → texte noir, foncées → blanc
+function climbTextColor(lvl){
+  return [2,5,7,8,9].includes(lvl) ? '#000' : '#fff';
+}
 let currentClimbCounts = {};
 
 function openClimbingModal(){
@@ -2801,9 +2812,10 @@ function renderClimbLevels(){
   const html = CLIMB_LEVELS.map(lvl=>{
     const count = currentClimbCounts[lvl]||0;
     const color = CLIMB_COLORS[lvl];
-    const textColor = (lvl===6) ? '#fff' : ((lvl===7) ? '#000' : '#000');
-    return `<div class="climb-level-card ${count>0?'has-count':''}" style="border-color:${color}">
-      <div class="climb-level-name" style="background:${color};color:${textColor}">Niv ${lvl}</div>
+    const textColor = climbTextColor(lvl);
+    const borderExtra = (lvl===9) ? 'border:2px solid #475569' : ''; // blanc → bordure visible
+    return `<div class="climb-level-card ${count>0?'has-count':''}" style="border-color:${color};${borderExtra}">
+      <div class="climb-level-name" style="background:${color};color:${textColor}">${CLIMB_NAMES[lvl]}</div>
       <div class="climb-counter">
         <button onclick="changeClimbCount(${lvl},-1)" ${count===0?'disabled':''}>−</button>
         <span class="climb-count" id="climb-c-${lvl}">${count}</span>
@@ -2825,7 +2837,7 @@ function updateClimbSummary(){
   const total = Object.values(currentClimbCounts).reduce((s,c)=>s+c, 0);
   const maxLvl = Math.max(0, ...Object.entries(currentClimbCounts).filter(([_,c])=>c>0).map(([l])=>parseInt(l)));
   document.getElementById('climb-summary').innerHTML = total>0
-    ? `🧗 <strong>${total}</strong> blocs · max <strong>Niv ${maxLvl}</strong>`
+    ? `🧗 <strong>${total}</strong> blocs · max <strong>${CLIMB_NAMES[maxLvl]||'?'}</strong>`
     : '0 blocs au total';
 }
 
@@ -2849,7 +2861,7 @@ function saveClimbingSession(){
   // Refresh UI partout
   if(typeof renderWeekEditor==='function') renderWeekEditor();
   if(typeof renderDashboard==='function') renderDashboard();
-  alert(`✓ Séance enregistrée : ${total} blocs (max niv ${maxLevel})`);
+  alert(`✓ Séance enregistrée : ${total} blocs (max ${CLIMB_NAMES[maxLevel]||'?'})`);
 }
 
 function renderClimbHistory(){
@@ -2858,7 +2870,7 @@ function renderClimbHistory(){
   if(!sessions.length){ el.innerHTML='<div style="font-size:0.78rem;color:var(--muted)">Aucune séance enregistrée</div>'; return; }
   el.innerHTML = sessions.map(s=>{
     const d = new Date(s.date).toLocaleDateString('fr');
-    const lvlBadges = s.blocks.map(b=>`<span style="background:${CLIMB_COLORS[b.level]};color:${b.level===6?'#fff':'#000'};padding:1px 6px;border-radius:99px;font-size:0.65rem;font-weight:700;margin-right:3px">N${b.level}×${b.count}</span>`).join('');
+    const lvlBadges = s.blocks.map(b=>`<span style="background:${CLIMB_COLORS[b.level]};color:${climbTextColor(b.level)};padding:1px 7px;border-radius:99px;font-size:0.64rem;font-weight:700;margin-right:3px;border:${b.level===9?'1px solid #475569':'none'}" title="${CLIMB_NAMES[b.level]}">×${b.count}</span>`).join('');
     return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.75rem">
       <span style="color:var(--muted);min-width:65px">${d}</span>
       <div style="flex:1">${lvlBadges}</div>
@@ -3628,7 +3640,7 @@ function renderDuo(){
     {label:'PRs battus', lui:lui.prs, alex:alex.prs, fmt:n=>n+' 🏆'},
     {label:'🧗 Blocs cette semaine', lui:lui.climbWeek, alex:alex.climbWeek, fmt:n=>n},
     {label:'🧗 Blocs cumulés', lui:lui.climbBlocks, alex:alex.climbBlocks, fmt:n=>n},
-    {label:'🧗 Niveau max atteint', lui:lui.climbMaxLevel, alex:alex.climbMaxLevel, fmt:n=>n>0?'N'+n:'—'},
+    {label:'🧗 Niveau max atteint', lui:lui.climbMaxLevel, alex:alex.climbMaxLevel, fmt:n=>n>0?(CLIMB_NAMES[n]||('N'+n)):'—'},
   ];
 
   let luiHtml = '', alexHtml = '';
@@ -3727,7 +3739,7 @@ function renderEscalade(){
   let html = `
     <div class="stat-grid" style="margin-bottom:16px">
       <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Blocs cumulés</div><div class="stat-val" style="color:#a3e635">${totalBlocks}</div><div class="stat-sub">${sessions.length} séance${sessions.length>1?'s':''}</div></div>
-      <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Niveau max</div><div class="stat-val" style="color:#a3e635">N${maxLvl||'—'}</div><div class="stat-sub">all-time</div></div>
+      <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Niveau max</div><div class="stat-val" style="color:#a3e635;font-size:1.1rem">${CLIMB_NAMES[maxLvl]||'—'}</div><div class="stat-sub">all-time</div></div>
       <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Cette semaine</div><div class="stat-val" style="color:#a3e635">${weekBlocks}</div><div class="stat-sub">${weekSessions.length} séance${weekSessions.length>1?'s':''}</div></div>
       <div class="stat" style="border-color:rgba(132,204,22,0.3)"><div class="stat-label">Ce mois</div><div class="stat-val" style="color:#a3e635">${monthSessions.reduce((s,c)=>s+(c.total||0),0)}</div><div class="stat-sub">${monthSessions.length} séance${monthSessions.length>1?'s':''}</div></div>
     </div>`;
@@ -3746,15 +3758,16 @@ function renderEscalade(){
       levelTotals[b.level] = (levelTotals[b.level]||0) + (b.count||0);
     }));
     html += `<div class="card" style="margin-bottom:16px">
-      <h3>🎯 Répartition par niveau (cumulé)</h3>
-      <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:10px">
+      <h3>🎯 Répartition par couleur (cumulé)</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;margin-top:10px">
         ${CLIMB_LEVELS.map(lvl=>{
           const c = levelTotals[lvl]||0;
           const col = CLIMB_COLORS[lvl];
-          const txtCol = lvl===6?'#fff':(lvl===7?'#000':'#000');
+          const txtCol = climbTextColor(lvl);
+          const borderExtra = lvl===9 ? 'border:1px solid #475569' : '';
           return `<div style="text-align:center">
-            <div style="background:${col};color:${txtCol};padding:4px 0;border-radius:6px 6px 0 0;font-size:0.6rem;font-weight:700">N${lvl}</div>
-            <div style="background:var(--surface2);border:1px solid var(--border);border-top:none;padding:6px 0;border-radius:0 0 6px 6px;font-weight:800;font-size:0.85rem">${c}</div>
+            <div style="background:${col};color:${txtCol};padding:5px 0;border-radius:6px 6px 0 0;font-size:0.62rem;font-weight:700;${borderExtra}">${CLIMB_NAMES[lvl]}</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-top:none;padding:7px 0;border-radius:0 0 6px 6px;font-weight:800;font-size:0.9rem">${c}</div>
           </div>`;
         }).join('')}
       </div>
@@ -3765,7 +3778,7 @@ function renderEscalade(){
       <div style="max-height:60vh;overflow-y:auto">
         ${sessions.map(s=>{
           const d = new Date(s.date).toLocaleDateString('fr',{weekday:'short',day:'numeric',month:'short'});
-          const lvlBadges = (s.blocks||[]).map(b=>`<span style="background:${CLIMB_COLORS[b.level]};color:${b.level===6?'#fff':'#000'};padding:2px 7px;border-radius:99px;font-size:0.66rem;font-weight:700;margin-right:3px">N${b.level}×${b.count}</span>`).join('');
+          const lvlBadges = (s.blocks||[]).map(b=>`<span style="background:${CLIMB_COLORS[b.level]};color:${climbTextColor(b.level)};padding:2px 8px;border-radius:99px;font-size:0.64rem;font-weight:700;margin-right:3px;border:${b.level===9?'1px solid #475569':'none'}" title="${CLIMB_NAMES[b.level]}">${CLIMB_NAMES[b.level]}×${b.count}</span>`).join('');
           return `<div style="padding:12px 0;border-bottom:1px solid var(--border)">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <span style="font-weight:700;font-size:0.85rem">${d}</span>
@@ -4459,9 +4472,9 @@ function renderDashboard(){
     const dashWeekEl = document.getElementById('dash-volume-week');
     if(dashWeekEl && !document.getElementById('dash-climb-info')){
       dashWeekEl.parentElement.insertAdjacentHTML('beforeend',
-        `<div id="dash-climb-info" style="font-size:0.62rem;color:#a3e635;margin-top:6px;border-top:1px solid var(--border);padding-top:6px">🧗 ${climbTotal} blocs · max N${climbMax}</div>`);
+        `<div id="dash-climb-info" style="font-size:0.62rem;color:#a3e635;margin-top:6px;border-top:1px solid var(--border);padding-top:6px">🧗 ${climbTotal} blocs · max ${CLIMB_NAMES[climbMax]||'?'}</div>`);
     } else if(document.getElementById('dash-climb-info')){
-      document.getElementById('dash-climb-info').innerHTML = `🧗 ${climbTotal} blocs · max N${climbMax}`;
+      document.getElementById('dash-climb-info').innerHTML = `🧗 ${climbTotal} blocs · max ${CLIMB_NAMES[climbMax]||'?'}`;
     }
   }
 

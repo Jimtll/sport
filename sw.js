@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 9 — running toggle in calendar
-const CACHE_NAME = 'sportduo-cache-v9';
+// VERSION 10 — climbing colors (11 levels with French color names)
+const CACHE_NAME = 'sportduo-cache-v10';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
