@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 4 — fix sticky nav mobile
-const CACHE_NAME = 'sportduo-cache-v4';
+// VERSION 5 — rest timer + PR + duo
+const CACHE_NAME = 'sportduo-cache-v5';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

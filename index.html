@@ -15,6 +15,7 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmMTExNyIgcng9IjQwIi8+PHRleHQgeD0iOTAiIHk9IjEzMCIgZm9udC1zaXplPSIxMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPvCfkqo8L3RleHQ+PC9zdmc+">
 <title>SportDuo · Planning</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -457,6 +458,83 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .goal-title{font-weight:800;font-size:1rem}
 .goal-sub{font-size:0.78rem;color:var(--muted2);margin-top:2px}
 
+/* ── Barre Timer Repos flottante ── */
+#rest-timer-bar{
+  position:fixed;
+  bottom:calc(16px + env(safe-area-inset-bottom,0));
+  left:50%;
+  transform:translateX(-50%) translateY(120%);
+  z-index:300;
+  background:linear-gradient(135deg,var(--acc) 0%,#ea580c 100%);
+  color:#fff;
+  border-radius:99px;
+  padding:0;
+  box-shadow:0 8px 32px rgba(249,115,22,0.4),0 2px 8px rgba(0,0,0,0.3);
+  transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  min-width:280px;
+  max-width:calc(100vw - 24px);
+  overflow:hidden;
+}
+#rest-timer-bar.visible{transform:translateX(-50%) translateY(0)}
+#rest-timer-bar.almost-done{background:linear-gradient(135deg,#10b981 0%,#059669 100%);box-shadow:0 8px 32px rgba(16,185,129,0.5)}
+#rest-timer-bar.done{background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);animation:timerDone 0.6s ease-in-out}
+@keyframes timerDone{0%,100%{transform:translateX(-50%) translateY(0) scale(1)}50%{transform:translateX(-50%) translateY(0) scale(1.06)}}
+.rest-timer-progress{position:absolute;left:0;bottom:0;height:3px;background:rgba(255,255,255,0.5);transition:width 1s linear}
+.rest-timer-content{display:flex;align-items:center;gap:10px;padding:10px 16px}
+.rest-timer-icon{font-size:1.4rem}
+.rest-timer-info{flex:1;line-height:1.2}
+.rest-timer-time{font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-0.02em}
+.rest-timer-label{font-size:0.65rem;opacity:0.85;text-transform:uppercase;letter-spacing:0.08em}
+.rest-timer-actions{display:flex;gap:4px}
+.rest-timer-actions button{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:6px 10px;border-radius:99px;font-size:0.7rem;font-weight:700;cursor:pointer;backdrop-filter:blur(8px)}
+.rest-timer-actions button:hover{background:rgba(255,255,255,0.25)}
+.rest-timer-skip{background:rgba(0,0,0,0.2) !important}
+
+/* ── PR Toast ── */
+#pr-toast{
+  position:fixed;
+  top:calc(80px + env(safe-area-inset-top,0));
+  left:50%;
+  transform:translateX(-50%) translateY(-200%);
+  z-index:400;
+  background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 50%,#dc2626 100%);
+  color:#fff;
+  padding:14px 22px;
+  border-radius:16px;
+  box-shadow:0 12px 40px rgba(251,191,36,0.5),0 4px 12px rgba(0,0,0,0.3);
+  font-weight:700;
+  font-size:0.95rem;
+  text-align:center;
+  transition:transform 0.5s cubic-bezier(.34,1.56,.64,1);
+  max-width:90vw;
+  min-width:280px;
+}
+#pr-toast.visible{transform:translateX(-50%) translateY(0)}
+#pr-toast .pr-title{font-size:1.1rem;letter-spacing:0.02em;margin-bottom:4px}
+#pr-toast .pr-detail{font-size:0.82rem;opacity:0.95;font-weight:500}
+
+/* ── Duo compare ── */
+.duo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:500px){.duo-grid{grid-template-columns:1fr}}
+.duo-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px}
+.duo-col.lui{border-color:var(--c1-glow);box-shadow:0 0 0 1px var(--c1-dim)}
+.duo-col.alex{border-color:var(--c2-glow);box-shadow:0 0 0 1px var(--c2-dim)}
+.duo-col-header{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.duo-col-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.duo-col.lui .duo-col-avatar{background:var(--c1-dim)}
+.duo-col.alex .duo-col-avatar{background:var(--c2-dim)}
+.duo-col-name{font-weight:800;font-size:1.05rem}
+.duo-col.lui .duo-col-name{color:var(--c1)}
+.duo-col.alex .duo-col-name{color:var(--c2)}
+.duo-col-sub{font-size:0.72rem;color:var(--muted)}
+.duo-stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--border)}
+.duo-stat-row:last-child{border-bottom:none}
+.duo-stat-label{font-size:0.78rem;color:var(--muted2)}
+.duo-stat-val{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums}
+.duo-stat-row.winner .duo-stat-val::after{content:' 🏆';font-size:0.8em}
+.duo-winner-label{position:absolute;top:-10px;right:14px;background:var(--yellow);color:#000;padding:2px 8px;border-radius:99px;font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase}
+.duo-vs{display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin:14px 0 8px}
+
 /* ── OPTIMISATIONS MOBILE (iPhone 17, etc.) ── */
 @media (max-width:640px){
   /* Topbar : logo plus court, sub-text caché. Et SCROLL avec le contenu (non figé) */
@@ -757,6 +835,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <button class="nav-btn" onclick="goPage('nutrition')">🥗 Nutrition</button>
   <button class="nav-btn" onclick="goPage('progression')">📈 Progression</button>
   <button class="nav-btn" onclick="goPage('journal')">📓 Journal</button>
+  <button class="nav-btn" onclick="goPage('duo')">👫 Duo</button>
 </nav>
 
 <div class="content">
@@ -1101,8 +1180,38 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <div class="session-log" id="journal-list"></div>
 </div>
 
+<!-- ═══════ DUO — Comparatif ═══════ -->
+<div class="page" id="page-duo">
+  <h2>👫 Duo</h2>
+  <p class="section-sub">Comparatif Moi vs Alexandra — qui mène cette semaine ?</p>
+  <div id="duo-content"></div>
+</div>
+
 </div><!-- /content -->
 </div><!-- /app -->
+
+<!-- ═══════ PR TOAST ═══════ -->
+<div id="pr-toast" role="alert">
+  <div class="pr-title" id="pr-toast-title">🎉 NOUVEAU PR !</div>
+  <div class="pr-detail" id="pr-toast-detail"></div>
+</div>
+
+<!-- ═══════ BARRE TIMER REPOS FLOTTANTE ═══════ -->
+<div id="rest-timer-bar">
+  <div class="rest-timer-progress" id="rest-timer-progress"></div>
+  <div class="rest-timer-content">
+    <span class="rest-timer-icon">⏱</span>
+    <div class="rest-timer-info">
+      <div class="rest-timer-time" id="rest-timer-time">2:00</div>
+      <div class="rest-timer-label" id="rest-timer-label">Repos</div>
+    </div>
+    <div class="rest-timer-actions">
+      <button onclick="adjustRestTimer(-15)">−15s</button>
+      <button onclick="adjustRestTimer(15)">+15s</button>
+      <button onclick="skipRestTimer()" class="rest-timer-skip">Skip</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════ MODALE PICKER EXERCICES ═══════ -->
 <div class="modal-overlay" id="picker-modal" onclick="if(event.target===this)closePicker()">
@@ -3187,6 +3296,299 @@ function calcEpley(weight, reps){
   return Math.round(weight * (1 + reps/30));
 }
 
+// ══════════════════════════════════════════════
+// TIMER DE REPOS AUTO — durée intelligente selon poids
+// ══════════════════════════════════════════════
+let restTimer = null;
+let restTimerEnd = 0;
+let restTimerDuration = 0;
+
+function getRecommendedRest(exId, weight){
+  const ex = EXERCISES.find(e=>e.id===exId);
+  if(!ex) return 90;
+  const muscle = ex.muscle;
+  // Compound lourds → 2-3 min
+  const compounds = ['Squat barre','Soulevé de terre','Développé couché barre','Développé militaire barre','Rowing barre','Hip Thrust barre','Romanian Deadlift (RDL)','Tractions pronation'];
+  // Calcul intensité : si poids > 70% du max historique → repos long
+  let intensity = 0.5; // default
+  const history = state.exerciseWorkouts(exId);
+  if(history.length){
+    const maxEverWeight = history.reduce((m,w)=>Math.max(m, ...w.sets.map(s=>s.weight||0)), 0);
+    if(maxEverWeight > 0 && weight > 0){
+      intensity = weight / maxEverWeight;
+    }
+  }
+  // Base selon le type d'exercice
+  let base = 90; // 1m30 par défaut
+  if(compounds.includes(ex.name)) base = 150; // 2m30 compounds
+  else if(['Dos','Jambes','Poitrine','Fessiers'].includes(muscle)) base = 120; // 2 min
+  else if(['Core','Lombaires','Grip'].includes(muscle)) base = 60; // 1 min
+  // Modulation intensité
+  if(intensity > 0.85) base += 30; // très lourd → +30s
+  else if(intensity > 0.7) base += 15;
+  else if(intensity < 0.5) base -= 15;
+  // Clamp entre 1min et 3min
+  return Math.max(60, Math.min(180, base));
+}
+
+function startRestTimer(seconds, label){
+  stopRestTimer(false);
+  restTimerDuration = seconds;
+  restTimerEnd = Date.now() + seconds*1000;
+  const bar = document.getElementById('rest-timer-bar');
+  bar.classList.add('visible');
+  bar.classList.remove('done','almost-done');
+  document.getElementById('rest-timer-label').textContent = label || 'Repos';
+  tickRestTimer();
+  restTimer = setInterval(tickRestTimer, 200);
+  if(navigator.vibrate) navigator.vibrate(30);
+}
+
+function tickRestTimer(){
+  const left = Math.max(0, Math.round((restTimerEnd - Date.now())/1000));
+  const m = Math.floor(left/60), s = left%60;
+  document.getElementById('rest-timer-time').textContent = `${m}:${String(s).padStart(2,'0')}`;
+  const pct = (1 - left/restTimerDuration) * 100;
+  document.getElementById('rest-timer-progress').style.width = pct+'%';
+  const bar = document.getElementById('rest-timer-bar');
+  if(left <= 10 && left > 0) bar.classList.add('almost-done');
+  if(left === 0){
+    // Timer terminé
+    bar.classList.add('done');
+    bar.classList.remove('almost-done');
+    document.getElementById('rest-timer-label').textContent = 'Repos terminé !';
+    document.getElementById('rest-timer-time').textContent = '✓ GO';
+    if(navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+    playTimerSound();
+    clearInterval(restTimer);
+    restTimer = null;
+    setTimeout(stopRestTimer, 3000);
+  }
+}
+
+function adjustRestTimer(delta){
+  if(!restTimer) return;
+  restTimerEnd += delta * 1000;
+  restTimerDuration += delta;
+  tickRestTimer();
+}
+
+function skipRestTimer(){ stopRestTimer(true); }
+
+function stopRestTimer(hide=true){
+  if(restTimer){ clearInterval(restTimer); restTimer = null; }
+  if(hide){
+    const bar = document.getElementById('rest-timer-bar');
+    if(bar) bar.classList.remove('visible','done','almost-done');
+  }
+}
+
+function playTimerSound(){
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    // Triple bip ascendant
+    [523, 659, 784].forEach((freq, i)=>{
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = freq;
+      o.type = 'sine';
+      const start = ctx.currentTime + i*0.18;
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.exponentialRampToValueAtTime(0.4, start+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, start+0.18);
+      o.start(start); o.stop(start+0.2);
+    });
+  } catch(e){}
+}
+
+// ══════════════════════════════════════════════
+// DÉTECTION PR (Personal Record)
+// ══════════════════════════════════════════════
+function detectPRs(exId, newSets){
+  const history = state.exerciseWorkouts(exId);
+  let oldMaxWeight = 0, oldMaxRM = 0;
+  history.forEach(w=>{
+    (w.sets||[]).forEach(s=>{
+      if((s.weight||0) > oldMaxWeight) oldMaxWeight = s.weight;
+      const rm = calcEpley(s.weight||0, s.reps||0);
+      if(rm > oldMaxRM) oldMaxRM = rm;
+    });
+  });
+  let newMaxWeight = 0, newMaxRM = 0;
+  newSets.forEach(s=>{
+    if((s.weight||0) > newMaxWeight) newMaxWeight = s.weight;
+    const rm = calcEpley(s.weight||0, s.reps||0);
+    if(rm > newMaxRM) newMaxRM = rm;
+  });
+  const prs = [];
+  if(newMaxWeight > oldMaxWeight && oldMaxWeight > 0) prs.push({type:'weight', old:oldMaxWeight, new:newMaxWeight, delta:newMaxWeight-oldMaxWeight});
+  if(newMaxRM > oldMaxRM && oldMaxRM > 0) prs.push({type:'1rm', old:oldMaxRM, new:newMaxRM, delta:newMaxRM-oldMaxRM});
+  return prs;
+}
+
+// ══════════════════════════════════════════════
+// DUO — Comparatif Moi vs Alexandra
+// ══════════════════════════════════════════════
+function getProfileStats(profile){
+  const ls = (k)=>JSON.parse(localStorage.getItem('sp_'+k+'_'+profile)||'null');
+  const workouts = ls('workouts')||[];
+  const climbing = ls('climbing')||[];
+  const journal = ls('journal')||[];
+  const progress = ls('progress')||[];
+  const now = new Date();
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
+  const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth()-1);
+  const inWeek = (d)=>new Date(d) >= weekAgo;
+  const inMonth = (d)=>new Date(d) >= monthAgo;
+  // Total volume
+  const totalVolume = workouts.reduce((s,w)=>s+(w.volume||0),0);
+  const weekVolume = workouts.filter(w=>inWeek(w.date)).reduce((s,w)=>s+(w.volume||0),0);
+  // Séances
+  const sessTotal = journal.length + workouts.length;
+  const sessWeek = workouts.filter(w=>inWeek(w.date)).length;
+  // Escalade
+  const climbBlocks = climbing.reduce((s,c)=>s+(c.total||0),0);
+  const climbMaxLevel = climbing.reduce((m,c)=>Math.max(m, c.maxLevel||0), 0);
+  const climbWeek = climbing.filter(c=>inWeek(c.date)).reduce((s,c)=>s+(c.total||0),0);
+  // PRs
+  const prs = workouts.filter(w=>w.prs && w.prs.length).length;
+  // Poids actuel (dernier point de progression)
+  const lastWeight = progress.length ? progress[progress.length-1].poids : null;
+  // Best 1RM all-time
+  let bestRM = 0;
+  workouts.forEach(w=>{
+    (w.sets||[]).forEach(s=>{
+      const rm = calcEpley(s.weight||0, s.reps||0);
+      if(rm > bestRM) bestRM = rm;
+    });
+  });
+  return {totalVolume, weekVolume, sessTotal, sessWeek, climbBlocks, climbMaxLevel, climbWeek, prs, lastWeight, bestRM};
+}
+
+function renderDuo(){
+  const lui = getProfileStats('lui');
+  const alex = getProfileStats('alexandra');
+  const fmt = n => n>=1000 ? (n/1000).toFixed(1)+'k' : Math.round(n).toString();
+
+  // Liste de stats à comparer : higher is better sauf cas contraire
+  const rows = [
+    {label:'Séances cette semaine', lui:lui.sessWeek, alex:alex.sessWeek, fmt:n=>n},
+    {label:'Séances depuis le début', lui:lui.sessTotal, alex:alex.sessTotal, fmt:n=>n},
+    {label:'Volume cette semaine', lui:lui.weekVolume, alex:alex.weekVolume, fmt:n=>fmt(n)+' kg'},
+    {label:'Volume cumulé', lui:lui.totalVolume, alex:alex.totalVolume, fmt:n=>fmt(n)+' kg'},
+    {label:'Meilleur 1RM estimé', lui:lui.bestRM, alex:alex.bestRM, fmt:n=>n+' kg'},
+    {label:'PRs battus', lui:lui.prs, alex:alex.prs, fmt:n=>n+' 🏆'},
+    {label:'🧗 Blocs cette semaine', lui:lui.climbWeek, alex:alex.climbWeek, fmt:n=>n},
+    {label:'🧗 Blocs cumulés', lui:lui.climbBlocks, alex:alex.climbBlocks, fmt:n=>n},
+    {label:'🧗 Niveau max atteint', lui:lui.climbMaxLevel, alex:alex.climbMaxLevel, fmt:n=>n>0?'N'+n:'—'},
+  ];
+
+  let luiHtml = '', alexHtml = '';
+  let luiWins = 0, alexWins = 0;
+  rows.forEach(r=>{
+    const luiWin = r.lui > r.alex;
+    const alexWin = r.alex > r.lui;
+    if(luiWin) luiWins++;
+    if(alexWin) alexWins++;
+    luiHtml += `<div class="duo-stat-row ${luiWin?'winner':''}">
+      <span class="duo-stat-label">${r.label}</span>
+      <span class="duo-stat-val">${r.fmt(r.lui)}</span>
+    </div>`;
+    alexHtml += `<div class="duo-stat-row ${alexWin?'winner':''}">
+      <span class="duo-stat-label">${r.label}</span>
+      <span class="duo-stat-val">${r.fmt(r.alex)}</span>
+    </div>`;
+  });
+
+  const html = `
+    <div class="duo-grid">
+      <div class="duo-col lui" style="position:relative">
+        ${luiWins > alexWins ? '<div class="duo-winner-label">🏆 En tête</div>' : ''}
+        <div class="duo-col-header">
+          <div class="duo-col-avatar">🧔</div>
+          <div>
+            <div class="duo-col-name">Moi</div>
+            <div class="duo-col-sub">${lui.lastWeight ? lui.lastWeight.toFixed(1)+' kg' : '74 kg'} · Dos · Épaules · Grip</div>
+          </div>
+        </div>
+        ${luiHtml}
+      </div>
+      <div class="duo-col alex" style="position:relative">
+        ${alexWins > luiWins ? '<div class="duo-winner-label">🏆 En tête</div>' : ''}
+        <div class="duo-col-header">
+          <div class="duo-col-avatar">👩</div>
+          <div>
+            <div class="duo-col-name">Alexandra</div>
+            <div class="duo-col-sub">${alex.lastWeight ? alex.lastWeight.toFixed(1)+' kg' : '57 kg'} · Fessiers · Core · Dos</div>
+          </div>
+        </div>
+        ${alexHtml}
+      </div>
+    </div>
+    <div class="duo-vs">— ${luiWins===alexWins?'Égalité parfaite ⚖️':(luiWins>alexWins?`Lui mène ${luiWins} à ${alexWins} 💪`:`Alex mène ${alexWins} à ${luiWins} 💪`)} —</div>
+    <div class="card" style="margin-top:14px">
+      <h3>📊 Volume sur 7 jours</h3>
+      <div class="chart-wrap" style="height:200px"><canvas id="duo-chart"></canvas></div>
+    </div>
+  `;
+  document.getElementById('duo-content').innerHTML = html;
+
+  // Graphique comparatif sur 7 jours
+  setTimeout(()=>{
+    const ctx = document.getElementById('duo-chart');
+    if(!ctx) return;
+    const days = [];
+    const now = new Date();
+    for(let i=6;i>=0;i--){
+      const d = new Date(now); d.setDate(now.getDate()-i);
+      days.push({date:d, key:d.toISOString().slice(0,10)});
+    }
+    const dayVol = (profile, key)=>{
+      const ws = JSON.parse(localStorage.getItem('sp_workouts_'+profile)||'[]');
+      return ws.filter(w=>w.date.slice(0,10)===key).reduce((s,w)=>s+(w.volume||0),0);
+    };
+    const labels = days.map(d=>d.date.toLocaleDateString('fr',{weekday:'short'}));
+    const luiData = days.map(d=>dayVol('lui', d.key));
+    const alexData = days.map(d=>dayVol('alexandra', d.key));
+    if(window._duoChart) window._duoChart.destroy();
+    window._duoChart = new Chart(ctx, {
+      type:'bar',
+      data:{labels, datasets:[
+        {label:'Moi', data:luiData, backgroundColor:'#f97316', borderRadius:6},
+        {label:'Alexandra', data:alexData, backgroundColor:'#f472b6', borderRadius:6}
+      ]},
+      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{x:{ticks:{color:'#64748b',font:{size:10}}},y:{ticks:{color:'#64748b',font:{size:9}}}}}
+    });
+  }, 50);
+}
+
+function celebratePR(exerciseName, prs){
+  const toast = document.getElementById('pr-toast');
+  const title = document.getElementById('pr-toast-title');
+  const detail = document.getElementById('pr-toast-detail');
+  // Texte selon type
+  if(prs.length === 2){
+    title.textContent = '🎉🏆 DOUBLE PR !';
+    detail.innerHTML = `<strong>${exerciseName}</strong><br>Poids max : ${prs[0].old} → <strong>${prs[0].new} kg</strong> (+${prs[0].delta})<br>1RM estimé : ${prs[1].old} → <strong>${prs[1].new} kg</strong> (+${prs[1].delta})`;
+  } else {
+    const pr = prs[0];
+    title.textContent = pr.type==='weight' ? '🏆 PR POIDS MAX !' : '🚀 PR 1RM !';
+    const lbl = pr.type==='weight' ? 'Poids' : '1RM estimé';
+    detail.innerHTML = `<strong>${exerciseName}</strong><br>${lbl} : ${pr.old} → <strong>${pr.new} kg</strong> (+${pr.delta})`;
+  }
+  toast.classList.add('visible');
+  // Confetti !
+  if(window.confetti){
+    confetti({particleCount: 120, spread: 80, origin: {y: 0.3}, colors: ['#fbbf24','#f59e0b','#dc2626','#22c55e','#3b82f6']});
+    setTimeout(()=>confetti({particleCount:60, angle:60, spread:55, origin:{x:0, y:0.5}}), 200);
+    setTimeout(()=>confetti({particleCount:60, angle:120, spread:55, origin:{x:1, y:0.5}}), 400);
+  }
+  if(navigator.vibrate) navigator.vibrate([100,80,150,80,200]);
+  playTimerSound();
+  // Auto-hide
+  setTimeout(()=>toast.classList.remove('visible'), 5500);
+}
+
 function renderLogger(exId){
   const ex = EXERCISES.find(e=>e.id===exId);
   if(!ex) return;
@@ -3239,8 +3641,13 @@ function toggleSetDone(btn, exId){
       alert('Entre le poids et les reps avant de valider la série');
       return;
     }
-    // Démarre auto le timer de repos (court vibrate si supporté)
-    if(navigator.vibrate) navigator.vibrate(50);
+    // 🚀 Démarre auto le timer de repos selon l'intensité
+    const restSec = getRecommendedRest(exId, w);
+    const ex = EXERCISES.find(e=>e.id===exId);
+    startRestTimer(restSec, `Repos · ${ex?.name||'série'}`);
+  } else {
+    // On démarque → stoppe le timer
+    stopRestTimer(true);
   }
   updateLogger1RM(exId);
 }
@@ -3292,20 +3699,31 @@ function saveLogger(exId){
     if(w > 0 && r > 0) hasData = true;
   });
   if(!hasData){ alert('Entre au moins une série avec poids et reps'); return; }
+
+  // 🏆 Détection PR AVANT save (pour comparer à l'historique actuel)
+  const prs = detectPRs(exId, sets.filter(s=>s.weight>0 && s.reps>0));
+
   const volume = sets.reduce((s,set)=>s+(set.weight||0)*(set.reps||0),0);
   const entry = {
     id: Date.now(),
     date: new Date().toISOString(),
     exerciseId: exId,
     exerciseName: ex.name,
-    sets, volume
+    sets, volume,
+    prs: prs.length ? prs : undefined
   };
   const all = state.workouts;
   all.unshift(entry);
   state.setWorkouts(all);
-  // Feedback
-  const msg = document.getElementById('logger-success');
-  if(msg){ msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),2000); }
+
+  // Si PR : célébration ! sinon feedback normal
+  if(prs.length){
+    celebratePR(ex.name, prs);
+  } else {
+    const msg = document.getElementById('logger-success');
+    if(msg){ msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),2000); }
+  }
+  stopRestTimer(true);
   // Refresh history & dashboard
   renderExerciseHistory(exId);
   if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
@@ -3543,6 +3961,7 @@ function goPage(id){
   if(id==='progression') renderProgressCharts();
   if(id==='dashboard') renderDashboard();
   if(id==='programme') refreshProgramUI();
+  if(id==='duo') renderDuo();
   if(id==='calendrier'){
     if(!selectedWeekKey) selectedWeekKey = getISOWeek(new Date());
     renderCalendar();
