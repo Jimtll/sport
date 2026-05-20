@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 11 — code cleanup: toast system, custom dialogs, export/import JSON, dead code removed
-const CACHE_NAME = 'sportduo-cache-v11';
+// VERSION 12 — dynamic profiles + GitHub-gated onboarding (welcome flow)
+const CACHE_NAME = 'sportduo-cache-v12';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

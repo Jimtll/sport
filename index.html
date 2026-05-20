@@ -468,6 +468,27 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .goal-title{font-weight:800;font-size:1rem}
 .goal-sub{font-size:0.78rem;color:var(--muted2);margin-top:2px}
 
+/* ── Welcome / Onboarding (bloque l'app) ── */
+#welcome-overlay{position:fixed;inset:0;background:linear-gradient(180deg,#0f1117 0%,#1a1d27 100%);z-index:999;overflow-y:auto;padding:env(safe-area-inset-top,20px) 20px env(safe-area-inset-bottom,20px);-webkit-overflow-scrolling:touch}
+.welcome-card{max-width:520px;margin:30px auto;text-align:center}
+.welcome-logo{font-size:4rem;margin-bottom:8px}
+.welcome-title{font-size:1.8rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px;background:linear-gradient(135deg,var(--acc) 0%,#f59e0b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.welcome-sub{font-size:0.92rem;color:var(--muted2);margin-bottom:28px}
+.welcome-step{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:22px 20px;text-align:left;margin-bottom:14px}
+.welcome-step-num{font-size:1.8rem;margin-bottom:6px}
+.welcome-step-title{font-weight:800;font-size:1.1rem;margin-bottom:4px}
+.welcome-step-desc{font-size:0.85rem;color:var(--muted2);margin-bottom:14px;line-height:1.5}
+.welcome-tutorial{background:var(--surface2);padding:14px 18px;border-radius:var(--radius-sm);font-size:0.82rem;line-height:1.6;margin-bottom:14px}
+.welcome-tutorial ol{margin-left:18px}.welcome-tutorial li{margin-bottom:4px}
+.welcome-tutorial a{color:var(--acc);font-weight:600}
+.welcome-tutorial code{background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:0.9em}
+.welcome-step input[type=password],.welcome-step input[type=text],.welcome-step input[type=number],.welcome-step select{width:100%;margin-bottom:10px}
+.welcome-step button.btn-primary{width:100%}
+.welcome-avatar-picker{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.welcome-avatar-pick{width:42px;height:42px;border-radius:50%;background:var(--surface2);border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:all 0.15s}
+.welcome-avatar-pick.active{border-color:var(--acc);background:var(--acc-dim);transform:scale(1.1)}
+.welcome-avatar-pick:hover{border-color:var(--border2)}
+
 /* ── Toast notifications (non-blocking, remplace alert()) ── */
 #toast-container{position:fixed;top:calc(env(safe-area-inset-top,0) + 12px);right:12px;left:auto;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:340px}
 @media (max-width:640px){#toast-container{left:12px;right:12px;max-width:none}}
@@ -845,22 +866,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
 <!-- PROFILE SWITCHER -->
 <div class="profile-bar">
   <span class="profile-bar-label">Profil</span>
-  <div class="profile-cards">
-    <div class="profile-card active-lui" id="pcard-lui" onclick="switchProfile('lui')">
-      <div class="profile-avatar lui">🧔</div>
-      <div class="profile-info">
-        <div class="profile-name">Moi</div>
-        <div class="profile-meta">74 kg · 1m80 · Dos · Épaules · Grip</div>
-      </div>
-    </div>
-    <div class="profile-card" id="pcard-alex" onclick="switchProfile('alexandra')">
-      <div class="profile-avatar alex">👩</div>
-      <div class="profile-info">
-        <div class="profile-name">Alexandra</div>
-        <div class="profile-meta">57 kg · 1m59 · Fessiers · Core · Dos</div>
-      </div>
-    </div>
-  </div>
+  <div class="profile-cards" id="profile-cards"></div>
   <div class="profile-sep"></div>
   <div class="profile-bar-stats">
     <span class="pbs">Séances/sem <span id="pbs-seances">0/4</span></span>
@@ -1411,6 +1417,52 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
 </div>
 
 <!-- ═══════ MODALE SYNC CLOUD ═══════ -->
+<!-- ═══════ WELCOME / ONBOARDING (bloque l'app tant que pas configuré) ═══════ -->
+<div id="welcome-overlay" style="display:none">
+  <div class="welcome-card">
+    <div class="welcome-logo">💪</div>
+    <h1 class="welcome-title">Bienvenue sur SportDuo</h1>
+    <p class="welcome-sub">L'app de suivi sportif perso · muscu · escalade · course à pied</p>
+
+    <!-- Étape 1 : Token -->
+    <div class="welcome-step" id="welcome-step-token">
+      <div class="welcome-step-num">1️⃣</div>
+      <div class="welcome-step-title">Connecte ton GitHub</div>
+      <div class="welcome-step-desc">Tes données seront stockées sur ton Gist personnel · gratuit · privé · sync entre appareils.</div>
+      <div class="welcome-tutorial">
+        <strong>Comment obtenir un token (30 secondes) :</strong>
+        <ol>
+          <li>Va sur <a href="https://github.com/signup" target="_blank">github.com/signup</a> si tu n'as pas de compte (gratuit)</li>
+          <li>Une fois connecté, ouvre <a href="https://github.com/settings/tokens/new?scopes=gist&description=SportDuo" target="_blank">cette page</a> (token pré-configuré)</li>
+          <li>Choisis <strong>No expiration</strong> · clique <strong>Generate token</strong></li>
+          <li>Copie le token (<code>ghp_…</code>) et colle-le ci-dessous</li>
+        </ol>
+      </div>
+      <input type="password" id="welcome-token-input" placeholder="ghp_…" autocomplete="off">
+      <button class="btn btn-primary" onclick="welcomeConnectToken()">🔌 Connecter GitHub</button>
+    </div>
+
+    <!-- Étape 2 : Création profil -->
+    <div class="welcome-step" id="welcome-step-profile" style="display:none">
+      <div class="welcome-step-num">2️⃣</div>
+      <div class="welcome-step-title">Crée ton profil</div>
+      <div class="welcome-step-desc">Tes infos personnelles · synchronisées avec ton Gist GitHub.</div>
+      <div id="welcome-profile-form"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODALE ÉDITION / CRÉATION PROFIL ═══════ -->
+<div class="modal-overlay" id="profile-modal" onclick="if(event.target===this)closeProfileModal()">
+  <div class="modal" style="max-width:540px">
+    <button class="modal-close" onclick="closeProfileModal()">✕</button>
+    <div class="modal-header">
+      <div class="modal-title" id="profile-modal-title">Mon profil</div>
+    </div>
+    <div style="padding:18px 22px 22px" id="profile-modal-body"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="sync-modal" onclick="if(event.target===this)closeSyncModal()">
   <div class="modal" style="max-width:640px">
     <button class="modal-close" onclick="closeSyncModal()">✕</button>
@@ -1523,7 +1575,9 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
 // ══════════════════════════════════════════════
 // PROFILES
 // ══════════════════════════════════════════════
-const PROFILES = {
+// PROFIL DEFAULTS — utilisé uniquement comme template lors de la migration auto
+// La vérité actuelle = state.profileList (stocké dans sp_profileList)
+const DEFAULT_PROFILES = {
   lui: {
     id:'lui', name:'Moi', avatar:'🧔',
     poids:74, taille:180, age:27, sexe:'H',
@@ -1571,6 +1625,32 @@ const PROFILES = {
     ]
   }
 };
+
+// Helper : retourne le profil actif depuis la liste stockée
+// Garde compat avec les défauts pour les IDs "lui"/"alexandra"
+function getProfile(id){
+  const list = JSON.parse(localStorage.getItem('sp_profileList')||'[]');
+  const fromList = list.find(p => p.id === id);
+  if(fromList) return fromList;
+  // Fallback sur défaut pour les IDs connus (anciens utilisateurs avant migration)
+  return DEFAULT_PROFILES[id] || null;
+}
+
+// Migration : si pas de profileList stocké mais qu'on a des données legacy → auto-créer
+function migrateLegacyProfiles(){
+  const existing = localStorage.getItem('sp_profileList');
+  if(existing) return; // déjà migré
+  const hasLui = !!(localStorage.getItem('sp_workouts_lui')||localStorage.getItem('sp_progress_lui')||localStorage.getItem('sp_journal_lui')||localStorage.getItem('sp_climbing_lui'));
+  const hasAlex = !!(localStorage.getItem('sp_workouts_alexandra')||localStorage.getItem('sp_progress_alexandra')||localStorage.getItem('sp_journal_alexandra')||localStorage.getItem('sp_climbing_alexandra'));
+  const list = [];
+  if(hasLui) list.push(JSON.parse(JSON.stringify(DEFAULT_PROFILES.lui)));
+  if(hasAlex) list.push(JSON.parse(JSON.stringify(DEFAULT_PROFILES.alexandra)));
+  if(list.length){
+    localStorage.setItem('sp_profileList', JSON.stringify(list));
+    if(!localStorage.getItem('sp_profile')) localStorage.setItem('sp_profile', JSON.stringify(list[0].id));
+    console.log('[Migration] '+list.length+' profil(s) auto-créé(s) depuis données legacy');
+  }
+}
 
 const SPLITS = {
   // ── LUI ──
@@ -3750,8 +3830,11 @@ const SS = (key,val) => {
   if(typeof scheduleSync==='function') scheduleSync();
 };
 
+// Migration auto au load (depuis l'ancien système 2-profils-figés)
+migrateLegacyProfiles();
+
 let state = {
-  profile: LS('profile')||'lui',
+  profile: LS('profile') || (JSON.parse(localStorage.getItem('sp_profileList')||'[]')[0]?.id) || null,
   splits: { lui: LS('split_lui')||'ppl6', alexandra: LS('split_alex')||'glutes4' },
   selectedDay: 0,
   timerInterval: null,
@@ -3761,7 +3844,9 @@ let state = {
   rm1: 100,
   currentRPE: 8,
   get pid(){ return this.profile; },
-  get prof(){ return PROFILES[this.profile]; },
+  get prof(){ return getProfile(this.profile) || {name:'?',poids:0,taille:0,age:0,sexe:'H',goal:'',goalSub:'',goalIcon:'?',goalBannerClass:'lui',poidsSub:'',activite:1.55,surplus:0,protRatio:2,sessions:[],seancesTarget:0,tips:[]}; },
+  get profileList(){ return LS('profileList') || []; },
+  setProfileList(v){ SS('profileList', v); },
   get progressData(){ return LS('progress_'+this.profile)||[]; },
   setProgress(v){ SS('progress_'+this.profile,v); },
   get journalData(){ return LS('journal_'+this.profile)||[]; },
@@ -3811,25 +3896,43 @@ let currentMuscle = 'Tous';
 // ══════════════════════════════════════════════
 // PROFILE SWITCH
 // ══════════════════════════════════════════════
+function renderProfileCards(){
+  const list = state.profileList;
+  const container = document.getElementById('profile-cards');
+  if(!container) return;
+  const cards = list.map(p=>{
+    const isActive = state.profile === p.id;
+    const themeClass = p.goalBannerClass === 'alex' ? 'alex' : 'lui';
+    return `<div class="profile-card ${isActive?'active-'+themeClass:''}" onclick="switchProfile('${p.id}')">
+      <div class="profile-avatar ${themeClass}">${p.avatar||'💪'}</div>
+      <div class="profile-info">
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-meta">${p.poids} kg · ${p.taille>=100?Math.floor(p.taille/100)+'m'+(p.taille%100):p.taille+'cm'} · ${(p.goal||'').replace(/[^\\w À-ÿ·]/g,'').trim()}</div>
+      </div>
+      <button onclick="event.stopPropagation();openProfileEditor('${p.id}')" style="background:none;border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;padding:4px 6px" title="Éditer">✏️</button>
+    </div>`;
+  }).join('') + `<div class="profile-card" style="border-style:dashed;justify-content:center;color:var(--muted);cursor:pointer" onclick="openProfileEditor(null)">
+    <span style="font-size:1.2rem">+</span><span style="font-size:0.78rem">Nouveau profil</span>
+  </div>`;
+  container.innerHTML = cards;
+}
+
 function switchProfile(pid){
+  if(!pid) return;
   state.profile = pid;
   SS('profile', pid);
 
-  // CSS theme
-  document.body.classList.toggle('alex', pid==='alexandra');
+  // CSS theme selon le profil
+  const p = getProfile(pid);
+  document.body.classList.toggle('alex', p?.goalBannerClass === 'alex');
 
-  // Profile cards highlight
-  document.getElementById('pcard-lui').className = 'profile-card'+(pid==='lui'?' active-lui':'');
-  document.getElementById('pcard-alex').className = 'profile-card'+(pid==='alexandra'?' active-alex':'');
+  // Re-render des cartes pour mettre à jour l'état actif
+  renderProfileCards();
 
   // Topbar
-  const p = PROFILES[pid];
-  document.getElementById('topbar-sub').textContent = `${p.goal} · Intermédiaire`;
+  if(p) document.getElementById('topbar-sub').textContent = `${p.goal} · Intermédiaire`;
 
-  // Reset filters
   currentMuscle = 'Tous';
-
-  // Refresh all sections
   refreshAll();
 }
 
@@ -4790,6 +4893,204 @@ async function importAllData(file){
   }
 }
 
+// ══════════════════════════════════════════════
+// ONBOARDING & PROFIL DYNAMIQUE
+// ══════════════════════════════════════════════
+const AVATAR_OPTIONS = ['🧔','👨','👩','🧑','👱','👨‍🦰','👩‍🦰','👨‍🦱','👩‍🦱','🧔‍♀️','🦸','🦹','🏋️','🏃','🧗','💪','🥷','🤸'];
+
+function checkOnboarding(){
+  const hasToken = !!cloud.token;
+  const profiles = state.profileList;
+  const overlay = document.getElementById('welcome-overlay');
+  if(!overlay) return true;
+  // Si on a au moins un profil (utilisateur existant), on cache l'overlay
+  if(profiles.length > 0){
+    overlay.style.display = 'none';
+    return true;
+  }
+  // Sinon on bloque l'app et on affiche les étapes selon l'état
+  overlay.style.display = 'block';
+  document.getElementById('welcome-step-token').style.display = hasToken ? 'none' : 'block';
+  document.getElementById('welcome-step-profile').style.display = hasToken ? 'block' : 'none';
+  if(hasToken) renderProfileForm('welcome-profile-form', null, true);
+  return false;
+}
+
+async function welcomeConnectToken(){
+  const token = document.getElementById('welcome-token-input').value.trim();
+  if(!token.startsWith('ghp_') && !token.startsWith('github_pat_')){
+    toast('Le token doit commencer par ghp_ ou github_pat_','error');
+    return;
+  }
+  cloud.token = token;
+  setSyncStatus('syncing');
+  try {
+    // Tente de récupérer un Gist existant (utilisateur revient sur un autre appareil)
+    const gists = await cloud._api('/gists?per_page=100');
+    const existing = gists.find(g => g.files && (g.files[GIST_FILES.lui] || g.files[GIST_FILES.alexandra] || g.files[GIST_LEGACY_FILE] || Object.keys(g.files).some(f=>f.startsWith('sportduo-'))));
+    if(existing){
+      cloud.gistId = existing.id;
+      toast('Données existantes trouvées · restauration...','info');
+      const ok = await cloud.pull();
+      if(ok && state.profileList.length>0){
+        // On a récupéré au moins un profil
+        toast('✓ Compte restauré · '+state.profileList.length+' profil(s)','success');
+        setTimeout(()=>location.reload(), 1000);
+        return;
+      }
+    }
+    setSyncStatus('synced');
+    toast('✓ GitHub connecté · crée maintenant ton profil','success');
+    checkOnboarding();
+  } catch(e){
+    cloud.token = null;
+    setSyncStatus('off');
+    toast('Échec de connexion : '+e.message.slice(0,80),'error',5000);
+  }
+}
+
+// Génère le HTML du formulaire de création/édition de profil
+function renderProfileForm(containerId, existing, isFirstProfile){
+  const p = existing || {
+    id: 'user_'+Date.now(),
+    name:'', avatar:'💪',
+    poids:75, taille:175, age:25, sexe:'H',
+    goal:'Prise de muscle 💪', goalSub:'', goalIcon:'🏋️', goalBannerClass:'lui',
+    poidsSub:'kg · objectif perso',
+    defaultSplit:'ul4', activite:1.55, surplus:0, protRatio:2.0,
+    sessions:['Push','Pull','Legs','Upper','Lower','Full Body'],
+    seancesTarget:4, tips:[]
+  };
+  const isNew = !existing;
+  const html = `
+    <div class="field">
+      <label>Avatar</label>
+      <div class="welcome-avatar-picker">
+        ${AVATAR_OPTIONS.map(a=>`<div class="welcome-avatar-pick ${a===p.avatar?'active':''}" data-avatar="${a}" onclick="document.querySelectorAll('.welcome-avatar-pick').forEach(e=>e.classList.remove('active'));this.classList.add('active')">${a}</div>`).join('')}
+      </div>
+    </div>
+    <div class="field"><label>Prénom / Surnom</label><input type="text" id="pf-name" value="${p.name||''}" placeholder="Ex: Jimmy"></div>
+    <div class="field-row">
+      <div class="field"><label>Poids (kg)</label><input type="number" id="pf-poids" value="${p.poids}" step="0.5" min="20" max="250"></div>
+      <div class="field"><label>Taille (cm)</label><input type="number" id="pf-taille" value="${p.taille}" min="100" max="230"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Âge</label><input type="number" id="pf-age" value="${p.age}" min="10" max="100"></div>
+      <div class="field"><label>Sexe</label>
+        <select id="pf-sexe">
+          <option value="H" ${p.sexe==='H'?'selected':''}>Homme</option>
+          <option value="F" ${p.sexe==='F'?'selected':''}>Femme</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Objectif</label>
+      <select id="pf-goal-preset" onchange="if(this.value)document.getElementById('pf-goal').value=this.value">
+        <option value="">Choisir un préréglage…</option>
+        <option value="Prise de muscle 💪">Prise de muscle</option>
+        <option value="Force 🏋️">Force</option>
+        <option value="Sèche 🔥">Sèche / Perte de gras</option>
+        <option value="Endurance 🏃">Endurance / Cardio</option>
+        <option value="Recomposition ⚖️">Recomposition</option>
+        <option value="Fessiers · Core 🍑">Fessiers · Core</option>
+        <option value="Dos · Épaules 💪">Dos · Épaules</option>
+        <option value="Maintien 🧘">Maintien / Forme</option>
+      </select>
+      <input type="text" id="pf-goal" value="${p.goal||''}" placeholder="Ton objectif personnalisé" style="margin-top:6px">
+    </div>
+    <div class="field"><label>Séances cible par semaine</label><input type="number" id="pf-target" value="${p.seancesTarget}" min="1" max="7"></div>
+    <div class="field"><label>Niveau d'activité quotidienne (BMR multiplicateur)</label>
+      <select id="pf-activite">
+        <option value="1.375" ${p.activite==1.375?'selected':''}>Légère (1-3j sport/sem)</option>
+        <option value="1.55"  ${p.activite==1.55?'selected':''}>Modérée (3-5j sport/sem)</option>
+        <option value="1.725" ${p.activite==1.725?'selected':''}>Intense (6-7j sport/sem)</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" onclick="saveProfileForm('${p.id}',${isNew},${!!isFirstProfile})">${isNew?'✓ Créer mon profil':'💾 Enregistrer'}</button>
+      ${!isFirstProfile && !isNew ? `<button class="btn btn-danger btn-sm" onclick="deleteProfile('${p.id}')">🗑 Supprimer</button>` : ''}
+    </div>
+  `;
+  document.getElementById(containerId).innerHTML = html;
+}
+
+async function saveProfileForm(id, isNew, isFirstProfile){
+  const name = document.getElementById('pf-name').value.trim();
+  if(!name){ toast('Entre un prénom','warn'); return; }
+  const avatar = document.querySelector('.welcome-avatar-pick.active')?.dataset.avatar || '💪';
+  const goal = document.getElementById('pf-goal').value.trim() || 'Objectif perso';
+  const poids = parseFloat(document.getElementById('pf-poids').value) || 75;
+  const taille = parseInt(document.getElementById('pf-taille').value) || 175;
+  const age = parseInt(document.getElementById('pf-age').value) || 25;
+  const sexe = document.getElementById('pf-sexe').value;
+  const seancesTarget = parseInt(document.getElementById('pf-target').value) || 4;
+  const activite = parseFloat(document.getElementById('pf-activite').value) || 1.55;
+
+  const profile = {
+    id, name, avatar, poids, taille, age, sexe,
+    goal,
+    goalSub:`${poids} kg · ${taille>=100?Math.floor(taille/100)+'m'+(taille%100):taille+'cm'} · ${seancesTarget} séances/sem`,
+    goalIcon:'🏋️',
+    goalBannerClass: sexe==='F' ? 'alex' : 'lui',
+    poidsSub:'kg',
+    defaultSplit: sexe==='F' ? 'glutes4b' : 'ul4',
+    activite, surplus:0, protRatio:2.0,
+    sessions:['Push','Pull','Legs','Upper','Lower','Full Body'],
+    seancesTarget,
+    tips:[
+      {t:'Surcharge progressive',s:'Augmente le volume ou la charge chaque semaine — c\'est le moteur principal de la progression.'},
+      {t:'Sommeil = récup',s:'7-9h par nuit pour optimiser la synthèse protéique et la récupération nerveuse.'},
+      {t:'Constance > intensité',s:'Mieux vaut s\'entraîner régulièrement à 80% que sporadiquement à 100%.'},
+    ]
+  };
+  const list = state.profileList;
+  if(isNew){
+    list.push(profile);
+    state.setProfileList(list);
+    state.profile = id;
+    localStorage.setItem('sp_profile', JSON.stringify(id));
+    toast('✓ Profil "'+name+'" créé','success');
+  } else {
+    const idx = list.findIndex(p=>p.id===id);
+    if(idx>=0){ list[idx] = profile; state.setProfileList(list); }
+    toast('✓ Profil mis à jour','success');
+  }
+  closeProfileModal();
+  // Reload pour rafraîchir toute l'app
+  setTimeout(()=>location.reload(), 500);
+}
+
+function openProfileEditor(id){
+  const profile = id ? getProfile(id) : null;
+  document.getElementById('profile-modal-title').textContent = profile ? `Éditer : ${profile.name}` : 'Nouveau profil';
+  renderProfileForm('profile-modal-body', profile, false);
+  document.getElementById('profile-modal').classList.add('show');
+}
+
+function closeProfileModal(){
+  document.getElementById('profile-modal').classList.remove('show');
+}
+
+async function deleteProfile(id){
+  const profile = getProfile(id);
+  if(!await confirmDialog(`Supprimer le profil "${profile?.name||id}" ?\n\nToutes ses données (workouts, escalade, course, planning) seront EFFACÉES.`, {danger:true, okLabel:'Supprimer'})) return;
+  // Supprime toutes les données du profil
+  const keys = [];
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(k && k.endsWith('_'+id)) keys.push(k);
+  }
+  keys.forEach(k=>localStorage.removeItem(k));
+  const list = state.profileList.filter(p=>p.id!==id);
+  state.setProfileList(list);
+  if(state.profile === id && list.length){
+    state.profile = list[0].id;
+    localStorage.setItem('sp_profile', JSON.stringify(list[0].id));
+  }
+  toast('Profil supprimé','info');
+  closeProfileModal();
+  setTimeout(()=>location.reload(), 500);
+}
+
 // Debounced auto-sync : déclenché après chaque SS()
 let syncTimer = null;
 function scheduleSync(){
@@ -4935,12 +5236,19 @@ async function autoBootstrapSync(){
   if(prTitle) prTitle.textContent = '🎉 NOUVEAU PR !';
   if(prDetail) prDetail.textContent = '';
 
-  switchProfile(state.profile);
-  calc1RM();
-  updateTimerDisplay();
   setSyncStatus(cloud.token ? 'synced' : 'off');
-  try { renderDashboard(); } catch(e){ console.warn('renderDashboard init:', e); }
-  setTimeout(autoBootstrapSync, 800);
+  // Onboarding : bloque l'app si pas de profil
+  const setupOk = checkOnboarding();
+  if(setupOk){
+    if(state.profile) switchProfile(state.profile);
+    calc1RM();
+    updateTimerDisplay();
+    try { renderDashboard(); } catch(e){ console.warn('renderDashboard init:', e); }
+    setTimeout(autoBootstrapSync, 800);
+  } else {
+    // Affiche un mini état même bloqué
+    console.log('[Onboarding] En attente de configuration utilisateur');
+  }
 })();
 
 // ══════════════════════════════════════════════
