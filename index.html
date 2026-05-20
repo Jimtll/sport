@@ -468,6 +468,24 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .goal-title{font-weight:800;font-size:1rem}
 .goal-sub{font-size:0.78rem;color:var(--muted2);margin-top:2px}
 
+/* ── Toast notifications (non-blocking, remplace alert()) ── */
+#toast-container{position:fixed;top:calc(env(safe-area-inset-top,0) + 12px);right:12px;left:auto;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:340px}
+@media (max-width:640px){#toast-container{left:12px;right:12px;max-width:none}}
+.toast{padding:12px 16px;border-radius:10px;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:0.85rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.4);opacity:0;transform:translateX(20px);transition:opacity 0.3s,transform 0.3s;pointer-events:auto;backdrop-filter:blur(10px);line-height:1.4}
+.toast.visible{opacity:1;transform:translateX(0)}
+.toast-success{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.15);color:#a7f3d0}
+.toast-error{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.15);color:#fca5a5}
+.toast-warn{border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.15);color:#fde68a}
+.toast-info{border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.15);color:#bfdbfe}
+
+/* Confirm dialog non-blocking */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity 0.2s}
+.confirm-overlay.visible{opacity:1}
+.confirm-dialog{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:22px;max-width:380px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.5);transform:scale(0.9);transition:transform 0.25s}
+.confirm-overlay.visible .confirm-dialog{transform:scale(1)}
+.confirm-msg{font-size:0.95rem;line-height:1.4;margin-bottom:18px}
+.confirm-actions{display:flex;gap:8px;justify-content:flex-end}
+
 /* ── Barre Timer Repos flottante ── */
 #rest-timer-bar{
   position:fixed;
@@ -1444,9 +1462,17 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
           <button class="btn btn-danger btn-sm" onclick="disconnectSync()">🔌 Déconnecter</button>
         </div>
         <div id="notif-status" style="font-size:0.72rem;color:var(--muted);margin-top:6px"></div>
-        <div class="sync-tutorial" style="margin-top:14px">
-          <strong>Auto-sync activé :</strong> chaque modification (workout loggé, semaine planifiée, mensuration…) déclenche automatiquement un push après 3 secondes. Sur un nouvel appareil, recolle ton token : tes données seront restaurées.
-        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="modal-section-title">💾 Backup local (fichier JSON)</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">
+        Indépendant de la sync cloud — utile pour archiver ou transférer manuellement entre appareils.
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary btn-sm" onclick="exportAllData()">💾 Exporter mes données</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file').click()">📥 Importer un backup</button>
+        <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="if(this.files[0]){importAllData(this.files[0]);this.value='';}">
       </div>
     </div>
   </div>
@@ -1948,579 +1974,6 @@ const EX_ANIM = {
 };
 
 // ══════════════════════════════════════════════
-// TEMPLATES SVG D'EXERCICES — style schéma anatomique
-// Chaque template définit le corps + muscles colorables
-// ══════════════════════════════════════════════
-const POSE_TEMPLATES = {
-  // ─── DEBOUT (par défaut, vue 3/4) ───
-  stand: `<svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="110" cy="320" rx="60" ry="6" opacity="0.3"/>
-    <circle class="body-fill" cx="110" cy="42" r="16"/>
-    <path class="body-fill" d="M 100 56 L 120 56 L 120 70 L 100 70 Z"/>
-    <path class="body-fill" d="M 78 70 Q 76 110 82 145 Q 80 165 88 175 L 132 175 Q 140 165 138 145 Q 144 110 142 70 Q 132 65 110 65 Q 88 65 78 70 Z"/>
-    <path class="body-fill" d="M 78 75 L 70 78 L 60 130 L 65 145 L 78 145 L 80 110 Z"/>
-    <path class="body-fill" d="M 142 75 L 150 78 L 160 130 L 155 145 L 142 145 L 140 110 Z"/>
-    <path class="body-fill" d="M 65 145 L 78 145 L 75 195 L 60 195 Z"/>
-    <path class="body-fill" d="M 142 145 L 155 145 L 160 195 L 145 195 Z"/>
-    <ellipse class="body-fill" cx="68" cy="200" rx="9" ry="8"/>
-    <ellipse class="body-fill" cx="152" cy="200" rx="9" ry="8"/>
-    <path class="body-fill" d="M 88 175 Q 84 230 92 285 L 108 285 Q 110 230 108 175 Z"/>
-    <path class="body-fill" d="M 132 175 Q 136 230 128 285 L 112 285 Q 110 230 112 175 Z"/>
-    <ellipse class="body-fill" cx="100" cy="293" rx="14" ry="5"/>
-    <ellipse class="body-fill" cx="120" cy="293" rx="14" ry="5"/>
-    <path class="body-detail" d="M 110 70 L 110 165"/>
-    <path class="body-detail" d="M 95 90 L 95 145"/>
-    <path class="body-detail" d="M 125 90 L 125 145"/>
-    <!-- MUSCLES -->
-    <path data-m="pec" d="M 82 75 Q 88 90 108 95 L 110 95 L 112 95 Q 132 90 138 75 Q 124 70 110 70 Q 96 70 82 75 Z"/>
-    <path data-m="abs" d="M 95 95 L 125 95 L 124 145 L 96 145 Z"/>
-    <ellipse data-m="delt-f" cx="78" cy="80" rx="10" ry="13"/>
-    <ellipse data-m="delt-f" cx="142" cy="80" rx="10" ry="13"/>
-    <ellipse data-m="delt-l" cx="68" cy="78" rx="6" ry="11"/>
-    <ellipse data-m="delt-l" cx="152" cy="78" rx="6" ry="11"/>
-    <ellipse data-m="delt-r" cx="78" cy="80" rx="10" ry="13" opacity="0.7"/>
-    <ellipse data-m="delt-r" cx="142" cy="80" rx="10" ry="13" opacity="0.7"/>
-    <ellipse data-m="biceps" cx="64" cy="105" rx="7" ry="14"/>
-    <ellipse data-m="biceps" cx="156" cy="105" rx="7" ry="14"/>
-    <ellipse data-m="triceps" cx="64" cy="105" rx="7" ry="14"/>
-    <ellipse data-m="triceps" cx="156" cy="105" rx="7" ry="14"/>
-    <ellipse data-m="forearm" cx="68" cy="170" rx="6" ry="22"/>
-    <ellipse data-m="forearm" cx="152" cy="170" rx="6" ry="22"/>
-    <path data-m="lats" d="M 78 90 L 88 90 L 90 145 L 80 145 Z"/>
-    <path data-m="lats" d="M 132 90 L 142 90 L 140 145 L 130 145 Z"/>
-    <path data-m="traps" d="M 90 65 L 130 65 L 128 85 L 92 85 Z"/>
-    <path data-m="rhomb" d="M 90 90 L 130 90 L 130 115 L 90 115 Z"/>
-    <path data-m="oblique" d="M 80 100 L 95 100 L 94 145 L 82 142 Z"/>
-    <path data-m="oblique" d="M 125 100 L 140 100 L 138 142 L 126 145 Z"/>
-    <path data-m="lower-back" d="M 92 145 L 128 145 L 128 175 L 92 175 Z"/>
-    <ellipse data-m="quad" cx="98" cy="220" rx="11" ry="38"/>
-    <ellipse data-m="quad" cx="122" cy="220" rx="11" ry="38"/>
-    <ellipse data-m="hams" cx="98" cy="245" rx="9" ry="32"/>
-    <ellipse data-m="hams" cx="122" cy="245" rx="9" ry="32"/>
-    <ellipse data-m="adductor" cx="110" cy="220" rx="6" ry="32"/>
-    <path data-m="glute" d="M 88 175 Q 88 195 100 200 L 120 200 Q 132 195 132 175 Z"/>
-    <ellipse data-m="calf" cx="100" cy="278" rx="7" ry="14"/>
-    <ellipse data-m="calf" cx="120" cy="278" rx="7" ry="14"/>
-  </svg>`,
-
-  // ─── SQUAT (avec barre) — comme la capture Hevy ───
-  squat: `<svg viewBox="0 0 230 340" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="115" cy="320" rx="80" ry="6" opacity="0.3"/>
-    <!-- Barre derrière nuque -->
-    <line class="equip-bar" x1="20" y1="80" x2="210" y2="80" stroke-width="3"/>
-    <circle class="equip" cx="20" cy="80" r="9"/>
-    <circle class="equip" cx="210" cy="80" r="9"/>
-    <rect class="equip" x="10" y="68" width="7" height="24" rx="1"/>
-    <rect class="equip" x="213" y="68" width="7" height="24" rx="1"/>
-    <!-- Tête -->
-    <circle class="body-fill" cx="115" cy="48" r="14"/>
-    <path class="body-fill" d="M 106 60 L 124 60 L 123 73 L 107 73 Z"/>
-    <!-- Bras tenant la barre (coudes hauts, mains sur barre) -->
-    <path class="body-fill" d="M 88 75 Q 78 70 70 78 L 65 88 Q 72 92 82 90 Z"/>
-    <path class="body-fill" d="M 142 75 Q 152 70 160 78 L 165 88 Q 158 92 148 90 Z"/>
-    <path class="body-fill" d="M 70 78 L 60 75 L 50 78 L 55 85 L 65 85 Z"/>
-    <path class="body-fill" d="M 160 78 L 170 75 L 180 78 L 175 85 L 165 85 Z"/>
-    <!-- Torse incliné légèrement vers l'avant -->
-    <path class="body-fill" d="M 88 75 Q 84 110 92 142 L 138 142 Q 146 110 142 75 Q 130 70 115 70 Q 100 70 88 75 Z"/>
-    <!-- Bassin/hanches -->
-    <path class="body-fill" d="M 92 142 Q 86 165 98 178 L 132 178 Q 144 165 138 142 Z"/>
-    <!-- Cuisse gauche (squat: vers l'avant et bas) -->
-    <path class="body-fill" d="M 98 178 Q 78 200 88 222 L 110 220 Q 116 195 110 178 Z"/>
-    <!-- Cuisse droite (cachée 3/4) -->
-    <path class="body-fill" d="M 132 178 Q 152 200 142 222 L 120 220 Q 114 195 120 178 Z" opacity="0.7"/>
-    <!-- Tibia gauche -->
-    <path class="body-fill" d="M 84 222 L 110 222 L 108 290 L 86 290 Z"/>
-    <!-- Tibia droit -->
-    <path class="body-fill" d="M 120 222 L 146 222 L 144 290 L 122 290 Z" opacity="0.7"/>
-    <!-- Pieds -->
-    <ellipse class="body-fill" cx="97" cy="294" rx="16" ry="5"/>
-    <ellipse class="body-fill" cx="133" cy="294" rx="16" ry="5" opacity="0.7"/>
-    <line class="body-detail" x1="15" y1="299" x2="215" y2="299"/>
-    <!-- MUSCLES -->
-    <ellipse data-m="quad" cx="97" cy="200" rx="13" ry="22"/>
-    <ellipse data-m="quad" cx="133" cy="200" rx="13" ry="22" opacity="0.7"/>
-    <path data-m="glute" d="M 90 142 Q 84 162 98 175 L 132 175 Q 146 162 140 142 Z"/>
-    <path data-m="hams" d="M 86 222 L 110 222 L 108 252 L 88 252 Z"/>
-    <path data-m="hams" d="M 122 222 L 144 222 L 142 252 L 124 252 Z" opacity="0.7"/>
-    <ellipse data-m="calf" cx="97" cy="270" rx="9" ry="14"/>
-    <ellipse data-m="calf" cx="133" cy="270" rx="9" ry="14" opacity="0.7"/>
-    <ellipse data-m="adductor" cx="115" cy="200" rx="7" ry="20"/>
-    <path data-m="lower-back" d="M 95 130 L 135 130 L 134 162 L 96 162 Z"/>
-    <path data-m="abs" d="M 100 88 L 130 88 L 128 140 L 102 140 Z"/>
-    <path data-m="traps" d="M 92 75 L 138 75 L 134 90 L 96 90 Z"/>
-    <ellipse data-m="delt-f" cx="80" cy="82" rx="10" ry="11"/>
-    <ellipse data-m="delt-f" cx="150" cy="82" rx="10" ry="11"/>
-    <ellipse data-m="forearm" cx="55" cy="80" rx="8" ry="6"/>
-    <ellipse data-m="forearm" cx="175" cy="80" rx="8" ry="6"/>
-  </svg>`,
-
-  // ─── HIP HINGE (deadlift / RDL) — buste penché en avant ───
-  hinge: `<svg viewBox="0 0 280 340" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="140" cy="320" rx="70" ry="6" opacity="0.3"/>
-    <!-- Tête en avant -->
-    <circle class="body-fill" cx="60" cy="115" r="14"/>
-    <!-- Cou -->
-    <path class="body-fill" d="M 70 122 L 78 132 L 70 138 L 62 130 Z"/>
-    <!-- Torse penché ~80° -->
-    <path class="body-fill" d="M 75 130 Q 100 120 175 130 Q 178 152 178 168 Q 165 178 95 178 Q 78 168 75 130 Z"/>
-    <!-- Bras pendants verticaux tenant la barre -->
-    <path class="body-fill" d="M 100 175 L 95 220 L 105 222 L 110 175 Z"/>
-    <path class="body-fill" d="M 165 175 L 160 220 L 170 222 L 175 175 Z"/>
-    <!-- Mains sur barre -->
-    <ellipse class="body-fill" cx="100" cy="225" rx="8" ry="7"/>
-    <ellipse class="body-fill" cx="165" cy="225" rx="8" ry="7"/>
-    <!-- Barre + plates -->
-    <line class="equip-bar" x1="50" y1="232" x2="220" y2="232" stroke-width="3"/>
-    <circle class="equip" cx="48" cy="232" r="11"/>
-    <circle class="equip" cx="222" cy="232" r="11"/>
-    <rect class="equip" x="36" y="218" width="8" height="28" rx="1"/>
-    <rect class="equip" x="226" y="218" width="8" height="28" rx="1"/>
-    <!-- Hanches -->
-    <path class="body-fill" d="M 175 130 Q 195 138 200 165 L 210 175 Q 218 165 218 145 Q 200 125 175 130 Z"/>
-    <!-- Cuisses (presque verticales avec léger fléchissement) -->
-    <path class="body-fill" d="M 195 168 Q 200 230 196 280 L 218 280 Q 224 230 218 168 Z"/>
-    <!-- Genoux -->
-    <path class="body-fill" d="M 196 280 L 218 280 L 218 290 L 196 290 Z"/>
-    <!-- Tibias -->
-    <path class="body-fill" d="M 198 290 L 218 290 L 220 295 L 196 295 Z"/>
-    <!-- Pieds -->
-    <ellipse class="body-fill" cx="208" cy="298" rx="22" ry="5"/>
-    <line class="body-detail" x1="20" y1="302" x2="260" y2="302"/>
-    <!-- MUSCLES -->
-    <path data-m="lower-back" d="M 90 132 Q 130 125 170 132 L 168 162 Q 130 158 92 162 Z"/>
-    <path data-m="glute" d="M 175 130 Q 200 138 210 165 L 215 145 Q 198 125 175 130 Z"/>
-    <ellipse data-m="hams" cx="207" cy="220" rx="13" ry="40"/>
-    <ellipse data-m="quad" cx="207" cy="220" rx="13" ry="40" opacity="0.6"/>
-    <path data-m="lats" d="M 95 132 L 110 132 L 108 168 L 92 168 Z"/>
-    <path data-m="lats" d="M 160 132 L 175 132 L 175 168 L 158 168 Z"/>
-    <path data-m="traps" d="M 78 128 Q 130 122 175 130 L 175 145 Q 130 138 80 145 Z"/>
-    <path data-m="rhomb" d="M 100 132 L 165 132 L 165 158 L 100 158 Z"/>
-    <ellipse data-m="biceps" cx="103" cy="195" rx="7" ry="20"/>
-    <ellipse data-m="biceps" cx="168" cy="195" rx="7" ry="20"/>
-    <ellipse data-m="forearm" cx="103" cy="220" rx="6" ry="14"/>
-    <ellipse data-m="forearm" cx="168" cy="220" rx="6" ry="14"/>
-    <ellipse data-m="delt-r" cx="78" cy="135" rx="9" ry="9"/>
-    <ellipse data-m="delt-r" cx="178" cy="138" rx="9" ry="9"/>
-    <ellipse data-m="calf" cx="208" cy="293" rx="9" ry="6"/>
-  </svg>`,
-
-  // ─── LUNGE (fente) ───
-  lunge: `<svg viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="130" cy="320" rx="100" ry="5" opacity="0.3"/>
-    <circle class="body-fill" cx="130" cy="48" r="14"/>
-    <path class="body-fill" d="M 121 60 L 139 60 L 138 73 L 122 73 Z"/>
-    <!-- Torse vertical -->
-    <path class="body-fill" d="M 105 73 Q 102 110 108 148 L 152 148 Q 158 110 155 73 Q 144 68 130 68 Q 116 68 105 73 Z"/>
-    <!-- Bras le long du corps -->
-    <path class="body-fill" d="M 105 78 L 88 80 L 78 145 L 90 148 L 100 110 Z"/>
-    <path class="body-fill" d="M 155 78 L 172 80 L 182 145 L 170 148 L 160 110 Z"/>
-    <ellipse class="body-fill" cx="84" cy="155" rx="7" ry="10"/>
-    <ellipse class="body-fill" cx="176" cy="155" rx="7" ry="10"/>
-    <!-- Bassin -->
-    <path class="body-fill" d="M 108 148 Q 102 168 114 178 L 146 178 Q 158 168 152 148 Z"/>
-    <!-- JAMBE AVANT (gauche, fléchie) -->
-    <path class="body-fill" d="M 114 178 Q 80 200 70 222 L 90 232 Q 105 205 116 178 Z"/>
-    <!-- Tibia avant (vertical) -->
-    <path class="body-fill" d="M 70 232 L 92 232 L 90 290 L 72 290 Z"/>
-    <ellipse class="body-fill" cx="82" cy="294" rx="14" ry="4"/>
-    <!-- JAMBE ARRIÈRE (droite, étirée vers arrière) -->
-    <path class="body-fill" d="M 146 178 Q 168 200 178 220 L 160 230 Q 148 200 144 178 Z"/>
-    <!-- Tibia arrière (oblique) -->
-    <path class="body-fill" d="M 178 220 L 198 232 L 200 285 L 188 290 Z"/>
-    <ellipse class="body-fill" cx="195" cy="294" rx="12" ry="4"/>
-    <line class="body-detail" x1="20" y1="299" x2="240" y2="299"/>
-    <!-- MUSCLES -->
-    <ellipse data-m="quad" cx="92" cy="200" rx="13" ry="22"/>
-    <ellipse data-m="quad" cx="80" cy="262" rx="9" ry="22" opacity="0.7"/>
-    <ellipse data-m="hams" cx="170" cy="205" rx="11" ry="20"/>
-    <path data-m="glute" d="M 110 148 Q 104 168 116 178 L 144 178 Q 156 168 150 148 Z"/>
-    <ellipse data-m="calf" cx="82" cy="275" rx="8" ry="14"/>
-    <ellipse data-m="calf" cx="195" cy="275" rx="7" ry="11" opacity="0.7"/>
-    <ellipse data-m="adductor" cx="130" cy="200" rx="7" ry="20"/>
-    <path data-m="abs" d="M 115 92 L 145 92 L 142 145 L 118 145 Z"/>
-    <path data-m="lower-back" d="M 112 130 L 148 130 L 148 160 L 112 160 Z"/>
-  </svg>`,
-
-  // ─── BENCH PRESS (lying on back, side view) ───
-  bench: `<svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
-    <!-- Banc -->
-    <rect class="equip" x="40" y="135" width="240" height="22" rx="3"/>
-    <rect class="equip" x="60" y="157" width="10" height="50"/>
-    <rect class="equip" x="250" y="157" width="10" height="50"/>
-    <line class="body-detail" x1="20" y1="210" x2="300" y2="210"/>
-    <!-- Tête à gauche -->
-    <circle class="body-fill" cx="65" cy="120" r="15"/>
-    <path class="body-fill" d="M 78 122 L 90 116 L 92 130 L 80 132 Z"/>
-    <!-- Torse allongé -->
-    <path class="body-fill" d="M 90 115 Q 130 108 200 112 Q 210 122 210 132 Q 130 138 90 132 Z"/>
-    <!-- Hanches -->
-    <path class="body-fill" d="M 200 112 Q 230 110 240 122 L 240 134 Q 220 138 200 134 Z"/>
-    <!-- Jambes pliées (genoux relevés) -->
-    <path class="body-fill" d="M 240 122 Q 270 118 280 130 L 280 145 Q 260 142 240 138 Z"/>
-    <path class="body-fill" d="M 270 130 Q 285 110 280 100 L 270 95 Q 265 115 268 130 Z"/>
-    <ellipse class="body-fill" cx="270" cy="92" rx="6" ry="4"/>
-    <!-- Bras LEVÉS verticaux poussant la barre -->
-    <path class="body-fill" d="M 130 110 L 124 60 L 134 58 L 138 110 Z"/>
-    <path class="body-fill" d="M 170 110 L 164 60 L 174 58 L 178 110 Z"/>
-    <!-- Mains tenant barre -->
-    <ellipse class="body-fill" cx="129" cy="55" rx="6" ry="6"/>
-    <ellipse class="body-fill" cx="170" cy="55" rx="6" ry="6"/>
-    <!-- Barre -->
-    <line class="equip-bar" x1="40" y1="48" x2="260" y2="48" stroke-width="3"/>
-    <circle class="equip" cx="38" cy="48" r="10"/>
-    <circle class="equip" cx="262" cy="48" r="10"/>
-    <rect class="equip" x="26" y="34" width="8" height="28" rx="1"/>
-    <rect class="equip" x="266" y="34" width="8" height="28" rx="1"/>
-    <!-- MUSCLES -->
-    <ellipse data-m="pec" cx="130" cy="120" rx="32" ry="11"/>
-    <ellipse data-m="pec" cx="170" cy="120" rx="22" ry="11"/>
-    <ellipse data-m="delt-f" cx="105" cy="115" rx="10" ry="9"/>
-    <ellipse data-m="triceps" cx="125" cy="80" rx="6" ry="20"/>
-    <ellipse data-m="triceps" cx="170" cy="80" rx="6" ry="20"/>
-    <ellipse data-m="biceps" cx="135" cy="80" rx="5" ry="20"/>
-    <ellipse data-m="biceps" cx="174" cy="80" rx="5" ry="20"/>
-    <path data-m="abs" d="M 130 124 L 200 124 L 198 134 L 130 134 Z"/>
-    <ellipse data-m="forearm" cx="129" cy="55" rx="6" ry="10"/>
-    <ellipse data-m="forearm" cx="170" cy="55" rx="6" ry="10"/>
-  </svg>`,
-
-  // ─── PULL-UP (suspension à la barre, vue de face) ───
-  pullup: `<svg viewBox="0 0 220 360" xmlns="http://www.w3.org/2000/svg">
-    <!-- Barre fixe -->
-    <line class="equip-bar" x1="15" y1="35" x2="205" y2="35" stroke-width="4"/>
-    <rect class="equip" x="15" y="0" width="6" height="40"/>
-    <rect class="equip" x="199" y="0" width="6" height="40"/>
-    <!-- Mains agrippant la barre -->
-    <ellipse class="body-fill" cx="80" cy="38" rx="8" ry="7"/>
-    <ellipse class="body-fill" cx="140" cy="38" rx="8" ry="7"/>
-    <!-- Bras tendus levés -->
-    <path class="body-fill" d="M 76 40 L 70 130 L 88 130 L 90 40 Z"/>
-    <path class="body-fill" d="M 132 40 L 130 130 L 148 130 L 144 40 Z"/>
-    <!-- Tête -->
-    <circle class="body-fill" cx="110" cy="115" r="14"/>
-    <path class="body-fill" d="M 101 127 L 119 127 L 118 138 L 102 138 Z"/>
-    <!-- Torse -->
-    <path class="body-fill" d="M 78 138 Q 76 175 82 215 L 138 215 Q 144 175 142 138 Q 130 134 110 134 Q 90 134 78 138 Z"/>
-    <!-- Bassin / hanches -->
-    <path class="body-fill" d="M 82 215 Q 78 232 90 240 L 130 240 Q 142 232 138 215 Z"/>
-    <!-- Jambes ensemble (genoux légèrement pliés) -->
-    <path class="body-fill" d="M 92 240 Q 88 285 94 320 L 108 320 L 110 240 Z"/>
-    <path class="body-fill" d="M 128 240 Q 132 285 126 320 L 112 320 L 110 240 Z"/>
-    <ellipse class="body-fill" cx="100" cy="324" rx="9" ry="4"/>
-    <ellipse class="body-fill" cx="120" cy="324" rx="9" ry="4"/>
-    <!-- MUSCLES -->
-    <path data-m="lats" d="M 78 145 Q 72 170 78 200 L 90 200 L 90 145 Z"/>
-    <path data-m="lats" d="M 142 145 Q 148 170 142 200 L 130 200 L 130 145 Z"/>
-    <ellipse data-m="biceps" cx="79" cy="80" rx="7" ry="22"/>
-    <ellipse data-m="biceps" cx="141" cy="80" rx="7" ry="22"/>
-    <ellipse data-m="forearm" cx="80" cy="50" rx="8" ry="14"/>
-    <ellipse data-m="forearm" cx="140" cy="50" rx="8" ry="14"/>
-    <path data-m="traps" d="M 90 138 L 130 138 L 128 152 L 92 152 Z"/>
-    <path data-m="rhomb" d="M 92 152 L 128 152 L 128 175 L 92 175 Z"/>
-    <path data-m="abs" d="M 95 150 L 125 150 L 125 215 L 95 215 Z"/>
-    <ellipse data-m="delt-l" cx="86" cy="142" rx="8" ry="8"/>
-    <ellipse data-m="delt-l" cx="134" cy="142" rx="8" ry="8"/>
-    <path data-m="oblique" d="M 80 155 L 95 155 L 94 215 L 82 213 Z"/>
-    <path data-m="oblique" d="M 125 155 L 140 155 L 138 213 L 126 215 Z"/>
-  </svg>`,
-
-  // ─── ROW (rowing penché) ───
-  row: `<svg viewBox="0 0 280 320" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="140" cy="305" rx="80" ry="5" opacity="0.3"/>
-    <!-- Tête en avant -->
-    <circle class="body-fill" cx="68" cy="105" r="14"/>
-    <!-- Torse penché ~60° -->
-    <path class="body-fill" d="M 80 118 Q 110 110 180 122 Q 188 142 184 158 Q 110 168 90 165 Q 78 142 80 118 Z"/>
-    <!-- Bras tirant en arrière (coudes hauts) -->
-    <path class="body-fill" d="M 95 118 L 80 95 L 90 90 L 105 115 Z"/>
-    <path class="body-fill" d="M 95 105 L 75 100 L 70 110 L 88 118 Z"/>
-    <ellipse class="body-fill" cx="70" cy="106" rx="6" ry="6"/>
-    <!-- Hanches -->
-    <path class="body-fill" d="M 180 122 Q 200 130 208 158 L 215 175 Q 220 158 215 138 Q 200 118 180 122 Z"/>
-    <!-- Jambes (légèrement pliées, on voit une jambe) -->
-    <path class="body-fill" d="M 200 165 Q 208 220 206 270 L 222 270 Q 226 220 220 165 Z"/>
-    <path class="body-fill" d="M 206 270 L 222 270 L 220 280 L 206 280 Z"/>
-    <ellipse class="body-fill" cx="214" cy="290" rx="14" ry="5"/>
-    <!-- Barre haltère sous bras -->
-    <line class="equip-bar" x1="40" y1="135" x2="100" y2="135" stroke-width="3"/>
-    <circle class="equip" cx="40" cy="135" r="9"/>
-    <!-- MUSCLES -->
-    <path data-m="lats" d="M 88 122 Q 84 145 88 162 L 105 162 L 105 122 Z"/>
-    <path data-m="lats" d="M 168 130 Q 172 152 168 165 L 152 165 L 152 130 Z"/>
-    <path data-m="rhomb" d="M 105 122 L 168 130 L 168 155 L 105 155 Z"/>
-    <path data-m="traps" d="M 80 118 Q 130 112 180 122 L 178 132 Q 130 125 82 132 Z"/>
-    <path data-m="lower-back" d="M 110 145 L 178 152 L 178 165 L 110 162 Z"/>
-    <ellipse data-m="biceps" cx="89" cy="105" rx="7" ry="14"/>
-    <ellipse data-m="forearm" cx="78" cy="100" rx="7" ry="9"/>
-    <ellipse data-m="delt-r" cx="92" cy="118" rx="9" ry="9"/>
-    <path data-m="glute" d="M 184 122 Q 200 130 210 158 L 215 138 Q 200 118 184 122 Z"/>
-    <ellipse data-m="hams" cx="212" cy="220" rx="11" ry="32"/>
-  </svg>`,
-
-  // ─── PRESS (overhead press, vue de face) ───
-  press: `<svg viewBox="0 0 240 360" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="120" cy="338" rx="60" ry="5" opacity="0.3"/>
-    <!-- Barre au-dessus de la tête -->
-    <line class="equip-bar" x1="40" y1="40" x2="200" y2="40" stroke-width="3"/>
-    <circle class="equip" cx="38" cy="40" r="10"/>
-    <circle class="equip" cx="202" cy="40" r="10"/>
-    <rect class="equip" x="26" y="26" width="8" height="28" rx="1"/>
-    <rect class="equip" x="206" y="26" width="8" height="28" rx="1"/>
-    <ellipse class="body-fill" cx="80" cy="44" rx="7" ry="6"/>
-    <ellipse class="body-fill" cx="160" cy="44" rx="7" ry="6"/>
-    <!-- Bras tendus vers le haut -->
-    <path class="body-fill" d="M 76 48 L 78 110 L 92 110 L 88 48 Z"/>
-    <path class="body-fill" d="M 152 48 L 148 110 L 162 110 L 164 48 Z"/>
-    <!-- Tête -->
-    <circle class="body-fill" cx="120" cy="78" r="15"/>
-    <path class="body-fill" d="M 110 91 L 130 91 L 129 105 L 111 105 Z"/>
-    <!-- Torse -->
-    <path class="body-fill" d="M 88 105 Q 84 145 90 185 L 150 185 Q 156 145 152 105 Q 138 100 120 100 Q 102 100 88 105 Z"/>
-    <!-- Hanches -->
-    <path class="body-fill" d="M 90 185 Q 86 205 96 215 L 144 215 Q 154 205 150 185 Z"/>
-    <!-- Jambes -->
-    <path class="body-fill" d="M 96 215 Q 92 270 100 320 L 116 320 Q 118 270 116 215 Z"/>
-    <path class="body-fill" d="M 144 215 Q 148 270 140 320 L 124 320 Q 122 270 124 215 Z"/>
-    <ellipse class="body-fill" cx="108" cy="328" rx="13" ry="4"/>
-    <ellipse class="body-fill" cx="132" cy="328" rx="13" ry="4"/>
-    <!-- MUSCLES -->
-    <ellipse data-m="delt-f" cx="86" cy="108" rx="11" ry="11"/>
-    <ellipse data-m="delt-f" cx="154" cy="108" rx="11" ry="11"/>
-    <ellipse data-m="delt-l" cx="76" cy="108" rx="7" ry="11"/>
-    <ellipse data-m="delt-l" cx="164" cy="108" rx="7" ry="11"/>
-    <ellipse data-m="triceps" cx="80" cy="78" rx="8" ry="22"/>
-    <ellipse data-m="triceps" cx="160" cy="78" rx="8" ry="22"/>
-    <ellipse data-m="biceps" cx="80" cy="78" rx="8" ry="22"/>
-    <ellipse data-m="biceps" cx="160" cy="78" rx="8" ry="22"/>
-    <path data-m="traps" d="M 96 100 L 144 100 L 142 118 L 98 118 Z"/>
-    <path data-m="pec" d="M 92 110 Q 100 130 118 132 L 122 132 Q 140 130 148 110 Q 134 105 120 105 Q 106 105 92 110 Z"/>
-    <path data-m="abs" d="M 105 130 L 135 130 L 133 185 L 107 185 Z"/>
-    <ellipse data-m="forearm" cx="82" cy="55" rx="7" ry="10"/>
-    <ellipse data-m="forearm" cx="158" cy="55" rx="7" ry="10"/>
-  </svg>`,
-
-  // ─── CURL (vue de face, biceps) ───
-  curl: `<svg viewBox="0 0 240 360" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="120" cy="338" rx="60" ry="5" opacity="0.3"/>
-    <circle class="body-fill" cx="120" cy="50" r="15"/>
-    <path class="body-fill" d="M 110 64 L 130 64 L 129 78 L 111 78 Z"/>
-    <!-- Torse -->
-    <path class="body-fill" d="M 90 78 Q 86 120 92 165 L 148 165 Q 154 120 150 78 Q 138 73 120 73 Q 102 73 90 78 Z"/>
-    <!-- Épaule + bras supérieur (pendant) -->
-    <path class="body-fill" d="M 90 80 L 76 85 L 70 145 L 84 148 Z"/>
-    <path class="body-fill" d="M 150 80 L 164 85 L 170 145 L 156 148 Z"/>
-    <!-- Avant-bras curlés vers la poitrine -->
-    <path class="body-fill" d="M 70 145 Q 90 130 105 110 L 95 100 Q 80 120 65 140 Z"/>
-    <path class="body-fill" d="M 170 145 Q 150 130 135 110 L 145 100 Q 160 120 175 140 Z"/>
-    <ellipse class="body-fill" cx="100" cy="105" rx="6" ry="5"/>
-    <ellipse class="body-fill" cx="140" cy="105" rx="6" ry="5"/>
-    <!-- Haltères -->
-    <rect class="equip" x="92" y="98" width="6" height="14" rx="1"/>
-    <rect class="equip" x="142" y="98" width="6" height="14" rx="1"/>
-    <!-- Hanches & jambes -->
-    <path class="body-fill" d="M 92 165 Q 88 185 98 195 L 142 195 Q 152 185 148 165 Z"/>
-    <path class="body-fill" d="M 98 195 Q 94 250 102 320 L 116 320 Q 118 250 116 195 Z"/>
-    <path class="body-fill" d="M 142 195 Q 146 250 138 320 L 124 320 Q 122 250 124 195 Z"/>
-    <ellipse class="body-fill" cx="108" cy="328" rx="13" ry="4"/>
-    <ellipse class="body-fill" cx="132" cy="328" rx="13" ry="4"/>
-    <!-- MUSCLES (biceps en evidence) -->
-    <ellipse data-m="biceps" cx="76" cy="115" rx="8" ry="22"/>
-    <ellipse data-m="biceps" cx="164" cy="115" rx="8" ry="22"/>
-    <ellipse data-m="forearm" cx="85" cy="125" rx="9" ry="22"/>
-    <ellipse data-m="forearm" cx="155" cy="125" rx="9" ry="22"/>
-    <ellipse data-m="triceps" cx="76" cy="115" rx="8" ry="22"/>
-    <ellipse data-m="triceps" cx="164" cy="115" rx="8" ry="22"/>
-    <path data-m="pec" d="M 92 80 Q 102 100 118 102 L 122 102 Q 138 100 148 80 Q 134 75 120 75 Q 106 75 92 80 Z"/>
-    <path data-m="abs" d="M 105 105 L 135 105 L 133 165 L 107 165 Z"/>
-    <ellipse data-m="delt-f" cx="86" cy="85" rx="10" ry="11"/>
-    <ellipse data-m="delt-f" cx="154" cy="85" rx="10" ry="11"/>
-    <path data-m="traps" d="M 96 75 L 144 75 L 142 92 L 98 92 Z"/>
-  </svg>`,
-
-  // ─── LATERAL RAISE (élévations latérales) ───
-  lateral: `<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
-    <ellipse class="body-detail" cx="160" cy="305" rx="60" ry="5" opacity="0.3"/>
-    <circle class="body-fill" cx="160" cy="60" r="14"/>
-    <path class="body-fill" d="M 151 72 L 169 72 L 168 84 L 152 84 Z"/>
-    <path class="body-fill" d="M 130 84 Q 126 125 132 168 L 188 168 Q 194 125 190 84 Q 178 80 160 80 Q 142 80 130 84 Z"/>
-    <!-- Bras levés latéralement -->
-    <path class="body-fill" d="M 130 87 L 70 110 L 78 122 L 132 100 Z"/>
-    <path class="body-fill" d="M 190 87 L 250 110 L 242 122 L 188 100 Z"/>
-    <!-- Mains tenant haltères -->
-    <ellipse class="body-fill" cx="65" cy="113" rx="7" ry="6"/>
-    <ellipse class="body-fill" cx="255" cy="113" rx="7" ry="6"/>
-    <rect class="equip" x="50" y="106" width="14" height="14" rx="2"/>
-    <rect class="equip" x="256" y="106" width="14" height="14" rx="2"/>
-    <!-- Bassin -->
-    <path class="body-fill" d="M 132 168 Q 128 188 138 198 L 182 198 Q 192 188 188 168 Z"/>
-    <!-- Jambes -->
-    <path class="body-fill" d="M 138 198 Q 134 250 144 290 L 156 290 Q 158 250 156 198 Z"/>
-    <path class="body-fill" d="M 182 198 Q 186 250 176 290 L 164 290 Q 162 250 164 198 Z"/>
-    <ellipse class="body-fill" cx="148" cy="298" rx="11" ry="4"/>
-    <ellipse class="body-fill" cx="172" cy="298" rx="11" ry="4"/>
-    <!-- MUSCLES -->
-    <ellipse data-m="delt-l" cx="120" cy="100" rx="11" ry="13"/>
-    <ellipse data-m="delt-l" cx="200" cy="100" rx="11" ry="13"/>
-    <ellipse data-m="delt-f" cx="130" cy="92" rx="9" ry="9"/>
-    <ellipse data-m="delt-f" cx="190" cy="92" rx="9" ry="9"/>
-    <ellipse data-m="delt-r" cx="130" cy="92" rx="9" ry="9" opacity="0.7"/>
-    <ellipse data-m="delt-r" cx="190" cy="92" rx="9" ry="9" opacity="0.7"/>
-    <path data-m="traps" d="M 138 80 L 182 80 L 180 95 L 140 95 Z"/>
-    <ellipse data-m="biceps" cx="92" cy="106" rx="9" ry="6"/>
-    <ellipse data-m="biceps" cx="228" cy="106" rx="9" ry="6"/>
-    <ellipse data-m="forearm" cx="72" cy="115" rx="7" ry="6"/>
-    <ellipse data-m="forearm" cx="248" cy="115" rx="7" ry="6"/>
-    <path data-m="pec" d="M 134 86 Q 142 105 158 108 L 162 108 Q 178 105 186 86 Z"/>
-    <path data-m="abs" d="M 145 110 L 175 110 L 173 168 L 147 168 Z"/>
-  </svg>`,
-
-  // ─── PUSHUP (pompe vue de profil) ───
-  pushup: `<svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
-    <line class="body-detail" x1="20" y1="170" x2="300" y2="170"/>
-    <circle class="body-fill" cx="60" cy="80" r="14"/>
-    <path class="body-fill" d="M 73 84 L 88 88 L 86 100 L 72 96 Z"/>
-    <!-- Corps allongé incliné -->
-    <path class="body-fill" d="M 78 88 Q 130 78 220 90 Q 240 92 250 100 Q 240 110 220 112 Q 130 102 78 100 Z"/>
-    <!-- Bras tendus vers le sol -->
-    <path class="body-fill" d="M 95 100 L 86 158 L 100 162 L 105 100 Z"/>
-    <ellipse class="body-fill" cx="92" cy="162" rx="10" ry="6"/>
-    <!-- Jambes -->
-    <path class="body-fill" d="M 240 100 Q 270 90 280 96 L 282 108 Q 270 110 240 110 Z"/>
-    <ellipse class="body-fill" cx="285" cy="103" rx="10" ry="5"/>
-    <path class="body-fill" d="M 230 110 Q 252 156 264 162 L 270 158 Q 250 152 240 110 Z"/>
-    <!-- MUSCLES -->
-    <ellipse data-m="pec" cx="120" cy="92" rx="32" ry="9"/>
-    <ellipse data-m="delt-f" cx="92" cy="100" rx="11" ry="9"/>
-    <ellipse data-m="triceps" cx="92" cy="125" rx="7" ry="22"/>
-    <path data-m="abs" d="M 130 92 L 220 95 L 220 105 L 130 102 Z"/>
-    <path data-m="lower-back" d="M 200 92 L 240 95 L 240 105 L 200 102 Z"/>
-    <ellipse data-m="quad" cx="245" cy="103" rx="22" ry="9"/>
-    <path data-m="glute" d="M 215 90 Q 240 88 250 95 L 250 102 Q 230 102 215 100 Z"/>
-  </svg>`,
-
-  // ─── FLY (écarté couché) ───
-  fly: `<svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
-    <rect class="equip" x="40" y="155" width="240" height="22" rx="3"/>
-    <rect class="equip" x="60" y="177" width="10" height="50"/>
-    <rect class="equip" x="250" y="177" width="10" height="50"/>
-    <line class="body-detail" x1="20" y1="230" x2="300" y2="230"/>
-    <circle class="body-fill" cx="65" cy="140" r="14"/>
-    <path class="body-fill" d="M 78 142 L 92 138 L 90 152 L 80 152 Z"/>
-    <path class="body-fill" d="M 90 135 Q 130 128 200 132 Q 210 142 210 152 Q 130 158 90 152 Z"/>
-    <path class="body-fill" d="M 200 132 Q 230 130 240 142 L 240 154 Q 220 158 200 154 Z"/>
-    <path class="body-fill" d="M 240 142 Q 270 138 280 152 L 280 165 Q 260 162 240 158 Z"/>
-    <ellipse class="body-fill" cx="285" cy="155" rx="10" ry="5"/>
-    <!-- Bras écartés (haltères) -->
-    <path class="body-fill" d="M 130 130 Q 90 90 70 80 L 75 70 Q 100 80 138 122 Z"/>
-    <path class="body-fill" d="M 170 130 Q 210 90 230 80 L 225 70 Q 200 80 162 122 Z"/>
-    <ellipse class="body-fill" cx="68" cy="76" rx="7" ry="6"/>
-    <ellipse class="body-fill" cx="232" cy="76" rx="7" ry="6"/>
-    <rect class="equip" x="58" y="68" width="14" height="14" rx="2"/>
-    <rect class="equip" x="228" y="68" width="14" height="14" rx="2"/>
-    <!-- MUSCLES -->
-    <ellipse data-m="pec" cx="130" cy="142" rx="32" ry="11"/>
-    <ellipse data-m="pec" cx="170" cy="142" rx="22" ry="11"/>
-    <ellipse data-m="delt-f" cx="115" cy="135" rx="11" ry="9"/>
-    <ellipse data-m="delt-f" cx="185" cy="135" rx="11" ry="9"/>
-    <ellipse data-m="biceps" cx="100" cy="115" rx="6" ry="20"/>
-    <ellipse data-m="biceps" cx="200" cy="115" rx="6" ry="20"/>
-    <ellipse data-m="forearm" cx="78" cy="92" rx="6" ry="14"/>
-    <ellipse data-m="forearm" cx="222" cy="92" rx="6" ry="14"/>
-    <path data-m="abs" d="M 130 145 L 200 145 L 200 154 L 130 154 Z"/>
-  </svg>`,
-
-  // ─── HIP THRUST (vue latérale, dos sur banc, hanches en haut) ───
-  hipthrust: `<svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
-    <line class="body-detail" x1="20" y1="220" x2="300" y2="220"/>
-    <!-- Banc -->
-    <rect class="equip" x="20" y="115" width="80" height="20" rx="2"/>
-    <rect class="equip" x="35" y="135" width="8" height="40"/>
-    <rect class="equip" x="78" y="135" width="8" height="40"/>
-    <!-- Tête sur le banc -->
-    <circle class="body-fill" cx="60" cy="105" r="13"/>
-    <!-- Torse à plat -->
-    <path class="body-fill" d="M 73 110 L 130 100 Q 145 100 155 110 L 155 130 Q 130 132 73 130 Z"/>
-    <!-- Hanches en HAUT -->
-    <path class="body-fill" d="M 155 110 Q 175 88 200 90 L 215 100 Q 215 122 195 130 Q 170 130 155 130 Z"/>
-    <!-- Cuisses descendant à 45° -->
-    <path class="body-fill" d="M 200 90 Q 230 110 240 140 L 222 152 Q 200 130 192 92 Z"/>
-    <!-- Tibias verticaux -->
-    <path class="body-fill" d="M 222 152 Q 230 188 232 215 L 248 215 Q 252 188 240 140 Z"/>
-    <ellipse class="body-fill" cx="240" cy="222" rx="14" ry="5"/>
-    <!-- Barre sur le bassin -->
-    <line class="equip-bar" x1="160" y1="92" x2="240" y2="92" stroke-width="3"/>
-    <circle class="equip" cx="158" cy="92" r="11"/>
-    <circle class="equip" cx="242" cy="92" r="11"/>
-    <rect class="equip" x="146" y="78" width="8" height="28" rx="1"/>
-    <rect class="equip" x="246" y="78" width="8" height="28" rx="1"/>
-    <!-- MUSCLES (fessiers en évidence) -->
-    <path data-m="glute" d="M 160 100 Q 180 88 200 90 L 215 100 Q 215 120 195 128 Q 170 128 160 122 Z"/>
-    <ellipse data-m="hams" cx="216" cy="125" rx="11" ry="20"/>
-    <ellipse data-m="quad" cx="232" cy="170" rx="11" ry="22"/>
-    <ellipse data-m="calf" cx="240" cy="200" rx="9" ry="14"/>
-    <path data-m="abs" d="M 100 110 L 155 110 L 155 130 L 100 130 Z"/>
-    <path data-m="lower-back" d="M 100 105 L 145 105 L 145 130 L 100 130 Z"/>
-  </svg>`,
-
-  // ─── PLANK / Core (vue latérale en gainage) ───
-  plank: `<svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg">
-    <line class="body-detail" x1="20" y1="170" x2="320" y2="170"/>
-    <circle class="body-fill" cx="55" cy="84" r="13"/>
-    <path class="body-fill" d="M 67 88 L 80 92 L 78 102 L 66 98 Z"/>
-    <!-- Corps long horizontal -->
-    <path class="body-fill" d="M 70 90 Q 130 82 230 90 Q 250 92 260 100 Q 240 108 230 108 Q 130 100 70 100 Z"/>
-    <!-- Avant-bras au sol (vertical court) -->
-    <path class="body-fill" d="M 75 100 L 75 162 L 95 162 L 92 100 Z"/>
-    <ellipse class="body-fill" cx="85" cy="166" rx="14" ry="4"/>
-    <!-- Jambes étendues -->
-    <path class="body-fill" d="M 230 100 Q 290 96 305 100 L 305 110 Q 290 113 230 110 Z"/>
-    <!-- Pieds -->
-    <path class="body-fill" d="M 295 110 Q 305 130 295 162 L 308 165 Q 318 130 308 102 Z"/>
-    <ellipse class="body-fill" cx="304" cy="166" rx="13" ry="5"/>
-    <!-- MUSCLES — core en évidence -->
-    <path data-m="abs" d="M 130 92 L 210 95 L 210 102 L 130 100 Z"/>
-    <path data-m="oblique" d="M 145 90 L 205 92 L 205 105 L 145 102 Z"/>
-    <path data-m="lower-back" d="M 145 92 L 220 95 L 220 100 L 145 98 Z"/>
-    <ellipse data-m="delt-f" cx="85" cy="105" rx="8" ry="9"/>
-    <ellipse data-m="forearm" cx="85" cy="135" rx="7" ry="22"/>
-    <ellipse data-m="pec" cx="105" cy="92" rx="20" ry="7"/>
-    <ellipse data-m="quad" cx="265" cy="100" rx="22" ry="7"/>
-    <path data-m="glute" d="M 215 90 Q 240 86 252 92 L 252 100 Q 230 100 215 98 Z"/>
-  </svg>`,
-};
-
-// Render a schematic SVG with active muscles highlighted in red
-function renderSchematic(pattern, primary, secondary){
-  const tplString = POSE_TEMPLATES[pattern] || POSE_TEMPLATES.stand;
-  // Parse string and inject classes for primary/secondary muscles
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(tplString, 'image/svg+xml');
-  const svg = doc.documentElement;
-
-  // Reorder: muscle elements need to be on top of body. Move them to end.
-  const muscleEls = Array.from(svg.querySelectorAll('[data-m]'));
-  const primarySet = new Set(primary || []);
-  const secondarySet = new Set(secondary || []);
-  muscleEls.forEach(el=>{
-    const m = el.getAttribute('data-m');
-    if(primarySet.has(m)){
-      el.setAttribute('class','muscle primary');
-      svg.appendChild(el);
-    } else if(secondarySet.has(m)){
-      el.setAttribute('class','muscle secondary');
-      svg.appendChild(el);
-    } else {
-      // Hide unused muscle overlays
-      el.setAttribute('class','muscle');
-      el.setAttribute('style','display:none');
-    }
-  });
-
-  return new XMLSerializer().serializeToString(svg);
-}
-
-
-// ══════════════════════════════════════════════
 // CALENDRIER ANNUEL & PLANIFICATION
 // ══════════════════════════════════════════════
 const SESSION_TYPES = {
@@ -2845,7 +2298,7 @@ function saveClimbingSession(){
   const blocks = Object.entries(currentClimbCounts)
     .filter(([_,c]) => c>0)
     .map(([l,c]) => ({level:parseInt(l), count:c}));
-  if(!blocks.length){ alert('Ajoute au moins un bloc'); return; }
+  if(!blocks.length){ toast('Ajoute au moins un bloc','warn'); return; }
   const total = blocks.reduce((s,b)=>s+b.count, 0);
   const maxLevel = Math.max(...blocks.map(b=>b.level));
   const session = {
@@ -2861,7 +2314,7 @@ function saveClimbingSession(){
   // Refresh UI partout
   if(typeof renderWeekEditor==='function') renderWeekEditor();
   if(typeof renderDashboard==='function') renderDashboard();
-  alert(`✓ Séance enregistrée : ${total} blocs (max ${CLIMB_NAMES[maxLevel]||'?'})`);
+  toast(`✓ Séance enregistrée : ${total} blocs (max ${CLIMB_NAMES[maxLevel]||'?'})`, 'success', 4000);
 }
 
 function renderClimbHistory(){
@@ -2895,8 +2348,8 @@ function removeExFromDay(dayIdx, exId){
   renderWeekEditor();
 }
 
-function clearWeek(){
-  if(!confirm('Vider toute la semaine ?')) return;
+async function clearWeek(){
+  if(!await confirmDialog('Vider toute la semaine ?', {danger:true, okLabel:'Vider'})) return;
   const empty = {days: Array(7).fill(null).map(()=>({type:'rest',exercises:[]}))};
   saveWeekPlan(selectedWeekKey, empty);
   renderWeekEditor();
@@ -2908,10 +2361,10 @@ function duplicatePreviousWeek(){
   const [y, wStr] = selectedWeekKey.split('-W');
   const wNum = parseInt(wStr);
   const prevKey = wNum>1 ? `${y}-W${String(wNum-1).padStart(2,'0')}` : null;
-  if(!prevKey){ alert('Pas de semaine précédente disponible'); return; }
+  if(!prevKey){ toast('Pas de semaine précédente disponible','warn'); return; }
   const all = getPlannings();
   const prev = all[prevKey];
-  if(!prev){ alert('La semaine précédente est vide'); return; }
+  if(!prev){ toast('La semaine précédente est vide','warn'); return; }
   saveWeekPlan(selectedWeekKey, JSON.parse(JSON.stringify(prev)));
   renderWeekEditor();
   renderCalendar();
@@ -2970,11 +2423,11 @@ function closeCopyWeekModal(){
   if(m) m.remove();
 }
 
-function copyFromWeek(sourceKey){
+async function copyFromWeek(sourceKey){
   const all = getPlannings();
   const source = all[sourceKey];
-  if(!source){ alert('Semaine source introuvable'); return; }
-  if(!confirm(`Copier le planning de ${sourceKey} vers ${selectedWeekKey} ?\n\nCela remplacera le contenu actuel de la semaine cible.`)) return;
+  if(!source){ toast('Semaine source introuvable','error'); return; }
+  if(!await confirmDialog(`Copier le planning de ${sourceKey} vers ${selectedWeekKey} ?\n\nCela remplacera le contenu actuel.`, {danger:true, okLabel:'Copier'})) return;
   saveWeekPlan(selectedWeekKey, JSON.parse(JSON.stringify(source)));
   closeCopyWeekModal();
   renderWeekEditor();
@@ -3187,7 +2640,7 @@ function closeAnalyze(){
 
 // Copie un résumé formaté pour le coller dans Claude Pro / ChatGPT / etc.
 function copyWeekForClaude(){
-  if(!selectedWeekKey){ alert('Sélectionne une semaine d\'abord'); return; }
+  if(!selectedWeekKey){ toast('Sélectionne une semaine d\'abord','warn'); return; }
   const plan = getWeekPlan(selectedWeekKey);
   const profile = state.prof;
   const days = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
@@ -3266,12 +2719,12 @@ function copyWeekForClaude(){
 function saveApiKey(){
   const k = document.getElementById('claude-api-key').value.trim();
   if(k) localStorage.setItem('claude_api_key', k);
-  alert('Clé sauvegardée localement.');
+  toast('✓ Clé sauvegardée localement','success');
 }
 
 async function analyzeWithClaude(){
   const key = localStorage.getItem('claude_api_key') || document.getElementById('claude-api-key').value.trim();
-  if(!key){ alert('Entre ta clé API Anthropic d\'abord (sk-ant-…).'); return; }
+  if(!key){ toast('Entre ta clé API Anthropic d\'abord (sk-ant-…)','warn',4000); return; }
   const plan = getWeekPlan(selectedWeekKey);
   const profile = state.prof;
   const summary = plan.days.map((d,i)=>{
@@ -3811,10 +3264,11 @@ function renderEscalade(){
   }
 }
 
-function deleteClimbingSession(id){
-  if(!confirm('Supprimer cette séance ?')) return;
+async function deleteClimbingSession(id){
+  if(!await confirmDialog('Supprimer cette séance ?', {danger:true, okLabel:'Supprimer'})) return;
   state.setClimbing(state.climbing.filter(s=>s.id!==id));
   renderEscalade();
+  toast('Séance supprimée','info');
 }
 
 // ══════════════════════════════════════════════
@@ -3883,7 +3337,7 @@ function saveRunningSession(){
   const sec = parseInt(document.getElementById('run-sec').value) || 0;
   const duration = min*60 + sec;
   if(dist <= 0 || duration <= 0){
-    alert('Entre une distance et une durée valides');
+    toast('Entre une distance et une durée valides','warn');
     return;
   }
   const session = {
@@ -3901,7 +3355,7 @@ function saveRunningSession(){
   closeRunningModal();
   renderCourse();
   if(typeof renderDashboard==='function') renderDashboard();
-  alert(`✓ Sortie enregistrée : ${dist} km en ${formatDuration(duration)} (${formatPace(duration/dist)}/km)`);
+  toast(`✓ Sortie : ${dist} km en ${formatDuration(duration)} · ${formatPace(duration/dist)}/km`,'success',4000);
 }
 
 function renderCourse(){
@@ -4004,10 +3458,11 @@ function renderCourse(){
   }
 }
 
-function deleteRunningSession(id){
-  if(!confirm('Supprimer cette sortie ?')) return;
+async function deleteRunningSession(id){
+  if(!await confirmDialog('Supprimer cette sortie ?', {danger:true, okLabel:'Supprimer'})) return;
   state.setRunning(state.running.filter(r=>r.id!==id));
   renderCourse();
+  toast('Sortie supprimée','info');
 }
 
 function celebratePR(exerciseName, prs){
@@ -4086,7 +3541,7 @@ function toggleSetDone(btn, exId){
     if(!w || !r){
       row.classList.remove('set-done');
       btn.textContent = '○';
-      alert('Entre le poids et les reps avant de valider la série');
+      toast('Entre le poids et les reps avant de valider la série','warn');
       return;
     }
     // 🚀 Démarre auto le timer de repos selon l'intensité
@@ -4132,7 +3587,7 @@ function updateLogger1RM(exId){
 
 function prefillLastWeights(exId){
   const last = state.exerciseWorkouts(exId)[0];
-  if(!last){ alert('Aucune séance précédente'); return; }
+  if(!last){ toast('Aucune séance précédente','info'); return; }
   document.querySelectorAll('.logger-row').forEach((row,i)=>{
     const s = last.sets[i] || {};
     row.querySelector('.logger-w').value = s.weight || '';
@@ -4150,7 +3605,7 @@ function saveLogger(exId){
     sets.push({weight: w, reps: r});
     if(w > 0 && r > 0) hasData = true;
   });
-  if(!hasData){ alert('Entre au moins une série avec poids et reps'); return; }
+  if(!hasData){ toast('Entre au moins une série avec poids et reps','warn'); return; }
 
   // 🏆 Détection PR AVANT save (pour comparer à l'historique actuel)
   const prs = detectPRs(exId, sets.filter(s=>s.weight>0 && s.reps>0));
@@ -4969,7 +4424,7 @@ function renderFoodTable(){
 // ══════════════════════════════════════════════
 function saveProgress(){
   const poids=parseFloat(document.getElementById('log-poids').value);
-  if(!poids){alert('Entrez un poids');return;}
+  if(!poids){toast('Entrez un poids','warn');return;}
   const entry={date:new Date().toISOString(),poids,poitrine:+document.getElementById('log-poitrine').value||0,bras:+document.getElementById('log-bras').value||0,custom:+document.getElementById('log-taille-cm').value||0};
   const d=[...state.progressData,entry];
   state.setProgress(d);
@@ -5012,9 +4467,12 @@ function renderProgressCharts(){
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8'}}},scales:{x:{ticks:{color:'#64748b'}},y:{ticks:{color:'#64748b'}}}}});
 }
 
-function clearProgress(){
-  if(!confirm(`Supprimer toutes les mesures de ${state.prof.name} ?`))return;
-  state.setProgress([]);renderProgressHistory();renderProgressCharts();
+async function clearProgress(){
+  if(!await confirmDialog(`Supprimer toutes les mesures de ${state.prof.name} ?`, {danger:true, okLabel:'Tout effacer'})) return;
+  state.setProgress([]);
+  renderProgressHistory();
+  renderProgressCharts();
+  toast('Mesures effacées','info');
 }
 
 // ══════════════════════════════════════════════
@@ -5227,6 +4685,111 @@ const cloud = {
   }
 };
 
+// ══════════════════════════════════════════════
+// TOAST + CONFIRM DIALOG — remplace alert() / confirm()
+// Non-blocking, propre, mobile-friendly
+// ══════════════════════════════════════════════
+function toast(msg, type='info', duration=3200){
+  let container = document.getElementById('toast-container');
+  if(!container){
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const el = document.createElement('div');
+  el.className = 'toast toast-'+type;
+  el.textContent = msg;
+  container.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('visible'));
+  setTimeout(()=>{
+    el.classList.remove('visible');
+    setTimeout(()=>el.remove(), 300);
+  }, duration);
+}
+
+function confirmDialog(message, options={}){
+  return new Promise(resolve=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    const danger = !!options.danger;
+    const okLabel = options.okLabel || (danger ? 'Confirmer' : 'OK');
+    const cancelLabel = options.cancelLabel || 'Annuler';
+    overlay.innerHTML = `
+      <div class="confirm-dialog" role="dialog">
+        <div class="confirm-msg">${message.replace(/\n/g,'<br>')}</div>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost btn-sm" data-act="0">${cancelLabel}</button>
+          <button class="btn ${danger?'btn-danger':'btn-primary'} btn-sm" data-act="1">${okLabel}</button>
+        </div>
+      </div>`;
+    overlay.addEventListener('click', e=>{
+      if(e.target === overlay){ done(false); }
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if(act === '1') done(true);
+      else if(act === '0') done(false);
+    });
+    function done(v){
+      overlay.classList.remove('visible');
+      setTimeout(()=>overlay.remove(), 200);
+      resolve(v);
+    }
+    document.body.appendChild(overlay);
+    requestAnimationFrame(()=>overlay.classList.add('visible'));
+  });
+}
+
+// ══════════════════════════════════════════════
+// EXPORT / IMPORT — backup JSON de toutes les données
+// ══════════════════════════════════════════════
+function exportAllData(){
+  const data = {
+    _exportedAt: new Date().toISOString(),
+    _appVersion: 'sportduo-v1',
+    _profiles: ['lui','alexandra']
+  };
+  let count = 0;
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('sp_')){ data[k] = localStorage.getItem(k); count++; }
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sportduo-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  toast(`✓ Backup téléchargé (${count} entrées)`, 'success');
+}
+
+async function importAllData(file){
+  if(!file) return;
+  const confirmed = await confirmDialog(
+    `Importer ${file.name} ?\n\nCela remplacera toutes les données locales actuelles (workouts, plannings, escalade, course, sync...).\n\nUn export de sécurité est recommandé avant.`,
+    {okLabel:'Importer', danger:true}
+  );
+  if(!confirmed) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if(!data._appVersion) throw new Error('Format non reconnu (clé _appVersion manquante)');
+    // Restore sp_ keys
+    let count = 0;
+    Object.keys(data).forEach(k=>{
+      if(k.startsWith('sp_') && data[k] != null){
+        localStorage.setItem(k, data[k]);
+        count++;
+      }
+    });
+    toast(`✓ ${count} entrées restaurées · rechargement...`, 'success');
+    setTimeout(()=>location.reload(), 1200);
+  } catch(err){
+    toast('❌ Import échoué : '+err.message, 'error', 5000);
+  }
+}
+
 // Debounced auto-sync : déclenché après chaque SS()
 let syncTimer = null;
 function scheduleSync(){
@@ -5281,7 +4844,7 @@ function updateSyncModalUI(){
 async function connectGistSync(){
   const token = document.getElementById('gist-token-input').value.trim();
   if(!token.startsWith('ghp_') && !token.startsWith('github_pat_')){
-    alert('Le token doit commencer par ghp_ ou github_pat_. Réessaie depuis github.com/settings/tokens.');
+    toast('Le token doit commencer par ghp_ ou github_pat_','error',5000);
     return;
   }
   cloud.token = token;
@@ -5292,17 +4855,22 @@ async function connectGistSync(){
     const existing = gists.find(g => g.files && (g.files[GIST_FILES.lui] || g.files[GIST_FILES.alexandra] || g.files[GIST_LEGACY_FILE]));
     if(existing){
       cloud.gistId = existing.id;
-      const wantPull = confirm('🎉 Données existantes trouvées sur ton Gist !\n\nVeux-tu les restaurer ici (RECOMMANDÉ si nouvel appareil) ?\n\n→ OK = remplacer les données locales par celles du cloud\n→ Annuler = garder les données locales et écraser le cloud');
+      const wantPull = await confirmDialog(
+        '🎉 Données existantes trouvées sur ton Gist !\n\nRestaurer depuis le cloud ?\n\n→ Restaurer = données du cloud sur cet appareil\n→ Garder = écraser le cloud avec tes données locales',
+        {okLabel:'Restaurer du cloud', cancelLabel:'Garder local'}
+      );
       if(wantPull){ await cloud.pull(); }
       else { await cloud.push(); }
     } else {
-      // Pas de gist existant → on push tout de suite
       await cloud.push();
     }
     updateSyncModalUI();
-    setTimeout(()=>{ if(confirm('Sync activée ! Recharger la page pour appliquer ?')) location.reload(); }, 500);
+    toast('✓ Sync activée','success');
+    setTimeout(async ()=>{
+      if(await confirmDialog('Sync activée ! Recharger la page maintenant ?', {okLabel:'Recharger'})) location.reload();
+    }, 500);
   } catch(e){
-    alert('Échec de connexion : '+e.message+'\nVérifie que le token a bien la permission `gist`.');
+    toast('Échec de connexion : '+e.message.slice(0,80), 'error', 5500);
     cloud.token = null;
     setSyncStatus('off');
   }
@@ -5312,11 +4880,11 @@ async function manualPush(){ await cloud.push(); }
 
 async function askNotifications(){
   if(!('Notification' in window)){
-    alert('Ton navigateur ne supporte pas les notifications.');
+    toast('Ton navigateur ne supporte pas les notifications','error');
     return;
   }
   if(Notification.permission === 'denied'){
-    alert('Les notifications ont été refusées. Va dans Réglages iOS → Notifications → SportDuo pour les autoriser.');
+    toast('Notifs refusées · Réglages iOS → Notifications → SportDuo pour autoriser','warn',5500);
     return;
   }
   const granted = await ensureNotifPermission();
@@ -5330,13 +4898,14 @@ async function askNotifications(){
   }
 }
 async function manualPull(){
-  if(!confirm('Pull du cloud va remplacer tes données locales par celles du Gist. Continuer ?')) return;
+  if(!await confirmDialog('Le pull va remplacer tes données locales par celles du cloud. Continuer ?', {danger:true, okLabel:'Pull'})) return;
   const ok = await cloud.pull();
-  if(ok) setTimeout(()=>location.reload(), 300);
+  if(ok){ toast('✓ Données restaurées','success'); setTimeout(()=>location.reload(), 800); }
 }
-function disconnectSync(){
-  if(!confirm('Déconnecter la sync ? Tes données locales et le Gist resteront, mais ne se synchroniseront plus.')) return;
+async function disconnectSync(){
+  if(!await confirmDialog('Déconnecter la sync ?\n\nTes données locales et le Gist resteront intacts, mais ne se synchroniseront plus.', {danger:true, okLabel:'Déconnecter'})) return;
   cloud.disconnect();
+  toast('Sync déconnectée','info');
 }
 
 // Pull auto au démarrage si token présent (avec petite delay pour laisser init finir)

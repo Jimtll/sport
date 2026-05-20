@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 10 — climbing colors (11 levels with French color names)
-const CACHE_NAME = 'sportduo-cache-v10';
+// VERSION 11 — code cleanup: toast system, custom dialogs, export/import JSON, dead code removed
+const CACHE_NAME = 'sportduo-cache-v11';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
