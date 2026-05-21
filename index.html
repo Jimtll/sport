@@ -1526,6 +1526,13 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file').click()">📥 Importer un backup</button>
         <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="if(this.files[0]){importAllData(this.files[0]);this.value='';}">
       </div>
+
+      <div class="divider"></div>
+      <div class="modal-section-title">🗑 Zone dangereuse</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">
+        Efface TOUTES tes données locales (workouts, planning, profils...) et te ramène au welcome. Ton Gist GitHub n'est PAS supprimé — tu peux le recréer ou en créer un nouveau.
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="resetAllLocalData()">🔥 Tout réinitialiser sur cet appareil</button>
     </div>
   </div>
 </div>
@@ -4729,7 +4736,8 @@ const cloud = {
     try {
       const id = await this.findOrCreateGist();
       const profiles = state.profileList;
-      if(!profiles.length){ setSyncStatus('synced'); return false; }
+      // OK même si vide — on push juste la liste vide pour créer le Gist
+      // (utile lors du 1er connect avant création du 1er profil)
       const files = {};
       // Fichier metadata avec la liste des profils
       files[GIST_PROFILES_FILE] = { content: JSON.stringify({
@@ -5233,6 +5241,23 @@ async function disconnectSync(){
   if(!await confirmDialog('Déconnecter la sync ?\n\nTes données locales et le Gist resteront intacts, mais ne se synchroniseront plus.', {danger:true, okLabel:'Déconnecter'})) return;
   cloud.disconnect();
   toast('Sync déconnectée','info');
+}
+
+async function resetAllLocalData(){
+  if(!await confirmDialog(
+    '⚠️ TOUT effacer sur cet appareil ?\n\nProfils, workouts, planning, escalade, course, token GitHub — TOUT.\n\nTon Gist GitHub n\'est PAS touché (tes données restent sur ton compte). Tu pourras reconnecter le même token pour récupérer.',
+    {danger:true, okLabel:'TOUT effacer'}
+  )) return;
+  // Backup automatique avant
+  try { exportAllData(); } catch(e){}
+  // Wipe tout
+  const keys = [];
+  for(let i=0; i<localStorage.length; i++) keys.push(localStorage.key(i));
+  keys.forEach(k=>{
+    if(k && (k.startsWith('sp_') || k.startsWith('gist_') || k==='claude_api_key')) localStorage.removeItem(k);
+  });
+  toast('🔥 Données effacées · rechargement...','warn');
+  setTimeout(()=>location.reload(), 1200);
 }
 
 // Pull auto au démarrage si token présent (avec petite delay pour laisser init finir)
