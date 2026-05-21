@@ -4932,17 +4932,37 @@ function checkOnboarding(){
   const hasToken = !!cloud.token;
   const profiles = state.profileList;
   const overlay = document.getElementById('welcome-overlay');
-  if(!overlay) return true;
-  // Si on a au moins un profil (utilisateur existant), on cache l'overlay
+
+  // Si pas d'overlay HTML disponible (version stale en cache), on affiche un fallback
+  if(!overlay){
+    if(profiles.length === 0){
+      // App cassée + pas de profil : fallback de secours
+      document.body.innerHTML = `<div style="padding:30px;font-family:system-ui;color:#e2e8f0;background:#0f1117;min-height:100vh">
+        <h2 style="color:#f97316">💪 SportDuo — Configuration nécessaire</h2>
+        <p style="margin-top:12px;line-height:1.5">L'app a besoin d'être configurée. Suis ces étapes :</p>
+        <ol style="margin:14px 0 14px 20px;line-height:1.7">
+          <li>Va sur <a href="https://jimtll.github.io/sport/?reset=1" style="color:#f97316">jimtll.github.io/sport/?reset=1</a> pour reset complètement</li>
+          <li>Confirme le reset</li>
+          <li>Tu seras redirigé vers le welcome</li>
+        </ol>
+        <p style="margin-top:14px;font-size:0.85rem;color:#94a3b8">Si rien ne marche : kill l'app (swipe up), supprime-la de l'écran d'accueil, et ré-ajoute-la depuis Safari.</p>
+      </div>`;
+    }
+    return profiles.length > 0;
+  }
+
+  // Si on a au moins un profil, on cache l'overlay
   if(profiles.length > 0){
     overlay.style.display = 'none';
     return true;
   }
   // Sinon on bloque l'app et on affiche les étapes selon l'état
   overlay.style.display = 'block';
-  document.getElementById('welcome-step-token').style.display = hasToken ? 'none' : 'block';
-  document.getElementById('welcome-step-profile').style.display = hasToken ? 'block' : 'none';
-  if(hasToken) renderProfileForm('welcome-profile-form', null, true);
+  const tokenStep = document.getElementById('welcome-step-token');
+  const profileStep = document.getElementById('welcome-step-profile');
+  if(tokenStep) tokenStep.style.display = hasToken ? 'none' : 'block';
+  if(profileStep) profileStep.style.display = hasToken ? 'block' : 'none';
+  if(hasToken && profileStep) renderProfileForm('welcome-profile-form', null, true);
   return false;
 }
 
