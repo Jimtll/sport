@@ -499,9 +499,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .toast-warn{border-color:rgba(251,191,36,0.4);background:rgba(251,191,36,0.15);color:#fde68a}
 .toast-info{border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.15);color:#bfdbfe}
 
-/* Confirm dialog non-blocking */
-.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity 0.2s}
-.confirm-overlay.visible{opacity:1}
+/* Confirm dialog non-blocking — invisible ET sans pointer-events par défaut */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 0.2s,visibility 0.2s}
+.confirm-overlay.visible{opacity:1;visibility:visible;pointer-events:auto}
 .confirm-dialog{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:22px;max-width:380px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.5);transform:scale(0.9);transition:transform 0.25s}
 .confirm-overlay.visible .confirm-dialog{transform:scale(1)}
 .confirm-msg{font-size:0.95rem;line-height:1.4;margin-bottom:18px}
@@ -5285,16 +5285,36 @@ async function autoBootstrapSync(){
 // INIT
 // ══════════════════════════════════════════════
 (function init(){
-  // Cleanup défensif : force-cache les overlays au démarrage
+  // ─── Cleanup défensif EXTRÊME : tue tous les overlays orphelins ───
   document.getElementById('pr-toast')?.classList.remove('visible');
   document.getElementById('rest-timer-bar')?.classList.remove('visible');
-  // Reset également les textes du PR toast aux valeurs initiales
+  // Supprime TOUS les confirm-overlay stuck (ils bloqueraient les clics)
+  document.querySelectorAll('.confirm-overlay').forEach(el=>el.remove());
+  // Cache tous les modal-overlay (au cas où l'un est coincé)
+  document.querySelectorAll('.modal-overlay').forEach(el=>el.classList.remove('show'));
+  // Welcome explicitement caché
+  const welcomeEl = document.getElementById('welcome-overlay');
+  if(welcomeEl) welcomeEl.style.display = 'none';
+  // Reset textes du PR toast
   const prTitle = document.getElementById('pr-toast-title');
   const prDetail = document.getElementById('pr-toast-detail');
   if(prTitle) prTitle.textContent = '🎉 NOUVEAU PR !';
   if(prDetail) prDetail.textContent = '';
 
+  // ─── URL emergency reset ───
+  if(new URLSearchParams(location.search).has('reset')){
+    if(window.confirm('⚠️ RESET D\'URGENCE\n\nTout effacer et repartir de zéro ?')){
+      const keys = [];
+      for(let i=0; i<localStorage.length; i++) keys.push(localStorage.key(i));
+      keys.forEach(k=>{ if(k && (k.startsWith('sp_') || k.startsWith('gist_'))) localStorage.removeItem(k); });
+      location.href = location.pathname;
+      return;
+    }
+  }
+
   setSyncStatus(cloud.token ? 'synced' : 'off');
+  // Toujours rendre la barre des profils (avec bouton + Nouveau profil)
+  try { renderProfileCards(); } catch(e){ console.warn('renderProfileCards init:', e); }
   // Onboarding : bloque l'app si pas de profil
   const setupOk = checkOnboarding();
   if(setupOk){
@@ -5304,7 +5324,6 @@ async function autoBootstrapSync(){
     try { renderDashboard(); } catch(e){ console.warn('renderDashboard init:', e); }
     setTimeout(autoBootstrapSync, 800);
   } else {
-    // Affiche un mini état même bloqué
     console.log('[Onboarding] En attente de configuration utilisateur');
   }
 })();
