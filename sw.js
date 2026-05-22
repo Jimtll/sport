@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
 // VERSION 15 — fallback DOM for stale cache + robust onboarding
-const CACHE_NAME = 'sportduo-cache-v15';
+const CACHE_NAME = 'sportduo-cache-v16';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
