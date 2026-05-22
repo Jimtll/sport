@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 19 — Fix flicker nav sticky mobile + gainage 2 tours + checkbox Gainage dans le calendrier
-const CACHE_NAME = 'sportduo-cache-v19';
+// VERSION 20 — Suppression directe sur carte profil + bouton + compact à la place de "Nouveau profil"
+const CACHE_NAME = 'sportduo-cache-v20';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

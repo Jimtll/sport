@@ -83,6 +83,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .profile-meta{font-size:0.68rem;color:var(--muted)}
 .profile-card.active-lui .profile-name{color:var(--c1)}
 .profile-card.active-alex .profile-name{color:var(--c2)}
+.profile-card-btn{background:none;border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;padding:4px 6px;border-radius:50%;line-height:1;transition:all 0.15s}
+.profile-card-btn:hover{background:var(--surface3);color:var(--text)}
+.profile-card-del:hover{background:rgba(239,68,68,0.18);color:#ef4444}
+.profile-card-add{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:1.3rem;font-weight:700;line-height:1;padding:0;transition:all 0.15s;flex-shrink:0}
+.profile-card-add:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-dim)}
 .profile-sep{flex:1}
 .profile-bar-stats{display:flex;gap:12px}
 .pbs{font-size:0.75rem;color:var(--muted)}
@@ -4244,6 +4249,8 @@ function renderProfileCards(){
   const list = state.profileList;
   const container = document.getElementById('profile-cards');
   if(!container) return;
+  // On peut supprimer un profil seulement s'il en reste >= 2 (sinon on se retrouverait sans profil)
+  const canDelete = list.length > 1;
   const cards = list.map(p=>{
     const isActive = state.profile === p.id;
     const themeClass = p.goalBannerClass === 'alex' ? 'alex' : 'lui';
@@ -4253,11 +4260,10 @@ function renderProfileCards(){
         <div class="profile-name">${p.name}</div>
         <div class="profile-meta">${p.poids} kg · ${p.taille>=100?Math.floor(p.taille/100)+'m'+(p.taille%100):p.taille+'cm'} · ${(p.goal||'').replace(/[^\\w À-ÿ·]/g,'').trim()}</div>
       </div>
-      <button onclick="event.stopPropagation();openProfileEditor('${p.id}')" style="background:none;border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;padding:4px 6px" title="Éditer">✏️</button>
+      <button class="profile-card-btn" onclick="event.stopPropagation();openProfileEditor('${p.id}')" title="Éditer">✏️</button>
+      ${canDelete && !isActive ? `<button class="profile-card-btn profile-card-del" onclick="event.stopPropagation();deleteProfile('${p.id}')" title="Supprimer ce profil">✕</button>` : ''}
     </div>`;
-  }).join('') + `<div class="profile-card" style="border-style:dashed;justify-content:center;color:var(--muted);cursor:pointer" onclick="openProfileEditor(null)">
-    <span style="font-size:1.2rem">+</span><span style="font-size:0.78rem">Nouveau profil</span>
-  </div>`;
+  }).join('') + `<button class="profile-card-add" onclick="openProfileEditor(null)" title="Nouveau profil" aria-label="Ajouter un profil">+</button>`;
   container.innerHTML = cards;
 }
 
