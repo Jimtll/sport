@@ -184,6 +184,18 @@ input[type=range]:focus{border:none}
 .ex-sets{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .set-badge{font-size:0.7rem;font-weight:600;padding:2px 10px;border-radius:99px;background:var(--surface3);border:1px solid var(--border);color:var(--muted2)}
 
+/* ── GAINAGE ── */
+.gainage-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);margin-bottom:6px;cursor:pointer;transition:all 0.15s}
+.gainage-row:hover{border-color:var(--acc);background:var(--surface2)}
+.gainage-row.active{border-color:var(--acc);background:var(--acc-dim);box-shadow:0 0 0 2px rgba(59,130,246,0.15)}
+.gainage-row.done{opacity:0.55}
+.gainage-row.done .gainage-num{background:var(--green);border-color:var(--green);color:#fff}
+.gainage-num{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;flex-shrink:0}
+.gainage-row.active .gainage-num{background:var(--acc);border-color:var(--acc);color:#fff}
+.gainage-seg{flex:1;height:6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border)}
+.gainage-seg.done{background:var(--green);border-color:var(--green)}
+.gainage-seg.active{background:var(--acc);border-color:var(--acc);animation:chronoPulse 1.4s ease-in-out infinite}
+
 /* ── TIMER ── */
 .timer-display{text-align:center;padding:24px 0}
 .timer-circle{width:190px;height:190px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0 auto 20px;position:relative;background:var(--surface2)}
@@ -388,6 +400,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .day-pick-btn{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--surface3);border:1px solid var(--border);color:var(--muted2);font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;line-height:1}
 .day-pick-btn:hover{background:var(--green);border-color:var(--green);color:#fff}
 .day-card.planned-day .day-pick-btn{background:var(--green);border-color:var(--green);color:#fff}
+.day-launch-btn{margin-top:8px;width:100%;background:linear-gradient(135deg,var(--acc) 0%,var(--acc-2,var(--acc)) 100%);border:none;color:#fff;font-size:0.74rem;font-weight:800;padding:7px 8px;border-radius:8px;cursor:pointer;transition:transform 0.1s,box-shadow 0.2s;letter-spacing:0.02em;box-shadow:0 2px 8px rgba(0,0,0,0.18)}
+.day-launch-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.28)}
+.day-launch-btn:active{transform:translateY(0)}
 
 /* Logger de séries — version interactive avec check */
 .logger-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;padding:5px 8px;border-radius:8px;border:1px solid transparent;transition:all 0.2s}
@@ -401,6 +416,12 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .set-check{width:34px;height:34px;border-radius:50%;background:var(--surface2);border:2px solid var(--border2);color:var(--muted);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;padding:0;line-height:1}
 .set-check:hover{border-color:var(--acc);color:var(--acc)}
 .logger-row.set-done .set-check{background:var(--green);border-color:var(--green);color:#fff}
+.set-chrono{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted2);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1;transition:all 0.15s}
+.set-chrono:hover{border-color:var(--acc);color:var(--acc)}
+.set-chrono.chrono-running{background:var(--acc);border-color:var(--acc);color:#fff;animation:chronoPulse 1.4s ease-in-out infinite}
+@keyframes chronoPulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.35)}50%{box-shadow:0 0 0 6px rgba(59,130,246,0)}}
+.set-chrono-display{display:inline-block;margin-left:6px;font-variant-numeric:tabular-nums;font-weight:800;font-size:0.74rem;color:var(--acc);letter-spacing:-0.02em}
+.set-chrono-display:empty{display:none}
 
 /* GIFs et photos d'exercices */
 .exercise-photo-wrap{position:relative;width:100%;height:100%;min-height:380px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);overflow:hidden;background:#fff}
@@ -881,6 +902,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <button class="nav-btn" onclick="goPage('calendrier')">📆 Calendrier</button>
   <button class="nav-btn" onclick="goPage('programme')">📅 Programme</button>
   <button class="nav-btn" onclick="goPage('exercices')">🏋️ Exercices</button>
+  <button class="nav-btn" onclick="goPage('gainage')">🧘 Gainage</button>
   <button class="nav-btn" onclick="goPage('timer')">⏱ Timer</button>
   <!-- 1RM fusionné dans la modale exercice -->
   <!-- <button class="nav-btn" onclick="goPage('rm')">🔢 Calcul 1RM</button> -->
@@ -970,7 +992,19 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
 <!-- ═══════ PROGRAMME ═══════ -->
 <div class="page" id="page-programme">
   <h2>Mon Programme</h2>
-  <p class="section-sub">Affiche le plan de la semaine en cours · synchronisé avec le calendrier</p>
+  <p class="section-sub">Affiche le plan de la semaine sélectionnée · synchronisé avec le calendrier</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+    <button class="btn btn-ghost btn-sm" onclick="progPrevWeek()" title="Semaine précédente">◀</button>
+    <div style="text-align:center;flex:1;min-width:120px">
+      <div style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em">Semaine affichée</div>
+      <div id="prog-week-label" style="font-weight:800;font-size:0.95rem">—</div>
+      <div id="prog-week-dates" style="font-size:0.72rem;color:var(--muted)">—</div>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="btn btn-ghost btn-sm" onclick="progNextWeek()" title="Semaine suivante">▶</button>
+      <button class="btn btn-secondary btn-sm" onclick="progGoToCurrentWeek()" title="Revenir à la semaine actuelle">📅</button>
+    </div>
+  </div>
   <div id="prog-source-info" style="margin-bottom:14px;display:flex;align-items:center;flex-wrap:wrap;gap:6px"></div>
   <div class="card" style="margin-bottom:20px">
     <div class="field-row" style="align-items:end">
@@ -993,7 +1027,8 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
       <h3 id="day-detail-title">—</h3>
       <div class="btn-group">
         <button class="btn btn-secondary btn-sm" onclick="toggleRestDay()">🛌 Repos</button>
-        <button class="btn btn-primary btn-sm" onclick="goPage('timer')">▶ Démarrer</button>
+        <button class="btn btn-ghost btn-sm" onclick="goPage('timer')" title="Timer de repos">⏱</button>
+        <button class="btn btn-primary btn-sm" onclick="launchSession(state.selectedDay)">▶ Lancer la séance</button>
       </div>
     </div>
     <div id="day-exercises-list" class="ex-list"></div>
@@ -1059,6 +1094,52 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   </div>
 </div>
 
+<!-- ═══════ GAINAGE ═══════ -->
+<div class="page" id="page-gainage">
+  <h2>Gainage</h2>
+  <p class="section-sub">Renforcement du tronc · chrono intégré, enchainement automatique</p>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3>Choisis ton niveau</h3>
+    <div class="pill-row" id="gainage-levels" style="margin-top:10px">
+      <div class="pill active" data-lvl="debut" onclick="selectGainageLevel('debut')">🌱 Débutant</div>
+      <div class="pill" data-lvl="inter" onclick="selectGainageLevel('inter')">💪 Intermédiaire</div>
+      <div class="pill" data-lvl="avance" onclick="selectGainageLevel('avance')">🔥 Avancé</div>
+    </div>
+    <div id="gainage-level-info" style="margin-top:14px;font-size:0.82rem;color:var(--muted)"></div>
+  </div>
+
+  <div class="card" id="gainage-session" style="margin-bottom:16px">
+    <div id="gainage-current-info" style="text-align:center;margin-bottom:14px">
+      <div style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em" id="gainage-phase-label">Prêt</div>
+      <div style="font-size:1.4rem;font-weight:800;margin-top:4px" id="gainage-ex-name">—</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:4px" id="gainage-ex-tip">Sélectionne un niveau pour commencer</div>
+    </div>
+    <div class="timer-display" style="padding:8px 0">
+      <div class="timer-circle">
+        <svg viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="88"/>
+          <circle class="progress" id="gainage-ring" cx="100" cy="100" r="88" stroke-dasharray="553" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-time" id="gainage-time">0:00</div>
+        <div class="timer-label" id="gainage-step-label">—</div>
+      </div>
+      <div class="timer-controls" style="flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="gainagePrev()" title="Exercice précédent">⏮</button>
+        <button class="btn btn-primary btn-lg" id="gainage-toggle-btn" onclick="gainageToggle()">▶ Démarrer</button>
+        <button class="btn btn-secondary btn-sm" onclick="gainageSkip()" title="Exercice suivant">⏭</button>
+        <button class="btn btn-ghost btn-sm" onclick="gainageReset()" title="Réinitialiser">↺</button>
+      </div>
+    </div>
+    <div id="gainage-progress" style="margin-top:14px"></div>
+  </div>
+
+  <div class="card">
+    <h3>Programme du niveau</h3>
+    <div id="gainage-list" style="margin-top:10px"></div>
+  </div>
+</div>
+
 <!-- ═══════ 1RM ═══════ -->
 <div class="page" id="page-rm">
   <h2>Calculateur 1RM</h2>
@@ -1119,18 +1200,29 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
           </select>
         </div>
       </div>
-      <div class="field"><label>Niveau d'activité</label>
-        <select id="nut-activite" onchange="calcNutrition()">
-          <option value="1.375">Légère (1-3j/sem)</option>
-          <option value="1.55" selected>Modérée (3-5j/sem)</option>
-          <option value="1.725">Intense (6-7j/sem)</option>
-          <option value="1.9">Très intense (2×/j)</option>
+      <div class="field"><label>Niveau d'activité quotidienne</label>
+        <select id="nut-activite" onchange="onActivityChange();calcNutrition()">
+          <option value="1.2">Sédentaire (bureau, 0 sport)</option>
+          <option value="1.375">Légère (1-3 séances/sem)</option>
+          <option value="1.55" selected>Modérée (3-5 séances/sem)</option>
+          <option value="1.725">Intense (6-7 séances/sem)</option>
+          <option value="1.9">Très intense (2×/jour)</option>
+        </select>
+        <div id="nut-activite-hint" style="font-size:0.7rem;color:var(--muted);margin-top:4px"></div>
+      </div>
+      <div class="field"><label>Objectif</label>
+        <select id="nut-objectif" onchange="applyObjective()">
+          <option value="perte-forte">🔥 Perte de poids (déficit -400 kcal)</option>
+          <option value="perte-douce">💧 Perte douce (déficit -200 kcal)</option>
+          <option value="maintien">⚖️ Maintien du poids (0)</option>
+          <option value="prise-douce">🌱 Léger surplus (+200 kcal)</option>
+          <option value="prise-masse" selected>💪 Prise de masse (+400 kcal)</option>
         </select>
       </div>
       <div class="field">
-        <label id="surplus-label">Surplus calorique</label>
+        <label id="surplus-label">Surplus calorique (ajusté)</label>
         <div class="range-row">
-          <input type="range" min="-400" max="600" step="25" value="300" id="surplus-range" oninput="updateSurplusLabel();calcNutrition()">
+          <input type="range" min="-600" max="600" step="25" value="300" id="surplus-range" oninput="updateSurplusLabel();syncObjectiveFromSlider();calcNutrition()">
           <span class="range-val" id="surplus-val">+300 kcal</span>
         </div>
       </div>
@@ -1803,6 +1895,12 @@ const EXERCISES = [
   {id:53,name:'Hyperextension banc 45°',muscle:'Lombaires',level:'debut',sets:'3×12-15',tips:'Descente jusqu\'à 90°, montée lente. Peut se faire avec poids au torse',muscles_worked:['Érecteurs','Fessiers','Ischio']},
   {id:54,name:'Cat-Cow mobilité',muscle:'Lombaires',level:'debut',sets:'2×10 cycles',tips:'À intégrer en échauffement ou récupération — libère les lombaires',muscles_worked:['Mobilité rachis']},
   {id:55,name:'Planche bras tendus',muscle:'Lombaires',level:'debut',sets:'3×30-45s',tips:'Active profondément le transverse sans flexion lombaire',muscles_worked:['Transverse','Érecteurs','Core profond']},
+  // FESSIERS — variantes machine
+  {id:56,name:'Presse inclinée fessiers',muscle:'Fessiers',level:'inter',sets:'4×10-12',tips:'Pieds hauts et écartés sur la plateforme, descente contrôlée à 90°, poussée par les talons',muscles_worked:['Grand fessier','Ischio-jambiers','Quadriceps']},
+  {id:57,name:'Soulevé de terre barre guidée (fessiers)',muscle:'Fessiers',level:'inter',sets:'4×8-10',tips:'Smith machine, pieds avancés devant la barre, charnière de hanche pure, focus sur l\'étirement des ischio',muscles_worked:['Grand fessier','Ischio-jambiers','Érecteurs']},
+  // DOS — tirages
+  {id:58,name:'Tirage horizontal (poulie basse)',muscle:'Dos',level:'debut',sets:'4×10-12',tips:'Buste droit, tirer vers le nombril, contracter les omoplates 1s à la fin',muscles_worked:['Dorsal','Rhomboïdes','Trapèze moyen','Biceps']},
+  {id:59,name:'Tirage vertical (poulie haute prise neutre)',muscle:'Dos',level:'debut',sets:'4×10-12',tips:'Prise neutre paumes face à face, tirer la barre vers la poitrine, légère inclinaison du tronc',muscles_worked:['Grand dorsal','Biceps','Brachial']},
 ];
 
 const MUSCLES_LUI = ['Tous','Dos','Épaules','Grip','Poitrine','Biceps','Triceps','Jambes','Core'];
@@ -1881,6 +1979,12 @@ const EX_DETAILS = {
   53:{yt:'A1ImcXdM8WI',primary:['lower-back'],secondary:['glute','hams'],steps:['Banc à 45°, hanches au-dessus du coussin.','Croisez les bras ou tenez un poids.','Descendez à 90° en flexion de hanche.','Remontez à l\'horizontale, pas plus.','Mouvement lent et contrôlé.'],mistakes:['Hyperextension en haut','Mouvement rapide','Charge excessive']},
   54:{yt:'kqnua4rHVVA',primary:['lower-back'],secondary:['abs'],steps:['Position quadrupédique, mains sous épaules.','Cat : arrondissez le dos vers le plafond.','Cow : cambrez en regardant vers le haut.','Mouvement lent et fluide, respirez.','Idéal en échauffement ou récupération.'],mistakes:['Mouvement trop rapide','Apnée','Hyperextension cervicale']},
   55:{yt:'ASdvN_XEl_c',primary:['abs','lower-back'],secondary:['delt-f','glute'],steps:['Position pompes, bras tendus.','Corps en ligne droite parfaite.','Engagez transverse + lombaires.','Maintenez 30-45s en respirant.','Pour intensifier : alternez levée bras/jambe.'],mistakes:['Hanches affaissées','Hanches trop hautes','Apnée respiratoire']},
+  // FESSIERS variantes machine
+  56:{yt:'p5dCqF7wQXg',primary:['glute'],secondary:['hams','quad'],steps:['Asseyez-vous dans la presse, dos plaqué.','Placez les pieds HAUT et ÉCARTÉS sur la plateforme.','Descendez jusqu\'à 90° au genou en gardant les fessiers en charge.','Poussez par les TALONS, sans verrouiller en haut.','Contractez les fessiers en fin d\'extension.'],mistakes:['Pieds bas (devient quadriceps)','Verrouillage complet (perd la tension fessiers)','Lombaires qui décollent du siège']},
+  57:{yt:'9LpJ-D0OWtY',primary:['glute','hams'],secondary:['lower-back'],steps:['Placez la barre Smith à hauteur des hanches.','Pieds AVANCÉS devant la barre (10-15 cm), largeur hanches.','Charnière de hanche : poussez les fesses en arrière.','Descendez la barre le long des cuisses, dos plat.','Sentez l\'étirement des ischio puis remontez par les hanches.'],mistakes:['Pieds sous la barre (devient lombaires)','Dos arrondi (DANGER)','Squat au lieu de hip hinge']},
+  // DOS tirages
+  58:{yt:'GZbfZ033f74',primary:['lats','rhomb'],secondary:['biceps','traps'],steps:['Asseyez-vous, pieds calés, genoux légèrement fléchis.','Saisissez la poignée (V-bar ou prise neutre).','Buste droit, légère inclinaison à 10° en arrière.','Tirez vers le nombril, coudes proches du corps.','Contractez les omoplates 1s puis revenez en contrôle.'],mistakes:['Tronc qui balance d\'avant en arrière','Tirer avec les biceps','Épaules qui montent vers les oreilles']},
+  59:{yt:'lueEJGjTuPQ',primary:['lats'],secondary:['biceps','rhomb'],steps:['Asseyez-vous, cuisses bloquées, prise neutre paumes face à face.','Tronc légèrement incliné en arrière (~10°).','Tirez la barre vers le haut de la poitrine.','Coudes vers le bas et l\'arrière, omoplates engagées.','Contrôle parfait à la remontée.'],mistakes:['Tirer derrière la nuque (cervicales)','Élan du tronc','Demi-amplitude']},
 };
 
 // Anatomie : retourne juste les conteneurs vides — body-highlighter remplit ensuite
@@ -1979,6 +2083,10 @@ const EX_GIFS = {
   53:'spine/lever-back-extension.gif',
   54:null,
   55:'abs/front-plank-with-twist.gif',
+  56:'glutes/lever-leg-press.gif',
+  57:'glutes/barbell-romanian-deadlift.gif',
+  58:'upper-back/cable-seated-row.gif',
+  59:'lats/cable-lat-pulldown.gif',
 };
 
 // Fallback photos (free-exercise-db, 2 photos start/end)
@@ -2038,6 +2146,10 @@ const EX_PHOTOS = {
   53:'Hyperextensions_With_No_Hyperextension_Bench',
   54:'Cat_Stretch',
   55:'Plank',
+  56:'Leg_Press',
+  57:'Romanian_Deadlift',
+  58:'Seated_Cable_Rows',
+  59:'Wide-Grip_Lat_Pulldown',
 };
 
 // Mapping ID exercice → pattern d'animation
@@ -2060,6 +2172,8 @@ const EX_ANIM = {
   42:'stand',43:'stand',46:'stand',
   // Lombaires
   50:'hinge',51:'plank',52:'plank',53:'hinge',54:'plank',55:'plank',
+  // Nouveaux : presse fessiers, smith DL, tirages
+  56:'squat',57:'hinge',58:'row',59:'pulldown',
 };
 
 // ══════════════════════════════════════════════
@@ -2086,6 +2200,7 @@ const SESSION_TYPES = {
 
 let calYear = new Date().getFullYear();
 let selectedWeekKey = null;
+let progWeekKey = null; // semaine affichée dans l'onglet Programme (peut différer du calendrier)
 
 function getISOWeek(date){
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -2968,6 +3083,16 @@ function parseSetCount(setsStr){
   return m ? Math.min(parseInt(m[1]), 6) : 3;
 }
 
+function parseSetDuration(setsStr){
+  // Renvoie la durée en secondes si le format est time-based, sinon null
+  // "3×45s" → 45, "3×30-45s" → 30, "3×max (viser 60s)" → 60
+  // Skip distance like "4×30m"
+  const s = (setsStr||'').toString();
+  if(/×\s*\d+m(?!s|in)/.test(s)) return null;
+  const m = s.match(/(\d+)\s*s\b/);
+  return m ? parseInt(m[1]) : null;
+}
+
 // Formule Epley pour estimer le 1RM depuis (poids, reps)
 function calcEpley(weight, reps){
   if(!weight || !reps || reps < 1) return 0;
@@ -3601,19 +3726,21 @@ function renderLogger(exId){
   const setCount = parseSetCount(ex.sets);
   const lastWorkout = state.exerciseWorkouts(exId)[0];
   const lastSets = lastWorkout?.sets || [];
+  const setDurationHelp = parseSetDuration(ex.sets);
   let html = `
     <div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px">
-      Pour chaque série : poids × reps puis touche <strong>✓</strong> quand c'est fait. Le 1RM est calculé auto à partir de ta meilleure série.
+      Pour chaque série : poids × reps puis touche <strong>✓</strong> quand c'est fait. Bouton <strong>⏱</strong> pour lancer le chrono de la série${setDurationHelp?` (compte à rebours <strong>${setDurationHelp}s</strong>)`:''}. Le rest timer démarre auto après le ✓.
     </div>`;
   for(let i=0;i<setCount;i++){
     const last = lastSets[i] || {};
     const lastHint = (last.weight && last.reps) ? `<small style="font-size:0.62rem;color:var(--muted);margin-left:8px">dernière: ${last.weight}×${last.reps}</small>` : '';
     html += `
       <div class="logger-row" data-set="${i}">
-        <span class="logger-set-label">S${i+1}${lastHint}</span>
+        <span class="logger-set-label">S${i+1}${lastHint}<span class="set-chrono-display" data-i="${i}"></span></span>
         <input type="number" class="logger-w" data-i="${i}" placeholder="kg" step="0.5" min="0" inputmode="decimal" value="${last.weight||''}" onchange="updateLogger1RM(${exId})">
         <span class="logger-x">×</span>
         <input type="number" class="logger-r" data-i="${i}" placeholder="reps" min="0" max="50" inputmode="numeric" value="${last.reps||''}" onchange="updateLogger1RM(${exId})">
+        <button class="set-chrono" data-i="${i}" onclick="toggleSetChrono(this,${exId})" title="Démarrer le chrono de la série">⏱</button>
         <button class="set-check" data-i="${i}" onclick="toggleSetDone(this,${exId})" title="Marquer la série comme faite">○</button>
       </div>`;
   }
@@ -3639,17 +3766,21 @@ function toggleSetDone(btn, exId){
   btn.textContent = done ? '✓' : '○';
   // Si la série est marquée comme faite, on s'assure que les valeurs sont saisies
   if(done){
+    const ex = EXERCISES.find(e=>e.id===exId);
     const w = parseFloat(row.querySelector('.logger-w').value) || 0;
     const r = parseInt(row.querySelector('.logger-r').value) || 0;
-    if(!w || !r){
+    // Pour les exos time-based (planche, dead hang...), un seul des deux suffit
+    const isTimeBased = !!parseSetDuration(ex?.sets);
+    if(!w && !r && !isTimeBased){
       row.classList.remove('set-done');
       btn.textContent = '○';
       toast('Entre le poids et les reps avant de valider la série','warn');
       return;
     }
+    // Stoppe le chrono de série s'il tournait sur cette ligne
+    stopSetChrono(row);
     // 🚀 Démarre auto le timer de repos selon l'intensité
     const restSec = getRecommendedRest(exId, w);
-    const ex = EXERCISES.find(e=>e.id===exId);
     startRestTimer(restSec, `Repos · ${ex?.name||'série'}`);
     // Demande la permission notif au 1er ✓ (lazy)
     if('Notification' in window && Notification.permission === 'default'){
@@ -3660,6 +3791,99 @@ function toggleSetDone(btn, exId){
     stopRestTimer(true);
   }
   updateLogger1RM(exId);
+}
+
+// ── CHRONO DE SÉRIE ──
+// Un seul chrono actif à la fois (le plus récent click). Count-down si exo time-based, sinon count-up.
+let activeSetChrono = null;
+
+function toggleSetChrono(btn, exId){
+  const row = btn.closest('.logger-row');
+  if(activeSetChrono && activeSetChrono.row === row){
+    // Toggle off le chrono courant
+    stopSetChrono(row);
+    return;
+  }
+  // Stoppe tout autre chrono d'abord
+  if(activeSetChrono) stopSetChrono(activeSetChrono.row);
+
+  const ex = EXERCISES.find(e=>e.id===exId);
+  const target = parseSetDuration(ex?.sets);
+  const startTime = Date.now();
+  const mode = target ? 'down' : 'up';
+  const display = row.querySelector('.set-chrono-display');
+
+  const update = () => {
+    const elapsed = Math.floor((Date.now() - startTime)/1000);
+    let val;
+    if(mode === 'down'){
+      val = target - elapsed;
+      if(val <= 0){
+        clearInterval(activeSetChrono.intervalId);
+        if(display){
+          display.textContent = '✓ 0:00';
+          display.style.color = 'var(--green)';
+        }
+        try{ playBeep(); }catch(e){}
+        if(navigator.vibrate) navigator.vibrate([120,80,120]);
+        btn.textContent = '⏱';
+        btn.classList.remove('chrono-running');
+        activeSetChrono = null;
+        return;
+      }
+      const mins = Math.floor(val/60), secs = val%60;
+      if(display){
+        display.textContent = `${mins}:${String(secs).padStart(2,'0')}`;
+        display.style.color = val <= 5 ? 'var(--red,#ef4444)' : val <= 10 ? '#fbbf24' : 'var(--acc)';
+      }
+    } else {
+      val = elapsed;
+      const mins = Math.floor(val/60), secs = val%60;
+      if(display){
+        display.textContent = `${mins}:${String(secs).padStart(2,'0')}`;
+        display.style.color = 'var(--acc)';
+      }
+    }
+  };
+
+  activeSetChrono = {row, exId, startTime, mode, target, intervalId: null};
+  update();
+  activeSetChrono.intervalId = setInterval(update, 250);
+  btn.textContent = '⏸';
+  btn.classList.add('chrono-running');
+}
+
+function stopSetChrono(row){
+  if(!row) return;
+  if(activeSetChrono && activeSetChrono.row === row){
+    clearInterval(activeSetChrono.intervalId);
+    activeSetChrono = null;
+  }
+  const btn = row.querySelector('.set-chrono');
+  if(btn){
+    btn.textContent = '⏱';
+    btn.classList.remove('chrono-running');
+  }
+  const display = row.querySelector('.set-chrono-display');
+  if(display){
+    display.textContent = '';
+    display.style.color = '';
+  }
+}
+
+function stopAllSetChronos(){
+  if(activeSetChrono){
+    clearInterval(activeSetChrono.intervalId);
+    activeSetChrono = null;
+  }
+  document.querySelectorAll('.set-chrono').forEach(b=>{
+    b.textContent = '⏱';
+    b.classList.remove('chrono-running');
+  });
+  document.querySelectorAll('.set-chrono-display').forEach(d=>{
+    d.textContent = '';
+    d.style.color = '';
+  });
 }
 
 function updateLogger1RM(exId){
@@ -3814,23 +4038,70 @@ function closeExModal(){
   document.body.style.overflow = '';
   // Cleanup body-highlighter instances
   if(window.cleanupBodyAnatomy) window.cleanupBodyAnatomy();
+  // Arrête tout chrono de série en cours
+  if(typeof stopAllSetChronos==='function') stopAllSetChronos();
 }
 
 // Esc pour fermer
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeExModal(); });
 
-const MEALS_LUI = [
-  {time:'07:30',name:'Petit-déjeuner',foods:['Flocons d\'avoine 80g','Banane','Yaourt grec 200g','2 œufs','Lait 200ml']},
-  {time:'12:30',name:'Déjeuner',foods:['Poulet 200g','Riz cuit 200g','Brocolis 150g','Huile d\'olive 1cs']},
-  {time:'16:00',name:'Pré-workout',foods:['Banane','Whey 1 dose','Pain complet 2 tranches','Beurre de cacahuète']},
-  {time:'20:00',name:'Dîner',foods:['Saumon 200g','Patate douce 200g','Épinards 100g','2 œufs']},
-];
-const MEALS_ALEX = [
-  {time:'07:30',name:'Petit-déjeuner léger',foods:['Yaourt grec 0% 200g','Fruits rouges 100g','Flocons d\'avoine 40g','Graines de chia 15g']},
-  {time:'12:00',name:'Déjeuner équilibré',foods:['Thon 150g','Quinoa 100g','Légumes grillés 150g','Avocat ½']},
-  {time:'16:00',name:'Collation protéinée',foods:['Fromage blanc 0% 150g','1 pomme','Amandes 15g']},
-  {time:'19:30',name:'Dîner',foods:['Poulet 150g','Patate douce 150g','Salade verte','Huile d\'olive 1cs']},
-];
+// Plans repas variants par profil ET par objectif (perte / maintien / prise)
+const MEALS = {
+  lui: {
+    perte: [
+      {time:'07:30',name:'Petit-déjeuner protéiné',foods:['3 œufs','Avocat ½','Yaourt grec 0% 200g','1 fruit','Café/thé']},
+      {time:'12:30',name:'Déjeuner léger',foods:['Poulet 200g','Riz cuit 100g','Légumes verts 200g','Huile d\'olive 1cc']},
+      {time:'16:00',name:'Collation',foods:['Whey 1 dose','1 pomme','Amandes 15g']},
+      {time:'19:30',name:'Dîner protéiné',foods:['Saumon 180g','Courgettes 200g','Salade verte','Citron']},
+    ],
+    maintien: [
+      {time:'07:30',name:'Petit-déjeuner',foods:['Flocons d\'avoine 60g','Banane','Yaourt grec 200g','2 œufs','Café/thé']},
+      {time:'12:30',name:'Déjeuner',foods:['Poulet 200g','Riz cuit 150g','Brocolis 150g','Huile d\'olive 1cs']},
+      {time:'16:00',name:'Collation',foods:['Whey 1 dose','1 fruit','Pain complet 2 tranches','Beurre de cacahuète 1cs']},
+      {time:'20:00',name:'Dîner',foods:['Saumon 200g','Patate douce 150g','Épinards 100g','2 œufs']},
+    ],
+    prise: [
+      {time:'07:30',name:'Petit-déjeuner copieux',foods:['Flocons d\'avoine 100g','Banane','Yaourt grec 250g','3 œufs','Lait 300ml','Miel 1cs']},
+      {time:'10:30',name:'Collation matin',foods:['Pain complet 3 tranches','Beurre de cacahuète 2cs','1 fruit','Lait 200ml']},
+      {time:'12:30',name:'Déjeuner',foods:['Poulet 250g','Riz cuit 250g','Brocolis 200g','Huile d\'olive 1cs','Avocat ½']},
+      {time:'16:00',name:'Pré-workout',foods:['2 bananes','Whey 1 dose','Pain complet 3 tranches','Beurre de cacahuète 2cs']},
+      {time:'20:00',name:'Dîner',foods:['Saumon 250g','Patate douce 250g','Épinards 150g','2 œufs']},
+      {time:'22:00',name:'Casein avant nuit',foods:['Skyr/fromage blanc 0% 250g','Flocons d\'avoine 30g','Beurre d\'amande 1cs']},
+    ],
+  },
+  alexandra: {
+    perte: [
+      {time:'07:30',name:'Petit-déjeuner protéiné',foods:['Yaourt grec 0% 250g','Fruits rouges 100g','Flocons d\'avoine 30g','Graines de chia 10g']},
+      {time:'12:00',name:'Déjeuner léger',foods:['Thon 150g','Quinoa 60g','Légumes grillés 200g','Avocat ¼','Vinaigre balsamique']},
+      {time:'16:00',name:'Collation protéinée',foods:['Fromage blanc 0% 150g','1 pomme','Amandes 10g']},
+      {time:'19:30',name:'Dîner light',foods:['Poulet 150g','Brocolis 200g','Salade verte','Huile d\'olive 1cc']},
+    ],
+    maintien: [
+      {time:'07:30',name:'Petit-déjeuner équilibré',foods:['Yaourt grec 0% 200g','Fruits rouges 100g','Flocons d\'avoine 40g','Graines de chia 15g']},
+      {time:'12:00',name:'Déjeuner équilibré',foods:['Thon 150g','Quinoa 100g','Légumes grillés 150g','Avocat ½']},
+      {time:'16:00',name:'Collation',foods:['Fromage blanc 0% 150g','1 pomme','Amandes 15g']},
+      {time:'19:30',name:'Dîner',foods:['Poulet 150g','Patate douce 150g','Salade verte','Huile d\'olive 1cs']},
+    ],
+    prise: [
+      {time:'07:30',name:'Petit-déjeuner consistant',foods:['Yaourt grec 250g','Fruits rouges 150g','Flocons d\'avoine 60g','Graines de chia 15g','Miel 1cs','Noix 15g']},
+      {time:'12:00',name:'Déjeuner',foods:['Thon 180g','Quinoa 130g','Légumes grillés 200g','Avocat ½','Huile d\'olive 1cs']},
+      {time:'16:00',name:'Collation muscu',foods:['Whey 1 dose','Banane','Amandes 20g','Pain complet 2 tranches']},
+      {time:'19:30',name:'Dîner copieux',foods:['Poulet 180g','Patate douce 200g','Salade verte','Avocat ¼','Huile d\'olive 1cs']},
+      {time:'22:00',name:'Avant nuit',foods:['Skyr/fromage blanc 0% 200g','Beurre d\'amande 1cs','Cannelle']},
+    ],
+  },
+};
+
+function getObjectiveTier(){
+  const obj = document.getElementById('nut-objectif')?.value || 'maintien';
+  if(obj === 'perte-forte' || obj === 'perte-douce') return 'perte';
+  if(obj === 'prise-douce' || obj === 'prise-masse') return 'prise';
+  return 'maintien';
+}
+
+// Aliases pour rétro-compatibilité (au cas où d'autres places les utilisent)
+const MEALS_LUI = MEALS.lui.maintien;
+const MEALS_ALEX = MEALS.alexandra.maintien;
 const FOODS = [
   {name:'Poulet (blanc)',kcal:165,prot:31,gl:0,lip:3.6},
   {name:'Thon (conserve)',kcal:132,prot:28,gl:0,lip:1.2},
@@ -4010,6 +4281,7 @@ function goPage(id){
   if(id==='progression') renderProgressCharts();
   if(id==='dashboard') renderDashboard();
   if(id==='programme') refreshProgramUI();
+  if(id==='gainage') renderGainage();
   if(id==='duo') renderDuo();
   if(id==='escalade') renderEscalade();
   if(id==='course') renderCourse();
@@ -4174,11 +4446,40 @@ function applySplit(){
   refreshProgramUI();
 }
 
+function progGetWeekKey(){
+  // Priorité : progWeekKey (navigation locale) > selectedWeekKey (calendrier) > semaine ISO actuelle
+  if(progWeekKey) return progWeekKey;
+  if(selectedWeekKey) return selectedWeekKey;
+  return getISOWeek(new Date());
+}
+
+function progShiftWeek(delta){
+  const cur = progGetWeekKey();
+  const [year, weekStr] = cur.split('-W');
+  const monday = getMondayOfWeek(parseInt(year), parseInt(weekStr));
+  monday.setUTCDate(monday.getUTCDate() + delta*7);
+  progWeekKey = getISOWeek(new Date(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate()));
+  refreshProgramUI();
+}
+function progPrevWeek(){ progShiftWeek(-1); }
+function progNextWeek(){ progShiftWeek(1); }
+function progGoToCurrentWeek(){ progWeekKey = getISOWeek(new Date()); refreshProgramUI(); }
+
 function refreshProgramUI(){
-  // Priorité au plan personnalisé du Calendrier pour la semaine en cours
-  const weekKey = (typeof getISOWeek==='function') ? getISOWeek(new Date()) : null;
-  const calPlan = weekKey ? getWeekPlan(weekKey) : null;
-  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest');
+  // Semaine affichée — navigation indépendante du calendrier
+  const weekKey = progGetWeekKey();
+  const calPlan = getWeekPlan(weekKey);
+  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest' || (d.exercises||[]).length>0);
+  const isCurrentWeek = weekKey === getISOWeek(new Date());
+
+  // Label semaine + dates
+  const [yr, wkStr] = weekKey.split('-W');
+  const mon = getMondayOfWeek(parseInt(yr), parseInt(wkStr));
+  const sun = new Date(mon); sun.setUTCDate(mon.getUTCDate()+6);
+  const lbl = document.getElementById('prog-week-label');
+  const dts = document.getElementById('prog-week-dates');
+  if(lbl) lbl.textContent = `Semaine ${wkStr}${isCurrentWeek?' · cette semaine':''}`;
+  if(dts) dts.textContent = `${mon.getUTCDate()}/${mon.getUTCMonth()+1} → ${sun.getUTCDate()}/${sun.getUTCMonth()+1}/${sun.getUTCFullYear()}`;
 
   const splitKey = state.splits[state.pid];
   const split = SPLITS[splitKey];
@@ -4188,19 +4489,20 @@ function refreshProgramUI(){
   const srcInfo = document.getElementById('prog-source-info');
   if(srcInfo){
     srcInfo.innerHTML = hasCustomPlan
-      ? `<span class="badge badge-green">📆 Semaine ${weekKey} (plan custom)</span> <button class="btn btn-ghost btn-sm" onclick="goPage('calendrier')" style="margin-left:8px">✏️ Modifier dans le calendrier</button>`
-      : `<span class="badge badge-gray">📋 Modèle du split (aucun plan custom cette semaine)</span> <button class="btn btn-primary btn-sm" onclick="goPage('calendrier')" style="margin-left:8px">📆 Planifier ma semaine</button>`;
+      ? `<span class="badge badge-green">📆 Plan custom (${weekKey})</span> <button class="btn btn-ghost btn-sm" onclick="goPage('calendrier')" style="margin-left:8px">✏️ Modifier dans le calendrier</button>`
+      : `<span class="badge badge-gray">📋 Modèle du split (aucun plan pour cette semaine)</span> <button class="btn btn-primary btn-sm" onclick="goPage('calendrier')" style="margin-left:8px">📆 Planifier ${isCurrentWeek?'ma semaine':'la semaine '+wkStr}</button>`;
   }
 
   document.getElementById('prog-grid').innerHTML = split.days.map((tplDay,i)=>{
-    let label, sub, color, isRest, isClimb;
+    let label, sub, color, isRest, isClimb, exCount = 0;
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
       const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
       const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'');
       label = sess.emoji+' '+sess.label + extras;
+      exCount = (d.exercises||[]).length;
       const subParts = [];
-      if(d.type!=='rest') subParts.push(`${(d.exercises||[]).length} exo${(d.exercises||[]).length>1?'s':''}`);
+      if(d.type!=='rest') subParts.push(`${exCount} exo${exCount>1?'s':''}`);
       if(d.climbing) subParts.push('🧗');
       if(d.running) subParts.push('🏃');
       sub = subParts.length ? subParts.join(' + ') : 'Récupération';
@@ -4213,16 +4515,34 @@ function refreshProgramUI(){
       color = tplDay.c || 'var(--muted)';
       isRest = tplDay.rest;
       isClimb = tplDay.climb;
+      exCount = isRest ? 0 : 6; // template fallback — toujours lançable
     }
+    const canLaunch = !isRest && exCount > 0;
     return `<div class="day-card ${isRest?'rest':''} ${state.selectedDay===i?'active-day':''} ${planned===i?'planned-day':''}" onclick="selectDay(${i})">
       ${planned===i?'<div class="planned-badge">📌 Aujourd\'hui</div>':''}
       <div class="day-name">${DAYS[i]}</div>
       <div class="day-muscle" style="color:${color}">${label}</div>
       <div class="day-sub">${sub}</div>
       ${!isRest?`<button class="day-pick-btn" onclick="event.stopPropagation();pickPlannedDay(${i})" title="Marquer comme séance d'aujourd'hui">${planned===i?'✓':'+'}</button>`:''}
+      ${canLaunch?`<button class="day-launch-btn" onclick="event.stopPropagation();launchSession(${i})" title="Lancer la séance">▶ Lancer</button>`:''}
     </div>`;
   }).join('');
   renderDayDetail(state.selectedDay);
+}
+
+function launchSession(dayIdx){
+  state.selectedDay = dayIdx;
+  refreshProgramUI();
+  setTimeout(()=>{
+    const detail = document.getElementById('day-detail');
+    if(detail) detail.scrollIntoView({behavior:'smooth', block:'start'});
+    const firstEx = document.querySelector('#day-exercises-list .ex-item');
+    if(firstEx){
+      firstEx.click();
+    } else {
+      toast('Aucun exercice à lancer pour ce jour','warn');
+    }
+  }, 150);
 }
 
 function pickPlannedDay(i){
@@ -4236,9 +4556,9 @@ function selectDay(i){
   state.selectedDay=i;
   refreshProgramUI();
   // Titre selon source : custom plan > split template
-  const weekKey = (typeof getISOWeek==='function') ? getISOWeek(new Date()) : null;
-  const calPlan = weekKey ? getWeekPlan(weekKey) : null;
-  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest');
+  const weekKey = progGetWeekKey();
+  const calPlan = getWeekPlan(weekKey);
+  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest' || (d.exercises||[]).length>0);
   let title;
   if(hasCustomPlan){
     const d = calPlan.days[i] || {type:'rest'};
@@ -4256,10 +4576,10 @@ function renderDayDetail(i){
   const list = document.getElementById('day-exercises-list');
   if(!list) return;
 
-  // Priorité au plan custom du Calendrier
-  const weekKey = (typeof getISOWeek==='function') ? getISOWeek(new Date()) : null;
-  const calPlan = weekKey ? getWeekPlan(weekKey) : null;
-  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest');
+  // Plan custom de la semaine affichée par Programme
+  const weekKey = progGetWeekKey();
+  const calPlan = getWeekPlan(weekKey);
+  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest' || (d.exercises||[]).length>0);
 
   if(hasCustomPlan){
     const d = calPlan.days[i] || {type:'rest', exercises:[]};
@@ -4431,6 +4751,246 @@ function playBeep(){
 }
 
 // ══════════════════════════════════════════════
+// GAINAGE — séances guidées avec chrono
+// ══════════════════════════════════════════════
+const GAINAGE_PROGRAMS = {
+  debut: {
+    label:'Débutant', emoji:'🌱', restSec:20,
+    desc:'Découverte du gainage. Maintiens chaque position 15-25s.',
+    exos:[
+      {name:'Planche sur les genoux', dur:20, tip:'Avant-bras et genoux au sol, corps en ligne droite, abdos contractés'},
+      {name:'Pont fessier (statique)', dur:25, tip:'Sur le dos, pieds au sol, monte les hanches, contraction max'},
+      {name:'Bird Dog — droit', dur:15, tip:'4 pattes, bras droit + jambe gauche tendus, dos plat'},
+      {name:'Bird Dog — gauche', dur:15, tip:'Inverse : bras gauche + jambe droite tendus, dos plat'},
+      {name:'Dead Bug', dur:25, tip:'Sur le dos, bras et jambes opposés en alternance lent'},
+      {name:'Planche latérale genoux droite', dur:15, tip:'Sur le côté, genoux fléchis, hanches en l\'air'},
+      {name:'Planche latérale genoux gauche', dur:15, tip:'Inverse côté, hanches bien hautes'},
+    ]
+  },
+  inter: {
+    label:'Intermédiaire', emoji:'💪', restSec:15,
+    desc:'Progression solide. Maintien 30-45s par position.',
+    exos:[
+      {name:'Planche complète', dur:40, tip:'Avant-bras au sol, pieds tendus, ligne droite parfaite'},
+      {name:'Planche latérale droite', dur:30, tip:'Pieds empilés, hanches en l\'air, corps aligné'},
+      {name:'Planche latérale gauche', dur:30, tip:'Inverse côté, pas de descente des hanches'},
+      {name:'Hollow Hold', dur:25, tip:'Sur le dos, lombaires plaqués au sol, bras et jambes tendus'},
+      {name:'Mountain Climbers lents', dur:30, tip:'Position planche, alterner les genoux vers la poitrine lentement'},
+      {name:'Bird Dog dynamique', dur:30, tip:'Alterne bras et jambe opposés en gardant le dos plat'},
+      {name:'Planche bras tendus', dur:30, tip:'Mains au sol, bras tendus, gainage profond'},
+    ]
+  },
+  avance: {
+    label:'Avancé', emoji:'🔥', restSec:12,
+    desc:'Niveau haut. Tension maximale, respiration contrôlée.',
+    exos:[
+      {name:'Planche bras tendus longue', dur:60, tip:'Mains au sol, ligne droite parfaite, respiration profonde'},
+      {name:'Planche latérale lestée droite', dur:45, tip:'Avec poids sur la hanche si possible, sinon levée de jambe'},
+      {name:'Planche latérale lestée gauche', dur:45, tip:'Idem côté gauche, pas d\'effondrement'},
+      {name:'Hollow Hold avancé', dur:45, tip:'Bras tendus au-dessus de la tête, jambes basses, lombaires plaqués'},
+      {name:'RKC Plank', dur:30, tip:'Planche très contractée : fessiers + abdos + quadri à 100%'},
+      {name:'Ab Wheel Hold', dur:30, tip:'À genoux, roue (ou substitut) loin devant, gainage extrême'},
+      {name:'Planche avec touches d\'épaule', dur:45, tip:'Planche bras tendus, alterne touche d\'épaule sans bouger les hanches'},
+    ]
+  }
+};
+
+let gainageState = {
+  level: 'debut',
+  exIdx: 0,
+  phase: 'idle', // idle | running | rest | done
+  totalSec: 0,
+  secondsLeft: 0,
+  intervalId: null,
+};
+
+function selectGainageLevel(lvl){
+  gainageReset();
+  gainageState.level = lvl;
+  document.querySelectorAll('#gainage-levels .pill').forEach(p=>{
+    p.classList.toggle('active', p.dataset.lvl === lvl);
+  });
+  renderGainage();
+}
+
+function renderGainage(){
+  const prog = GAINAGE_PROGRAMS[gainageState.level];
+  if(!prog) return;
+  document.getElementById('gainage-level-info').innerHTML =
+    `<strong>${prog.emoji} ${prog.label}</strong> · ${prog.exos.length} exercices · repos ${prog.restSec}s entre · total ~${Math.ceil((prog.exos.reduce((s,e)=>s+e.dur,0) + prog.restSec*(prog.exos.length-1))/60)} min<br><span style="font-size:0.78rem">${prog.desc}</span>`;
+
+  // Liste
+  document.getElementById('gainage-list').innerHTML = prog.exos.map((e,i)=>{
+    const active = (gainageState.phase!=='idle' && gainageState.exIdx===i);
+    const done = gainageState.phase==='done' || (gainageState.exIdx>i && gainageState.phase!=='idle');
+    return `<div class="gainage-row ${active?'active':''} ${done?'done':''}" onclick="gainageJump(${i})">
+      <div class="gainage-num">${done?'✓':i+1}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:0.92rem">${e.name}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${e.tip}</div>
+      </div>
+      <div style="font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums">${e.dur}s</div>
+    </div>`;
+  }).join('');
+
+  // État actuel
+  const cur = prog.exos[gainageState.exIdx] || prog.exos[0];
+  document.getElementById('gainage-ex-name').textContent = cur.name;
+  document.getElementById('gainage-ex-tip').textContent = cur.tip;
+
+  // Phase label
+  const phaseLbl = document.getElementById('gainage-phase-label');
+  if(gainageState.phase==='idle') phaseLbl.textContent = `Exercice ${gainageState.exIdx+1}/${prog.exos.length} · Prêt`;
+  else if(gainageState.phase==='running') phaseLbl.textContent = `Exercice ${gainageState.exIdx+1}/${prog.exos.length} · En cours`;
+  else if(gainageState.phase==='rest') phaseLbl.textContent = `Repos · prochain : ${prog.exos[gainageState.exIdx+1]?.name||'—'}`;
+  else if(gainageState.phase==='done') phaseLbl.textContent = `✅ Séance terminée !`;
+
+  // Step label
+  document.getElementById('gainage-step-label').textContent =
+    gainageState.phase==='rest' ? 'Repos' :
+    gainageState.phase==='done' ? 'Terminé' :
+    gainageState.phase==='running' ? 'En tenue' : 'Prêt';
+
+  // Time
+  gainageRenderTime();
+
+  // Progress bar / segments
+  const prog2 = document.getElementById('gainage-progress');
+  prog2.innerHTML = `<div style="display:flex;gap:3px">${prog.exos.map((e,i)=>{
+    const cls = (gainageState.phase==='done' || (gainageState.exIdx>i && gainageState.phase!=='idle')) ? 'done' :
+                (gainageState.exIdx===i && gainageState.phase!=='idle') ? 'active' : '';
+    return `<div class="gainage-seg ${cls}" title="${e.name}"></div>`;
+  }).join('')}</div>`;
+}
+
+function gainageRenderTime(){
+  const sec = Math.max(0, Math.ceil(gainageState.secondsLeft));
+  const m = Math.floor(sec/60), s = sec%60;
+  document.getElementById('gainage-time').textContent = `${m}:${String(s).padStart(2,'0')}`;
+  const ring = document.getElementById('gainage-ring');
+  const pct = gainageState.totalSec > 0 ? (gainageState.secondsLeft / gainageState.totalSec) : 1;
+  if(ring) ring.style.strokeDashoffset = 553 * (1 - Math.max(0, Math.min(1, pct)));
+  if(ring) ring.style.stroke = gainageState.phase==='rest' ? 'var(--green)' : 'var(--acc)';
+}
+
+function gainageToggle(){
+  if(gainageState.phase==='done'){
+    gainageReset();
+    return;
+  }
+  if(gainageState.intervalId){
+    // Pause
+    clearInterval(gainageState.intervalId);
+    gainageState.intervalId = null;
+    document.getElementById('gainage-toggle-btn').textContent = '▶ Reprendre';
+    return;
+  }
+  // Start (ou resume)
+  if(gainageState.phase==='idle'){
+    const prog = GAINAGE_PROGRAMS[gainageState.level];
+    gainageState.phase = 'running';
+    gainageState.totalSec = prog.exos[gainageState.exIdx].dur;
+    gainageState.secondsLeft = gainageState.totalSec;
+  }
+  document.getElementById('gainage-toggle-btn').textContent = '⏸ Pause';
+  gainageState.intervalId = setInterval(gainageTick, 100);
+  renderGainage();
+}
+
+function gainageTick(){
+  gainageState.secondsLeft -= 0.1;
+  if(gainageState.secondsLeft <= 0){
+    clearInterval(gainageState.intervalId);
+    gainageState.intervalId = null;
+    try{ playBeep(); }catch(e){}
+    if(navigator.vibrate) navigator.vibrate([150,80,150]);
+    // Transition de phase
+    const prog = GAINAGE_PROGRAMS[gainageState.level];
+    if(gainageState.phase === 'running'){
+      // Plus d'exos ? Terminé
+      if(gainageState.exIdx >= prog.exos.length-1){
+        gainageState.phase = 'done';
+        gainageState.secondsLeft = 0;
+        gainageState.totalSec = 0;
+        document.getElementById('gainage-toggle-btn').textContent = '↻ Recommencer';
+        renderGainage();
+        return;
+      }
+      // Sinon → rest
+      gainageState.phase = 'rest';
+      gainageState.totalSec = prog.restSec;
+      gainageState.secondsLeft = prog.restSec;
+    } else if(gainageState.phase === 'rest'){
+      // Passage à l'exo suivant
+      gainageState.exIdx++;
+      gainageState.phase = 'running';
+      gainageState.totalSec = prog.exos[gainageState.exIdx].dur;
+      gainageState.secondsLeft = gainageState.totalSec;
+    }
+    gainageState.intervalId = setInterval(gainageTick, 100);
+    renderGainage();
+  } else {
+    gainageRenderTime();
+  }
+}
+
+function gainageSkip(){
+  if(gainageState.phase==='idle' || gainageState.phase==='done') return;
+  // Skip = force fin de phase courante
+  gainageState.secondsLeft = 0.05;
+}
+
+function gainagePrev(){
+  if(gainageState.exIdx === 0 && gainageState.phase!=='rest') return;
+  if(gainageState.intervalId){
+    clearInterval(gainageState.intervalId);
+    gainageState.intervalId = null;
+  }
+  const prog = GAINAGE_PROGRAMS[gainageState.level];
+  if(gainageState.phase === 'rest'){
+    // Retourne à l'exo courant
+    gainageState.phase = 'running';
+    gainageState.totalSec = prog.exos[gainageState.exIdx].dur;
+    gainageState.secondsLeft = gainageState.totalSec;
+  } else {
+    gainageState.exIdx = Math.max(0, gainageState.exIdx-1);
+    gainageState.phase = 'running';
+    gainageState.totalSec = prog.exos[gainageState.exIdx].dur;
+    gainageState.secondsLeft = gainageState.totalSec;
+  }
+  document.getElementById('gainage-toggle-btn').textContent = '▶ Reprendre';
+  renderGainage();
+}
+
+function gainageJump(idx){
+  if(gainageState.intervalId){
+    clearInterval(gainageState.intervalId);
+    gainageState.intervalId = null;
+  }
+  const prog = GAINAGE_PROGRAMS[gainageState.level];
+  gainageState.exIdx = idx;
+  gainageState.phase = 'running';
+  gainageState.totalSec = prog.exos[idx].dur;
+  gainageState.secondsLeft = gainageState.totalSec;
+  document.getElementById('gainage-toggle-btn').textContent = '▶ Démarrer';
+  renderGainage();
+}
+
+function gainageReset(){
+  if(gainageState.intervalId){
+    clearInterval(gainageState.intervalId);
+    gainageState.intervalId = null;
+  }
+  gainageState.exIdx = 0;
+  gainageState.phase = 'idle';
+  gainageState.totalSec = 0;
+  gainageState.secondsLeft = 0;
+  const btn = document.getElementById('gainage-toggle-btn');
+  if(btn) btn.textContent = '▶ Démarrer';
+  if(document.getElementById('page-gainage')) renderGainage();
+}
+
+// ══════════════════════════════════════════════
 // 1RM
 // ══════════════════════════════════════════════
 function calc1RM(){
@@ -4474,6 +5034,8 @@ function loadNutritionProfile(){
   document.getElementById('surplus-range').value=p.surplus;
   document.getElementById('nut-prot-ratio').value=p.protRatio;
   updateSurplusLabel();
+  syncObjectiveFromSlider();
+  onActivityChange();
   document.getElementById('nut-profile-sub').textContent = state.pid==='alexandra'
     ? 'Alexandra · 57 kg · Recomposition — léger déficit + protéines élevées'
     : 'Lui · 74 kg · Prise de masse — surplus calorique + protéines élevées';
@@ -4485,7 +5047,58 @@ function loadNutritionProfile(){
 function updateSurplusLabel(){
   const v=+document.getElementById('surplus-range').value;
   document.getElementById('surplus-val').textContent=(v>=0?'+':'')+v+' kcal';
-  document.getElementById('surplus-label').textContent=v<0?'Déficit calorique':'Surplus calorique';
+  document.getElementById('surplus-label').textContent=v<0?'Déficit calorique':v===0?'Maintien':'Surplus calorique';
+}
+
+const OBJECTIVE_SURPLUS = {
+  'perte-forte': -400,
+  'perte-douce': -200,
+  'maintien': 0,
+  'prise-douce': 200,
+  'prise-masse': 400,
+};
+
+function applyObjective(){
+  const obj = document.getElementById('nut-objectif').value;
+  const surplus = OBJECTIVE_SURPLUS[obj];
+  if(surplus !== undefined){
+    document.getElementById('surplus-range').value = surplus;
+    updateSurplusLabel();
+    calcNutrition();
+    genMeals();
+  }
+}
+
+function syncObjectiveFromSlider(){
+  // Quand l'utilisateur glisse le slider, on recale le select sur la valeur la plus proche
+  const v = +document.getElementById('surplus-range').value;
+  let best = 'maintien', bestDiff = Infinity;
+  for(const [k, s] of Object.entries(OBJECTIVE_SURPLUS)){
+    const d = Math.abs(s - v);
+    if(d < bestDiff){ bestDiff = d; best = k; }
+  }
+  // Seulement si très proche (±50 kcal) pour éviter de "snapper" toutes les valeurs intermédiaires
+  if(bestDiff <= 50){
+    document.getElementById('nut-objectif').value = best;
+    genMeals();
+  }
+}
+
+function onActivityChange(){
+  const act = +document.getElementById('nut-activite').value;
+  const hint = document.getElementById('nut-activite-hint');
+  if(!hint) return;
+  if(act <= 1.25){
+    hint.textContent = '💼 Travail de bureau, déplacements limités. Ajoute tes séances comme bonus calorique à part.';
+  } else if(act <= 1.4){
+    hint.textContent = 'Activité légère intégrée : 1-3 séances par semaine.';
+  } else if(act <= 1.6){
+    hint.textContent = 'Activité modérée intégrée : 3-5 séances par semaine.';
+  } else if(act <= 1.75){
+    hint.textContent = 'Activité intense intégrée : 6-7 séances par semaine.';
+  } else {
+    hint.textContent = 'Activité très intense : 2 séances par jour ou athlète.';
+  }
 }
 
 function calcNutrition(){
@@ -4515,8 +5128,10 @@ function calcNutrition(){
     ${macro('Glucides','var(--blue)',Math.max(glucides,0),'g',Math.round(Math.max(glucides,0)*4/Math.max(total,1)*100))}
     ${macro('Lipides','var(--purple)',lip,'g',Math.round(lip*9/Math.max(total,1)*100))}
   </div>`;
-  document.getElementById('dash-kcal').textContent=Math.max(total,1000).toLocaleString('fr');
-  document.getElementById('dash-prot').textContent=prot;
+  const dashK = document.getElementById('dash-kcal');
+  if(dashK) dashK.textContent = Math.max(total,1000).toLocaleString('fr');
+  const dashP = document.getElementById('dash-prot');
+  if(dashP) dashP.textContent = prot;
 }
 
 function macro(label,color,val,unit,pct){
@@ -4527,15 +5142,20 @@ function macro(label,color,val,unit,pct){
 }
 
 function genMeals(){
-  const meals=state.pid==='alexandra'?MEALS_ALEX:MEALS_LUI;
-  document.getElementById('meals-plan').innerHTML=meals.map(m=>`
+  const tier = getObjectiveTier();
+  const profileKey = (state.pid && MEALS[state.pid]) ? state.pid : (state.pid==='alexandra'?'alexandra':'lui');
+  const meals = MEALS[profileKey]?.[tier] || MEALS.lui.maintien;
+  const tierLabel = {perte:'🔥 Perte de poids', maintien:'⚖️ Maintien', prise:'💪 Prise de masse'}[tier];
+  document.getElementById('meals-plan').innerHTML = `
+    <div style="font-size:0.74rem;color:var(--muted);margin-bottom:10px">Plan adapté à l'objectif : <strong style="color:var(--acc)">${tierLabel}</strong> · ${meals.length} repas/jour</div>
+    ${meals.map(m=>`
     <div class="card-sm" style="margin-bottom:8px">
       <div style="display:flex;gap:10px;align-items:flex-start">
         <span class="badge badge-acc">${m.time}</span>
         <div><div style="font-weight:700;font-size:0.88rem;margin-bottom:4px">${m.name}</div>
         <div style="display:flex;flex-wrap:wrap;gap:5px">${m.foods.map(f=>`<span class="set-badge">${f}</span>`).join('')}</div></div>
       </div>
-    </div>`).join('');
+    </div>`).join('')}`;
 }
 
 function renderFoodTable(){
