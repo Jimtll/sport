@@ -346,9 +346,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .run-toggle{display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(59,130,246,0.08);border:1px solid transparent;transition:all 0.15s;align-self:flex-start;white-space:nowrap}
 .run-toggle:hover{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3)}
 .run-toggle input{margin:0;cursor:pointer;accent-color:#3b82f6;width:14px;height:14px}
+.gainage-toggle{display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(139,92,246,0.08);border:1px solid transparent;transition:all 0.15s;align-self:flex-start;white-space:nowrap}
+.gainage-toggle:hover{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3)}
+.gainage-toggle input{margin:0;cursor:pointer;accent-color:#8b5cf6;width:14px;height:14px}
+.gainage-log-btn{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;padding:3px 8px;border-radius:99px;font-size:0.65rem;font-weight:700;cursor:pointer;align-self:flex-start;white-space:nowrap}
+.gainage-log-btn:hover{background:rgba(139,92,246,0.25)}
 .week-day.has-running{border-color:#3b82f6;box-shadow:inset 0 0 0 1px rgba(59,130,246,0.3)}
 .week-day.has-running.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3),inset 0 0 0 2px rgba(59,130,246,0.3)}
 .week-day.has-running .run-toggle{background:rgba(59,130,246,0.18);color:#60a5fa;font-weight:700}
+.week-day.has-gainage{border-color:#8b5cf6;box-shadow:inset 0 0 0 1px rgba(139,92,246,0.3)}
+.week-day.has-gainage .gainage-toggle{background:rgba(139,92,246,0.18);color:#a78bfa;font-weight:700}
 .run-log-btn{display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);color:#60a5fa;font-weight:700;align-self:flex-start;margin-left:6px;white-space:nowrap}
 .run-log-btn:hover{background:#3b82f6;color:#0f1117}
 
@@ -374,6 +381,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   .climb-log-btn,.run-log-btn{font-size:0.64rem;padding:2px 6px}
 }
 .cal-day-dot.climb-dot{background:none !important;font-size:6px !important;bottom:-1px !important;width:auto !important;height:auto !important;line-height:1}
+.cal-day-dot.gainage-dot{background:none !important;font-size:6px !important;bottom:-1px !important;width:auto !important;height:auto !important;line-height:1}
 .week-day-add:hover{color:var(--acc);border-color:var(--acc)}
 .week-summary{margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:0.78rem;color:var(--muted2);display:flex;gap:14px;flex-wrap:wrap}
 .week-summary strong{color:var(--text)}
@@ -654,6 +662,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
     box-shadow:0 2px 8px rgba(0,0,0,0.4);
   }
   .nav-sentinel{height:1px;width:100%}
+  .nav-spacer{height:0;width:100%}
   .nav-btn{padding:11px 14px}
   /* Bloque le scroll horizontal mobile (overflow-x:clip n'interfère pas avec sticky) */
   html,body{height:auto;overflow-x:clip;max-width:100vw;width:100%}
@@ -913,6 +922,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <button class="nav-btn" onclick="goPage('journal')">📓 Journal</button>
   <button class="nav-btn" onclick="goPage('duo')">👫 Duo</button>
 </nav>
+<div class="nav-spacer" id="nav-spacer" aria-hidden="true"></div>
 
 <div class="content">
 
@@ -2306,11 +2316,13 @@ function renderCalendar(){
         const hasSession = sess && sess.type !== 'rest';
         const hasClimbing = sess && sess.climbing;
         const hasRunning = sess && sess.running;
+        const hasGainage = sess && sess.gainage;
         const color = hasSession ? SESSION_TYPES[sess.type]?.color : null;
         const dots = [];
         if(hasSession) dots.push(`<span class="cal-day-dot" style="background:${color}"></span>`);
         if(hasClimbing) dots.push(`<span class="cal-day-dot climb-dot">🧗</span>`);
         if(hasRunning) dots.push(`<span class="cal-day-dot run-dot">🏃</span>`);
+        if(hasGainage) dots.push(`<span class="cal-day-dot gainage-dot">🧘</span>`);
         cells.push(`<div class="cal-day ${inMonth?'in-month':''} ${isToday?'is-today':''} ${hasSession?'has-session':''}" style="${hasSession&&!isToday?`color:${color}`:''}">${d.getDate()}${!isToday?dots.join(''):''}</div>`);
       }
       if(!touchesMonth) break;
@@ -2355,7 +2367,8 @@ function renderWeekEditor(){
     const sessType = SESSION_TYPES[day.type] || SESSION_TYPES.rest;
     const hasClimbing = !!day.climbing;
     const hasRunning = !!day.running;
-    html += `<div class="week-day ${hasClimbing?'has-climbing':''} ${hasRunning?'has-running':''}">
+    const hasGainage = !!day.gainage;
+    html += `<div class="week-day ${hasClimbing?'has-climbing':''} ${hasRunning?'has-running':''} ${hasGainage?'has-gainage':''}">
       <div class="week-day-header">
         <div class="week-day-name">${days[i].substr(0,3)}</div>
         <div class="week-day-date">${date.getUTCDate()}/${date.getUTCMonth()+1}</div>
@@ -2378,6 +2391,13 @@ function renderWeekEditor(){
         </label>
         ${hasRunning?`<button class="run-log-btn" onclick="openRunningModal()">📝 Logger</button>`:''}
       </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+        <label class="gainage-toggle">
+          <input type="checkbox" ${hasGainage?'checked':''} onchange="toggleGainageDay(${i}, this.checked)">
+          <span>🧘 Gainage</span>
+        </label>
+        ${hasGainage?`<button class="gainage-log-btn" onclick="goPage('gainage')">📝 Lancer</button>`:''}
+      </div>
       <div class="week-day-exercises">
         ${(day.exercises||[]).map(exId=>{
           const ex = EXERCISES.find(e=>e.id===exId);
@@ -2397,12 +2417,14 @@ function renderWeekSummary(){
   const muscu = plan.days.filter(d=>d.type!=='rest').length;
   const climbingDays = plan.days.filter(d=>d.climbing).length;
   const runningDays = plan.days.filter(d=>d.running).length;
+  const gainageDays = plan.days.filter(d=>d.gainage).length;
   const totalEx = plan.days.reduce((s,d)=>s+(d.exercises?.length||0),0);
   const types = [...new Set(plan.days.filter(d=>d.type!=='rest').map(d=>d.type))];
   document.getElementById('week-summary').innerHTML = `
     <span><strong>${muscu}</strong> séances muscu</span>
     <span><strong>${climbingDays}</strong> 🧗 escalade</span>
     <span><strong>${runningDays}</strong> 🏃 course</span>
+    <span><strong>${gainageDays}</strong> 🧘 gainage</span>
     <span><strong>${totalEx}</strong> exercices</span>
     <span>${types.map(t=>SESSION_TYPES[t]?.emoji+SESSION_TYPES[t]?.label).join(' · ')||'—'}</span>
   `;
@@ -2419,6 +2441,14 @@ function toggleClimbingDay(dayIdx, checked){
 function toggleRunningDay(dayIdx, checked){
   const plan = getWeekPlan(selectedWeekKey);
   plan.days[dayIdx].running = !!checked;
+  saveWeekPlan(selectedWeekKey, plan);
+  renderWeekEditor();
+  renderCalendar();
+}
+
+function toggleGainageDay(dayIdx, checked){
+  const plan = getWeekPlan(selectedWeekKey);
+  plan.days[dayIdx].gainage = !!checked;
   saveWeekPlan(selectedWeekKey, plan);
   renderWeekEditor();
   renderCalendar();
@@ -4373,15 +4403,16 @@ function renderDashboard(){
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
       const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-      const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'');
+      const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'') + (d.gainage?' + 🧘':'');
       label = sess.emoji+' '+sess.label + extras;
       const sp = [];
       if(d.type!=='rest') sp.push(`${(d.exercises||[]).length} exo${(d.exercises||[]).length>1?'s':''}`);
       if(d.climbing) sp.push('🧗');
       if(d.running) sp.push('🏃');
+      if(d.gainage) sp.push('🧘');
       sub = sp.length ? sp.join(' + ') : 'Repos';
       color = sess.color;
-      isRest = d.type==='rest' && !d.climbing && !d.running;
+      isRest = d.type==='rest' && !d.climbing && !d.running && !d.gainage;
     } else {
       label = tplDay.l; sub = tplDay.s||'—'; color = tplDay.c||'var(--muted)'; isRest = tplDay.rest;
     }
@@ -4545,16 +4576,17 @@ function refreshProgramUI(){
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
       const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-      const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'');
+      const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'') + (d.gainage?' + 🧘':'');
       label = sess.emoji+' '+sess.label + extras;
       exCount = (d.exercises||[]).length;
       const subParts = [];
       if(d.type!=='rest') subParts.push(`${exCount} exo${exCount>1?'s':''}`);
       if(d.climbing) subParts.push('🧗');
       if(d.running) subParts.push('🏃');
+      if(d.gainage) subParts.push('🧘');
       sub = subParts.length ? subParts.join(' + ') : 'Récupération';
       color = sess.color;
-      isRest = d.type==='rest' && !d.climbing && !d.running;
+      isRest = d.type==='rest' && !d.climbing && !d.running && !d.gainage;
       isClimb = d.type==='climbing' || d.climbing;
     } else {
       label = tplDay.l;
@@ -4802,42 +4834,42 @@ function playBeep(){
 // ══════════════════════════════════════════════
 const GAINAGE_PROGRAMS = {
   debut: {
-    label:'Débutant', emoji:'🌱', restSec:20,
-    desc:'Découverte du gainage. Maintiens chaque position 15-25s.',
+    label:'Débutant', emoji:'🌱', restSec:25, restBetweenRounds:60, rounds:2,
+    desc:'Découverte du gainage. 7 exos × 2 tours, maintiens 25-35s.',
     exos:[
-      {name:'Planche sur les genoux', dur:20, tip:'Avant-bras et genoux au sol, corps en ligne droite, abdos contractés'},
-      {name:'Pont fessier (statique)', dur:25, tip:'Sur le dos, pieds au sol, monte les hanches, contraction max'},
-      {name:'Bird Dog — droit', dur:15, tip:'4 pattes, bras droit + jambe gauche tendus, dos plat'},
-      {name:'Bird Dog — gauche', dur:15, tip:'Inverse : bras gauche + jambe droite tendus, dos plat'},
-      {name:'Dead Bug', dur:25, tip:'Sur le dos, bras et jambes opposés en alternance lent'},
-      {name:'Planche latérale genoux droite', dur:15, tip:'Sur le côté, genoux fléchis, hanches en l\'air'},
-      {name:'Planche latérale genoux gauche', dur:15, tip:'Inverse côté, hanches bien hautes'},
+      {name:'Planche sur les genoux', dur:30, tip:'Avant-bras et genoux au sol, corps en ligne droite, abdos contractés'},
+      {name:'Pont fessier (statique)', dur:35, tip:'Sur le dos, pieds au sol, monte les hanches, contraction max'},
+      {name:'Bird Dog — droit', dur:25, tip:'4 pattes, bras droit + jambe gauche tendus, dos plat'},
+      {name:'Bird Dog — gauche', dur:25, tip:'Inverse : bras gauche + jambe droite tendus, dos plat'},
+      {name:'Dead Bug', dur:35, tip:'Sur le dos, bras et jambes opposés en alternance lent'},
+      {name:'Planche latérale genoux D', dur:25, tip:'Sur le côté, genoux fléchis, hanches en l\'air'},
+      {name:'Planche latérale genoux G', dur:25, tip:'Inverse côté, hanches bien hautes'},
     ]
   },
   inter: {
-    label:'Intermédiaire', emoji:'💪', restSec:15,
-    desc:'Progression solide. Maintien 30-45s par position.',
+    label:'Intermédiaire', emoji:'💪', restSec:20, restBetweenRounds:60, rounds:2,
+    desc:'Progression solide. 7 exos × 2 tours, maintiens 45-60s.',
     exos:[
-      {name:'Planche complète', dur:40, tip:'Avant-bras au sol, pieds tendus, ligne droite parfaite'},
-      {name:'Planche latérale droite', dur:30, tip:'Pieds empilés, hanches en l\'air, corps aligné'},
-      {name:'Planche latérale gauche', dur:30, tip:'Inverse côté, pas de descente des hanches'},
-      {name:'Hollow Hold', dur:25, tip:'Sur le dos, lombaires plaqués au sol, bras et jambes tendus'},
-      {name:'Mountain Climbers lents', dur:30, tip:'Position planche, alterner les genoux vers la poitrine lentement'},
-      {name:'Bird Dog dynamique', dur:30, tip:'Alterne bras et jambe opposés en gardant le dos plat'},
-      {name:'Planche bras tendus', dur:30, tip:'Mains au sol, bras tendus, gainage profond'},
+      {name:'Planche complète', dur:60, tip:'Avant-bras au sol, pieds tendus, ligne droite parfaite'},
+      {name:'Planche latérale droite', dur:45, tip:'Pieds empilés, hanches en l\'air, corps aligné'},
+      {name:'Planche latérale gauche', dur:45, tip:'Inverse côté, pas de descente des hanches'},
+      {name:'Hollow Hold', dur:45, tip:'Sur le dos, lombaires plaqués au sol, bras et jambes tendus'},
+      {name:'Mountain Climbers lents', dur:50, tip:'Position planche, alterner les genoux vers la poitrine lentement'},
+      {name:'Bird Dog dynamique', dur:50, tip:'Alterne bras et jambe opposés en gardant le dos plat'},
+      {name:'Planche bras tendus', dur:50, tip:'Mains au sol, bras tendus, gainage profond'},
     ]
   },
   avance: {
-    label:'Avancé', emoji:'🔥', restSec:12,
-    desc:'Niveau haut. Tension maximale, respiration contrôlée.',
+    label:'Avancé', emoji:'🔥', restSec:15, restBetweenRounds:45, rounds:2,
+    desc:'Niveau haut. 7 exos × 2 tours, maintiens 60-90s, tension max.',
     exos:[
-      {name:'Planche bras tendus longue', dur:60, tip:'Mains au sol, ligne droite parfaite, respiration profonde'},
-      {name:'Planche latérale lestée droite', dur:45, tip:'Avec poids sur la hanche si possible, sinon levée de jambe'},
-      {name:'Planche latérale lestée gauche', dur:45, tip:'Idem côté gauche, pas d\'effondrement'},
-      {name:'Hollow Hold avancé', dur:45, tip:'Bras tendus au-dessus de la tête, jambes basses, lombaires plaqués'},
-      {name:'RKC Plank', dur:30, tip:'Planche très contractée : fessiers + abdos + quadri à 100%'},
-      {name:'Ab Wheel Hold', dur:30, tip:'À genoux, roue (ou substitut) loin devant, gainage extrême'},
-      {name:'Planche avec touches d\'épaule', dur:45, tip:'Planche bras tendus, alterne touche d\'épaule sans bouger les hanches'},
+      {name:'Planche bras tendus longue', dur:90, tip:'Mains au sol, ligne droite parfaite, respiration profonde'},
+      {name:'Planche latérale lestée D', dur:60, tip:'Avec poids sur la hanche si possible, sinon levée de jambe'},
+      {name:'Planche latérale lestée G', dur:60, tip:'Idem côté gauche, pas d\'effondrement'},
+      {name:'Hollow Hold avancé', dur:60, tip:'Bras tendus au-dessus de la tête, jambes basses, lombaires plaqués'},
+      {name:'RKC Plank', dur:45, tip:'Planche très contractée : fessiers + abdos + quadri à 100%'},
+      {name:'Ab Wheel Hold', dur:45, tip:'À genoux, roue (ou substitut) loin devant, gainage extrême'},
+      {name:'Planche touches d\'épaule', dur:60, tip:'Planche bras tendus, alterne touche d\'épaule sans bouger les hanches'},
     ]
   }
 };
@@ -4845,7 +4877,8 @@ const GAINAGE_PROGRAMS = {
 let gainageState = {
   level: 'debut',
   exIdx: 0,
-  phase: 'idle', // idle | running | rest | done
+  round: 1, // tour courant (1 ou 2)
+  phase: 'idle', // idle | running | rest | rest-round | done
   totalSec: 0,
   secondsLeft: 0,
   intervalId: null,
@@ -4863,13 +4896,16 @@ function selectGainageLevel(lvl){
 function renderGainage(){
   const prog = GAINAGE_PROGRAMS[gainageState.level];
   if(!prog) return;
+  const rounds = prog.rounds || 1;
+  const totalTour1 = prog.exos.reduce((s,e)=>s+e.dur,0) + prog.restSec*(prog.exos.length-1);
+  const totalAll = totalTour1*rounds + (prog.restBetweenRounds||0)*(rounds-1);
   document.getElementById('gainage-level-info').innerHTML =
-    `<strong>${prog.emoji} ${prog.label}</strong> · ${prog.exos.length} exercices · repos ${prog.restSec}s entre · total ~${Math.ceil((prog.exos.reduce((s,e)=>s+e.dur,0) + prog.restSec*(prog.exos.length-1))/60)} min<br><span style="font-size:0.78rem">${prog.desc}</span>`;
+    `<strong>${prog.emoji} ${prog.label}</strong> · ${prog.exos.length} exos × <strong>${rounds} tour${rounds>1?'s':''}</strong> (${prog.exos.length*rounds} total) · repos ${prog.restSec}s entre · total ~${Math.ceil(totalAll/60)} min<br><span style="font-size:0.78rem">${prog.desc}</span>`;
 
   // Liste
   document.getElementById('gainage-list').innerHTML = prog.exos.map((e,i)=>{
     const active = (gainageState.phase!=='idle' && gainageState.exIdx===i);
-    const done = gainageState.phase==='done' || (gainageState.exIdx>i && gainageState.phase!=='idle');
+    const done = gainageState.phase==='done' || (gainageState.round > 1 && gainageState.exIdx>i && gainageState.phase!=='idle');
     return `<div class="gainage-row ${active?'active':''} ${done?'done':''}" onclick="gainageJump(${i})">
       <div class="gainage-num">${done?'✓':i+1}</div>
       <div style="flex:1">
@@ -4887,27 +4923,37 @@ function renderGainage(){
 
   // Phase label
   const phaseLbl = document.getElementById('gainage-phase-label');
-  if(gainageState.phase==='idle') phaseLbl.textContent = `Exercice ${gainageState.exIdx+1}/${prog.exos.length} · Prêt`;
-  else if(gainageState.phase==='running') phaseLbl.textContent = `Exercice ${gainageState.exIdx+1}/${prog.exos.length} · En cours`;
-  else if(gainageState.phase==='rest') phaseLbl.textContent = `Repos · prochain : ${prog.exos[gainageState.exIdx+1]?.name||'—'}`;
-  else if(gainageState.phase==='done') phaseLbl.textContent = `✅ Séance terminée !`;
+  const tourTxt = `Tour ${gainageState.round}/${rounds}`;
+  if(gainageState.phase==='idle') phaseLbl.textContent = `${tourTxt} · Exercice ${gainageState.exIdx+1}/${prog.exos.length} · Prêt`;
+  else if(gainageState.phase==='running') phaseLbl.textContent = `${tourTxt} · Exercice ${gainageState.exIdx+1}/${prog.exos.length} · En cours`;
+  else if(gainageState.phase==='rest') phaseLbl.textContent = `${tourTxt} · Repos · prochain : ${prog.exos[gainageState.exIdx+1]?.name||'—'}`;
+  else if(gainageState.phase==='rest-round') phaseLbl.textContent = `Pause inter-tours · prochain : Tour ${gainageState.round+1}/${rounds}`;
+  else if(gainageState.phase==='done') phaseLbl.textContent = `✅ Séance terminée — ${rounds} tour${rounds>1?'s':''} !`;
 
   // Step label
   document.getElementById('gainage-step-label').textContent =
     gainageState.phase==='rest' ? 'Repos' :
+    gainageState.phase==='rest-round' ? 'Pause tour' :
     gainageState.phase==='done' ? 'Terminé' :
     gainageState.phase==='running' ? 'En tenue' : 'Prêt';
 
   // Time
   gainageRenderTime();
 
-  // Progress bar / segments
+  // Progress bar / segments — affiche les 2 tours
   const prog2 = document.getElementById('gainage-progress');
-  prog2.innerHTML = `<div style="display:flex;gap:3px">${prog.exos.map((e,i)=>{
-    const cls = (gainageState.phase==='done' || (gainageState.exIdx>i && gainageState.phase!=='idle')) ? 'done' :
-                (gainageState.exIdx===i && gainageState.phase!=='idle') ? 'active' : '';
-    return `<div class="gainage-seg ${cls}" title="${e.name}"></div>`;
-  }).join('')}</div>`;
+  let segHtml = '';
+  for(let r=1; r<=rounds; r++){
+    const segs = prog.exos.map((e,i)=>{
+      const isPastRound = r < gainageState.round;
+      const isCurrentRound = r === gainageState.round;
+      const cls = (gainageState.phase==='done' || isPastRound || (isCurrentRound && gainageState.exIdx>i && gainageState.phase!=='idle')) ? 'done' :
+                  (isCurrentRound && gainageState.exIdx===i && gainageState.phase!=='idle') ? 'active' : '';
+      return `<div class="gainage-seg ${cls}" title="T${r} · ${e.name}"></div>`;
+    }).join('');
+    segHtml += `<div style="display:flex;gap:3px;align-items:center;margin-bottom:4px"><span style="font-size:0.62rem;color:var(--muted);min-width:34px;font-weight:700">T${r}</span><div style="display:flex;gap:3px;flex:1">${segs}</div></div>`;
+  }
+  prog2.innerHTML = segHtml;
 }
 
 function gainageRenderTime(){
@@ -4917,7 +4963,11 @@ function gainageRenderTime(){
   const ring = document.getElementById('gainage-ring');
   const pct = gainageState.totalSec > 0 ? (gainageState.secondsLeft / gainageState.totalSec) : 1;
   if(ring) ring.style.strokeDashoffset = 553 * (1 - Math.max(0, Math.min(1, pct)));
-  if(ring) ring.style.stroke = gainageState.phase==='rest' ? 'var(--green)' : 'var(--acc)';
+  if(ring){
+    ring.style.stroke = (gainageState.phase==='rest' || gainageState.phase==='rest-round')
+      ? 'var(--green)'
+      : 'var(--acc)';
+  }
 }
 
 function gainageToggle(){
@@ -4953,25 +5003,42 @@ function gainageTick(){
     if(navigator.vibrate) navigator.vibrate([150,80,150]);
     // Transition de phase
     const prog = GAINAGE_PROGRAMS[gainageState.level];
+    const rounds = prog.rounds || 1;
     if(gainageState.phase === 'running'){
-      // Plus d'exos ? Terminé
+      // Fin du dernier exo du tour ?
       if(gainageState.exIdx >= prog.exos.length-1){
-        gainageState.phase = 'done';
-        gainageState.secondsLeft = 0;
-        gainageState.totalSec = 0;
-        document.getElementById('gainage-toggle-btn').textContent = '↻ Recommencer';
-        renderGainage();
-        return;
+        // Y a-t-il encore un tour à faire ?
+        if(gainageState.round < rounds){
+          gainageState.phase = 'rest-round';
+          gainageState.totalSec = prog.restBetweenRounds || prog.restSec;
+          gainageState.secondsLeft = gainageState.totalSec;
+        } else {
+          // Tout est fini
+          gainageState.phase = 'done';
+          gainageState.secondsLeft = 0;
+          gainageState.totalSec = 0;
+          document.getElementById('gainage-toggle-btn').textContent = '↻ Recommencer';
+          renderGainage();
+          return;
+        }
+      } else {
+        // Repos inter-exos classique
+        gainageState.phase = 'rest';
+        gainageState.totalSec = prog.restSec;
+        gainageState.secondsLeft = prog.restSec;
       }
-      // Sinon → rest
-      gainageState.phase = 'rest';
-      gainageState.totalSec = prog.restSec;
-      gainageState.secondsLeft = prog.restSec;
     } else if(gainageState.phase === 'rest'){
-      // Passage à l'exo suivant
+      // Passage à l'exo suivant dans le même tour
       gainageState.exIdx++;
       gainageState.phase = 'running';
       gainageState.totalSec = prog.exos[gainageState.exIdx].dur;
+      gainageState.secondsLeft = gainageState.totalSec;
+    } else if(gainageState.phase === 'rest-round'){
+      // Démarrage du tour suivant
+      gainageState.round++;
+      gainageState.exIdx = 0;
+      gainageState.phase = 'running';
+      gainageState.totalSec = prog.exos[0].dur;
       gainageState.secondsLeft = gainageState.totalSec;
     }
     gainageState.intervalId = setInterval(gainageTick, 100);
@@ -5029,6 +5096,7 @@ function gainageReset(){
     gainageState.intervalId = null;
   }
   gainageState.exIdx = 0;
+  gainageState.round = 1;
   gainageState.phase = 'idle';
   gainageState.totalSec = 0;
   gainageState.secondsLeft = 0;
@@ -6016,42 +6084,59 @@ async function autoBootstrapSync(){
 })();
 
 // ══════════════════════════════════════════════
-// NAV STICKY MOBILE — IntersectionObserver fallback (sticky bugué en PWA iOS)
+// NAV STICKY MOBILE — scroll-based avec hystérésis pour éviter le flicker
 // ══════════════════════════════════════════════
+// Note importante : on n'agrandit JAMAIS le sentinel (sinon IntersectionObserver
+// re-déclenche en boucle quand il croise le bord du viewport). Le sentinel reste
+// à 1px et c'est un .nav-spacer SÉPARÉ (après la nav) qui prend la hauteur du
+// nav fixé pour éviter le saut de contenu.
 (function setupStickyNav(){
   const sentinel = document.getElementById('nav-sentinel');
+  const spacer = document.getElementById('nav-spacer');
   const nav = document.getElementById('main-nav');
-  if(!sentinel || !nav) return;
+  if(!sentinel || !nav || !spacer) return;
+
+  let isStuck = false;
+  const HYSTERESIS = 24; // px — buffer pour éviter le flicker au seuil
 
   function applyStuck(stuck){
     if(window.innerWidth > 640){
       // Desktop : on n'utilise pas le mécanisme JS
-      nav.classList.remove('nav-stuck');
-      sentinel.style.height = '1px';
+      if(isStuck){ nav.classList.remove('nav-stuck'); spacer.style.height = '0'; isStuck = false; }
       return;
     }
+    if(stuck === isStuck) return;
     if(stuck){
-      // Réserve la hauteur du nav pour éviter le saut de contenu
       const h = nav.getBoundingClientRect().height;
-      sentinel.style.height = h+'px';
+      spacer.style.height = h+'px';
       nav.classList.add('nav-stuck');
     } else {
-      sentinel.style.height = '1px';
+      spacer.style.height = '0';
       nav.classList.remove('nav-stuck');
     }
+    isStuck = stuck;
   }
 
-  const observer = new IntersectionObserver(([entry])=>{
-    const stuck = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-    applyStuck(stuck);
-  }, {threshold:0});
-  observer.observe(sentinel);
-
-  // Re-évalue au resize/rotation
-  window.addEventListener('resize',()=>{
+  let rafId = null;
+  function check(){
+    rafId = null;
+    if(window.innerWidth > 640){ applyStuck(false); return; }
     const r = sentinel.getBoundingClientRect();
-    applyStuck(r.top < 0);
-  });
+    // Hystérésis :
+    //  - on devient sticky dès que le sentinel passe au-dessus du viewport (top<0)
+    //  - on désticky seulement quand le sentinel est clairement revenu (top>HYSTERESIS)
+    if(!isStuck && r.top < 0) applyStuck(true);
+    else if(isStuck && r.top > HYSTERESIS) applyStuck(false);
+  }
+  function scheduleCheck(){
+    if(rafId) return;
+    rafId = requestAnimationFrame(check);
+  }
+
+  window.addEventListener('scroll', scheduleCheck, {passive:true});
+  window.addEventListener('resize', scheduleCheck);
+  // Évaluation initiale
+  scheduleCheck();
 })();
 
 // ══════════════════════════════════════════════

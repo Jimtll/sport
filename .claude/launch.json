@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sportduo",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5731"],
+      "port": 5731
+    }
+  ]
+}

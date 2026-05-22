@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 18 — Fix bug critique : profils dynamiques crashaient buildSplitSelect → programme partagé entre profils
-const CACHE_NAME = 'sportduo-cache-v18';
+// VERSION 19 — Fix flicker nav sticky mobile + gainage 2 tours + checkbox Gainage dans le calendrier
+const CACHE_NAME = 'sportduo-cache-v19';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
