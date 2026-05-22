@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 17 — Programme respecte la semaine sélectionnée + bouton Lancer + Gainage + chrono série + nutrition objectifs + plans repas adaptés + 4 exos
-const CACHE_NAME = 'sportduo-cache-v17';
+// VERSION 18 — Fix bug critique : profils dynamiques crashaient buildSplitSelect → programme partagé entre profils
+const CACHE_NAME = 'sportduo-cache-v18';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

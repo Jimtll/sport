@@ -2685,9 +2685,14 @@ function exercisesForType(type){
 
 function generateWeek(){
   if(!selectedWeekKey) return;
-  // Utilise le split actif du profil
-  const splitKey = state.splits[state.pid];
+  // Utilise le split actif du profil — fallback si profil custom sans split défini
+  let splitKey = state.splits[state.pid];
+  if(!splitKey || !SPLITS[splitKey]){
+    splitKey = splitsForProfile(state.pid)[0];
+    state.splits[state.pid] = splitKey;
+  }
   const split = SPLITS[splitKey];
+  if(!split) return;
   const plan = {days:[]};
   for(let i=0;i<7;i++){
     const d = split.days[i] || {l:'Repos',rest:true};
@@ -4129,7 +4134,22 @@ migrateLegacyProfiles();
 
 let state = {
   profile: LS('profile') || (JSON.parse(localStorage.getItem('sp_profileList')||'[]')[0]?.id) || null,
-  splits: { lui: LS('split_lui')||'ppl6', alexandra: LS('split_alex')||'glutes4' },
+  splits: (()=>{
+    // Initialise les splits pour TOUS les profils existants, custom ou pas.
+    // Lazy : on lit sp_split_<id> avec fallback intelligent selon le thème du profil.
+    const profiles = JSON.parse(localStorage.getItem('sp_profileList')||'[]');
+    const out = {};
+    for(const p of profiles){
+      const stored = LS('split_'+p.id);
+      if(stored){ out[p.id] = stored; continue; }
+      // Fallback : par thème (alex → glutes4, lui → ppl6)
+      out[p.id] = (p.goalBannerClass==='alex' ? 'glutes4' : 'ppl6');
+    }
+    // Compat ancien (legacy keys avant la migration dynamique)
+    if(!out.lui) out.lui = LS('split_lui') || 'ppl6';
+    if(!out.alexandra) out.alexandra = LS('split_alex') || LS('split_alexandra') || 'glutes4';
+    return out;
+  })(),
   selectedDay: 0,
   timerInterval: null,
   timerTotal: 90,
@@ -4331,8 +4351,12 @@ function renderDashboard(){
     }
   }
 
-  // Split + plan custom du Calendrier
-  const splitKey = state.splits[state.pid];
+  // Split + plan custom du Calendrier — fallback si profil custom sans split défini
+  let splitKey = state.splits[state.pid];
+  if(!splitKey || !SPLITS[splitKey]){
+    splitKey = splitsForProfile(state.pid)[0];
+    state.splits[state.pid] = splitKey;
+  }
   const split = SPLITS[splitKey];
   const weekKey = (typeof getISOWeek==='function') ? getISOWeek(new Date()) : null;
   const calPlan = weekKey ? getWeekPlan(weekKey) : null;
@@ -4432,11 +4456,28 @@ function renderWeightChart(){
 // ══════════════════════════════════════════════
 // PROGRAMME
 // ══════════════════════════════════════════════
+function splitsForProfile(pid){
+  // Renvoie la liste des splits proposés pour CE profil, avec fallback dynamique
+  if(SPLITS_BY_PROFILE[pid]) return SPLITS_BY_PROFILE[pid];
+  // Fallback par thème : profils custom basés sur 'alex' → splits Alexandra, sinon Lui
+  const p = (state.profileList||[]).find(x=>x.id===pid);
+  if(p?.goalBannerClass==='alex') return SPLITS_BY_PROFILE.alexandra;
+  return SPLITS_BY_PROFILE.lui;
+}
+
 function buildSplitSelect(){
   const sel = document.getElementById('split-select');
-  const keys = SPLITS_BY_PROFILE[state.pid];
-  sel.innerHTML = keys.map(k=>`<option value="${k}">${SPLITS[k].name}</option>`).join('');
-  sel.value = state.splits[state.pid];
+  if(!sel) return;
+  const keys = splitsForProfile(state.pid);
+  sel.innerHTML = keys.map(k=>`<option value="${k}">${SPLITS[k]?.name||k}</option>`).join('');
+  // S'assure que le split actuel existe pour ce profil, sinon défaut au premier
+  let current = state.splits[state.pid];
+  if(!current || !keys.includes(current)){
+    current = keys[0];
+    state.splits[state.pid] = current;
+    SS('split_'+state.pid, current);
+  }
+  sel.value = current;
 }
 
 function applySplit(){
@@ -4481,8 +4522,14 @@ function refreshProgramUI(){
   if(lbl) lbl.textContent = `Semaine ${wkStr}${isCurrentWeek?' · cette semaine':''}`;
   if(dts) dts.textContent = `${mon.getUTCDate()}/${mon.getUTCMonth()+1} → ${sun.getUTCDate()}/${sun.getUTCMonth()+1}/${sun.getUTCFullYear()}`;
 
-  const splitKey = state.splits[state.pid];
+  // Split avec fallback robuste : si pas défini pour le profil, on prend le 1er dispo
+  let splitKey = state.splits[state.pid];
+  if(!splitKey || !SPLITS[splitKey]){
+    splitKey = splitsForProfile(state.pid)[0];
+    state.splits[state.pid] = splitKey;
+  }
   const split = SPLITS[splitKey];
+  if(!split) return; // sécurité ultime
   const planned = state.plannedDay;
 
   // Bandeau d'info sur la source affichée
