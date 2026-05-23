@@ -719,10 +719,11 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   /* Profile bar : profils côte-à-côte (2 colonnes), padding réduit */
   .profile-bar{padding:6px 12px 2px;gap:4px;flex-direction:column;align-items:stretch}
   .profile-bar-label{display:none}
-  .profile-cards{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+  .profile-cards{display:flex;flex-wrap:wrap;gap:6px;width:100%;align-items:center}
   .profile-sep{display:none}
   .profile-bar-stats{justify-content:space-between;width:100%;padding:3px 0 0;border-top:1px solid var(--border);font-size:0.68rem;margin-bottom:0}
-  .profile-card{padding:6px 8px;min-height:44px;gap:6px}
+  .profile-card{padding:6px 8px;min-height:44px;gap:6px;flex:1 1 0;min-width:130px}
+  .profile-card-add{flex-shrink:0}
   .profile-avatar{width:26px;height:26px;font-size:0.85rem}
   .profile-info{gap:0;min-width:0;flex:1}
   .profile-name{font-size:0.78rem;font-weight:700;line-height:1.1}
@@ -5898,24 +5899,9 @@ function playBeep(){
 // ══════════════════════════════════════════════
 // GAINAGE — séances guidées avec chrono
 // ══════════════════════════════════════════════
-// Mappings visuels pour les exos de gainage
-const GAINAGE_GIFS = {
-  'Planche sur les genoux':'abs/front-plank-with-twist.gif',
-  'Planche complète':'abs/front-plank-with-twist.gif',
-  'Planche bras tendus':'abs/front-plank-with-twist.gif',
-  'Planche bras tendus longue':'abs/front-plank-with-twist.gif',
-  'Planche touches d\'épaule':'abs/front-plank-with-twist.gif',
-  'RKC Plank':'abs/front-plank-with-twist.gif',
-  'Planche latérale genoux D':'abs/bodyweight-incline-side-plank.gif',
-  'Planche latérale genoux G':'abs/bodyweight-incline-side-plank.gif',
-  'Planche latérale droite':'abs/bodyweight-incline-side-plank.gif',
-  'Planche latérale gauche':'abs/bodyweight-incline-side-plank.gif',
-  'Planche latérale lestée D':'abs/bodyweight-incline-side-plank.gif',
-  'Planche latérale lestée G':'abs/bodyweight-incline-side-plank.gif',
-  'Pont fessier (statique)':'glutes/barbell-glute-bridge.gif',
-  'Mountain Climbers lents':'abs/bridge-mountain-climber-cross-body.gif',
-  'Ab Wheel Hold':'abs/barbell-standing-ab-rollerout.gif',
-};
+// Visuels gainage : photo pour les holds statiques, GIF seulement pour les mouvements alternés
+// Static : juste une image (free-exercise-db) qui montre la position à tenir
+// Dynamic : GIF (ExerciseGymGifsDB) qui montre l'alternance
 const GAINAGE_PHOTOS = {
   'Planche sur les genoux':'Plank',
   'Planche complète':'Plank',
@@ -5935,9 +5921,16 @@ const GAINAGE_PHOTOS = {
   'Dead Bug':'Alternating_Floor_Quad_Press',
   'Mountain Climbers lents':'Mountain_Climbers',
   'Pont fessier (statique)':'Hip_Lift_With_Band',
-  'Hollow Hold':'Plank',
-  'Hollow Hold avancé':'Plank',
+  'Hollow Hold':'Crunch_-_Hands_Overhead',
+  'Hollow Hold avancé':'Crunch_-_Hands_Overhead',
   'Ab Wheel Hold':'Ab_Roller',
+};
+// GIFs uniquement pour exos VRAIMENT dynamiques (alternance, mouvement)
+const GAINAGE_GIFS = {
+  'Mountain Climbers lents':'abs/bridge-mountain-climber-cross-body.gif',
+  'Bird Dog dynamique':'abs/bird-dog-bodyweight.gif',
+  'Dead Bug':'abs/dead-bug-bodyweight.gif',
+  'Planche touches d\'épaule':'abs/shoulder-tap-plank.gif',
 };
 
 const GAINAGE_PROGRAMS = {
@@ -6036,12 +6029,20 @@ function renderGainage(){
       gifWrap.innerHTML = '<span class="ph">😮‍💨</span>';
     } else {
       gifWrap.className = 'gainage-gif-wrap';
+      // Préférence photo (statique) pour la majorité des exos qui sont des holds.
+      // GIF uniquement si exo référencé comme vraiment dynamique.
       const gif = GAINAGE_GIFS?.[cur.name];
       const photo = GAINAGE_PHOTOS?.[cur.name];
+      const photoUrl = photo ? `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photo}/0.jpg` : '';
       if(gif){
-        gifWrap.innerHTML = `<img src="https://raw.githubusercontent.com/JahelCuadrado/ExerciseGymGifsDB/main/${gif}" alt="${cur.name}" onerror="this.outerHTML='${photo?`<img src=https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photo}/0.jpg onerror=\\'this.outerHTML=&quot;<span class=ph>🧘</span>&quot;\\'>`:'<span class=ph>🧘</span>'}'">`;
+        // Dynamique : essaie GIF, fallback photo, fallback emoji
+        const fallback = photo
+          ? `<img src='${photoUrl}' onerror='this.outerHTML=&quot;<span class=ph>🧘</span>&quot;'>`
+          : `<span class='ph'>🧘</span>`;
+        gifWrap.innerHTML = `<img src="https://raw.githubusercontent.com/JahelCuadrado/ExerciseGymGifsDB/main/${gif}" alt="${cur.name}" onerror="this.outerHTML='${fallback.replace(/'/g,'&apos;')}'">`;
       } else if(photo){
-        gifWrap.innerHTML = `<img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photo}/0.jpg" alt="${cur.name}" onerror="this.outerHTML='<span class=ph>🧘</span>'">`;
+        // Statique : photo directe
+        gifWrap.innerHTML = `<img src="${photoUrl}" alt="${cur.name}" onerror="this.outerHTML='<span class=ph>🧘</span>'">`;
       } else {
         gifWrap.innerHTML = '<span class="ph">🧘</span>';
       }

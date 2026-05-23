@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 22 — 11 nouvelles features : workout mode plein écran, PR page, tonnage muscle, stagnation, périodisation, suggestion, templates, copier/coller jour, drag exos, gainage GIF, duo enrichi
-const CACHE_NAME = 'sportduo-cache-v22';
+// VERSION 23 — Bouton + profil inline (flex mobile) + gainage photo pour statique / GIF seulement pour dynamique
+const CACHE_NAME = 'sportduo-cache-v23';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
