@@ -200,6 +200,11 @@ input[type=range]:focus{border:none}
 .gainage-seg{flex:1;height:6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border)}
 .gainage-seg.done{background:var(--green);border-color:var(--green)}
 .gainage-seg.active{background:var(--acc);border-color:var(--acc);animation:chronoPulse 1.4s ease-in-out infinite}
+.gainage-gif-wrap{width:100%;max-width:340px;aspect-ratio:1;margin:0 auto 14px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.gainage-gif-wrap img{max-width:100%;max-height:100%;object-fit:contain}
+.gainage-gif-wrap .ph{font-size:5rem;opacity:0.4}
+.gainage-gif-wrap.rest-tint{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.3)}
+.gainage-gif-wrap.rest-tint .ph{font-size:5rem;opacity:0.8;color:var(--green)}
 
 /* ── TIMER ── */
 .timer-display{text-align:center;padding:24px 0}
@@ -334,10 +339,13 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .week-day select{font-size:0.78rem;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);width:100%}
 .week-day .session-color-bar{height:3px;border-radius:99px;margin:2px 0}
 .week-day-exercises{display:flex;flex-direction:column;gap:3px;flex:1;font-size:0.7rem}
-.week-ex-chip{background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:3px 7px;display:flex;justify-content:space-between;align-items:center;gap:4px}
+.week-ex-chip{background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:3px 6px;display:flex;justify-content:space-between;align-items:center;gap:3px;font-size:0.72rem}
 .week-ex-chip span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.week-ex-chip button{background:none;border:none;color:var(--red);font-size:0.85rem;cursor:pointer;padding:0;line-height:1}
-.week-ex-chip button:hover{color:#fca5a5}
+.week-ex-chip > button:last-child{background:none;border:none;color:var(--red);font-size:0.85rem;cursor:pointer;padding:0 2px;line-height:1}
+.week-ex-chip > button:last-child:hover{color:#fca5a5}
+.week-ex-chip .chip-arrow{background:none;border:none;color:var(--muted);font-size:0.55rem;cursor:pointer;padding:0 1px;line-height:1;width:14px;flex-shrink:0}
+.week-ex-chip .chip-arrow:hover:not(:disabled){color:var(--acc)}
+.week-ex-chip .chip-arrow:disabled{opacity:0.2;cursor:not-allowed}
 .week-day-add{font-size:0.7rem;padding:4px;border:1px dashed var(--border2);border-radius:5px;background:none;color:var(--muted);cursor:pointer;margin-top:auto}
 .climb-toggle{display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(132,204,22,0.08);border:1px solid transparent;transition:all 0.15s;align-self:flex-start;white-space:nowrap}
 .climb-toggle:hover{background:rgba(132,204,22,0.15);border-color:rgba(132,204,22,0.3)}
@@ -356,6 +364,35 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .gainage-toggle input{margin:0;cursor:pointer;accent-color:#8b5cf6;width:14px;height:14px}
 .gainage-log-btn{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;padding:3px 8px;border-radius:99px;font-size:0.65rem;font-weight:700;cursor:pointer;align-self:flex-start;white-space:nowrap}
 .gainage-log-btn:hover{background:rgba(139,92,246,0.25)}
+.day-action-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:0.78rem;cursor:pointer;line-height:1;transition:all 0.15s}
+.day-action-btn:hover{border-color:var(--acc);color:var(--acc)}
+.day-action-btn.disabled{opacity:0.4;cursor:not-allowed}
+.phase-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted2);padding:6px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.15s}
+.phase-btn.active{background:var(--surface3);border-width:2px}
+.phase-btn:hover{border-color:var(--acc-glow,var(--acc))}
+
+/* ─── WORKOUT MODE plein écran ─── */
+.workout-mode-overlay{position:fixed;inset:0;z-index:1000;background:linear-gradient(180deg,var(--bg) 0%,#0a0d14 100%);display:flex;flex-direction:column;overflow:hidden;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.workout-mode-header{display:flex;align-items:center;justify-content:space-between;padding:max(20px,env(safe-area-inset-top,20px)) 20px 12px;border-bottom:1px solid var(--border);background:var(--surface)}
+.workout-mode-day{font-weight:800;font-size:0.95rem}
+.workout-mode-progress{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px}
+.workout-mode-close{background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:0.95rem;display:flex;align-items:center;justify-content:center}
+.workout-mode-close:hover{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#ef4444}
+.workout-mode-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px;-webkit-overflow-scrolling:touch}
+.workout-mode-name{font-size:1.8rem;font-weight:800;text-align:center;letter-spacing:-0.02em;margin-top:8px;max-width:700px;line-height:1.15}
+.workout-mode-meta{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.workout-mode-gif{width:100%;max-width:480px;aspect-ratio:1;background:var(--surface2);border-radius:14px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.workout-mode-gif img{max-width:100%;max-height:100%;object-fit:contain}
+.workout-mode-gif .ph{font-size:5rem;opacity:0.4}
+.workout-mode-tip{font-size:0.88rem;color:var(--muted2);max-width:600px;text-align:center;line-height:1.45;padding:0 8px}
+.workout-mode-logger{width:100%;max-width:520px;background:var(--surface);padding:14px;border-radius:12px;border:1px solid var(--border)}
+.workout-mode-footer{display:flex;gap:8px;padding:12px 16px max(16px,env(safe-area-inset-bottom,16px));border-top:1px solid var(--border);background:var(--surface)}
+.workout-mode-footer .btn{flex:1;min-width:0;font-size:0.85rem;padding:11px 8px}
+@media(max-width:640px){
+  .workout-mode-name{font-size:1.4rem}
+  .workout-mode-gif{max-width:340px}
+}
 .week-day.has-running{border-color:#3b82f6;box-shadow:inset 0 0 0 1px rgba(59,130,246,0.3)}
 .week-day.has-running.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3),inset 0 0 0 2px rgba(59,130,246,0.3)}
 .week-day.has-running .run-toggle{background:rgba(59,130,246,0.18);color:#60a5fa;font-weight:700}
@@ -922,6 +959,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <!-- <button class="nav-btn" onclick="goPage('rm')">🔢 Calcul 1RM</button> -->
   <button class="nav-btn" onclick="goPage('nutrition')">🥗 Nutrition</button>
   <button class="nav-btn" onclick="goPage('progression')">📈 Progression</button>
+  <button class="nav-btn" onclick="goPage('records')">🏆 Records</button>
   <button class="nav-btn" onclick="goPage('escalade')">🧗 Escalade</button>
   <button class="nav-btn" onclick="goPage('course')">🏃 Course</button>
   <button class="nav-btn" onclick="goPage('journal')">📓 Journal</button>
@@ -1021,6 +1059,13 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
     </div>
   </div>
   <div id="prog-source-info" style="margin-bottom:14px;display:flex;align-items:center;flex-wrap:wrap;gap:6px"></div>
+  <div class="card" style="margin-bottom:14px;padding:12px 14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Phase d'entraînement</span>
+      <div id="phase-selector" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    </div>
+    <div id="phase-info" style="font-size:0.74rem;color:var(--muted)"></div>
+  </div>
   <div class="card" style="margin-bottom:20px">
     <div class="field-row" style="align-items:end">
       <div class="field" style="margin-bottom:0">
@@ -1127,9 +1172,10 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <div class="card" id="gainage-session" style="margin-bottom:16px">
     <div id="gainage-current-info" style="text-align:center;margin-bottom:14px">
       <div style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em" id="gainage-phase-label">Prêt</div>
-      <div style="font-size:1.4rem;font-weight:800;margin-top:4px" id="gainage-ex-name">—</div>
+      <div style="font-size:1.6rem;font-weight:800;margin-top:4px" id="gainage-ex-name">—</div>
       <div style="font-size:0.78rem;color:var(--muted);margin-top:4px" id="gainage-ex-tip">Sélectionne un niveau pour commencer</div>
     </div>
+    <div id="gainage-gif-wrap" class="gainage-gif-wrap"><span class="ph">🧘</span></div>
     <div class="timer-display" style="padding:8px 0">
       <div class="timer-circle">
         <svg viewBox="0 0 200 200">
@@ -1284,6 +1330,42 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   </div>
 </div>
 
+<!-- ═══════ WORKOUT MODE (overlay fullscreen) ═══════ -->
+<div class="workout-mode-overlay" id="workout-mode-overlay" style="display:none">
+  <div class="workout-mode-header">
+    <div>
+      <div class="workout-mode-day" id="workout-mode-day">—</div>
+      <div class="workout-mode-progress" id="workout-mode-progress">Exo 1/—</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="workout-mode-close" onclick="workoutModeClose()" title="Quitter le mode séance">✕</button>
+    </div>
+  </div>
+  <div class="workout-mode-body">
+    <div class="workout-mode-name" id="workout-mode-name">—</div>
+    <div class="workout-mode-meta" id="workout-mode-meta"></div>
+    <div class="workout-mode-gif" id="workout-mode-gif"></div>
+    <div class="workout-mode-tip" id="workout-mode-tip"></div>
+    <div class="workout-mode-logger" id="workout-mode-logger"></div>
+  </div>
+  <div class="workout-mode-footer">
+    <button class="btn btn-secondary" id="workout-mode-prev" onclick="workoutModePrev()">⏮ Précédent</button>
+    <button class="btn btn-ghost" onclick="workoutModeOpenDetails()">📖 Détails</button>
+    <button class="btn btn-primary" id="workout-mode-next" onclick="workoutModeNext()">Suivant ⏭</button>
+  </div>
+</div>
+
+<!-- ═══════ RECORDS PERSONNELS ═══════ -->
+<div class="page" id="page-records">
+  <h2>🏆 Records personnels</h2>
+  <p class="section-sub">Tes meilleures performances par exercice · alertes de stagnation</p>
+  <div id="stagnation-alerts" style="margin-bottom:14px"></div>
+  <div class="card">
+    <div class="section-header"><h3>Tous les PR</h3><span id="prs-count" class="badge badge-acc">—</span></div>
+    <div id="prs-list" style="margin-top:10px"></div>
+  </div>
+</div>
+
 <!-- ═══════ PROGRESSION ═══════ -->
 <div class="page" id="page-progression">
   <h2>Progression</h2>
@@ -1302,6 +1384,11 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   <div class="grid-2">
     <div class="card"><h3>Évolution du poids</h3><div class="chart-wrap"><canvas id="chart-prog-weight"></canvas></div></div>
     <div class="card"><h3>Mensurations</h3><div class="chart-wrap"><canvas id="chart-prog-body"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3>📊 Tonnage par muscle (8 dernières semaines)</h3>
+    <p class="section-sub">Volume soulevé (kg × reps) par groupe musculaire</p>
+    <div class="chart-wrap" style="height:280px"><canvas id="chart-muscle-volume"></canvas></div>
   </div>
   <div class="card" style="margin-top:16px">
     <div class="section-header"><h3>Historique</h3><button class="btn btn-ghost btn-sm" onclick="clearProgress()">🗑 Effacer</button></div>
@@ -2565,9 +2652,17 @@ function renderWeekEditor(){
       </div>
       <div class="week-day-exercises">
         ${day.type !== 'rest' ? `<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px">Séance 1 · ${SESSION_TYPES[day.type]?.label||day.type}</div>` : ''}
-        ${(day.exercises||[]).map(exId=>{
+        ${(day.exercises||[]).map((exId, exIdx, arr)=>{
           const ex = exById(exId);
-          return ex ? `<div class="week-ex-chip"><span title="${ex.name}">${ex.name}</span><button onclick="removeExFromDay(${i},${exId})">×</button></div>` : '';
+          if(!ex) return '';
+          const canUp = exIdx > 0;
+          const canDn = exIdx < arr.length-1;
+          return `<div class="week-ex-chip">
+            <button class="chip-arrow" onclick="moveExInDay(${i},${exId},-1)" ${canUp?'':'disabled'} title="Monter">▲</button>
+            <button class="chip-arrow" onclick="moveExInDay(${i},${exId},1)" ${canDn?'':'disabled'} title="Descendre">▼</button>
+            <span title="${ex.name}">${ex.name}</span>
+            <button onclick="removeExFromDay(${i},${exId})" title="Retirer">×</button>
+          </div>`;
         }).join('')}
       </div>
       ${day.type!=='rest' ? `<button class="week-day-add" onclick="openPicker(${i})">+ Ajouter exercice</button>` : ''}
@@ -2584,15 +2679,34 @@ function renderWeekEditor(){
           </select>
           <div class="session-color-bar" style="background:${sess.color};margin-top:4px"></div>
           <div class="week-day-exercises">
-            ${(extra.exercises||[]).map(exId=>{
+            ${(extra.exercises||[]).map((exId, exIdx, arr)=>{
               const ex = exById(exId);
-              return ex ? `<div class="week-ex-chip"><span title="${ex.name}">${ex.name}</span><button onclick="removeExFromDay(${i},${exId},${ei})">×</button></div>` : '';
+              if(!ex) return '';
+              const canUp = exIdx > 0;
+              const canDn = exIdx < arr.length-1;
+              return `<div class="week-ex-chip">
+                <button class="chip-arrow" onclick="moveExInDay(${i},${exId},-1,${ei})" ${canUp?'':'disabled'} title="Monter">▲</button>
+                <button class="chip-arrow" onclick="moveExInDay(${i},${exId},1,${ei})" ${canDn?'':'disabled'} title="Descendre">▼</button>
+                <span title="${ex.name}">${ex.name}</span>
+                <button onclick="removeExFromDay(${i},${exId},${ei})" title="Retirer">×</button>
+              </div>`;
             }).join('')}
           </div>
           <button class="week-day-add" onclick="openPicker(${i}, ${ei})">+ Ajouter exercice</button>
         </div>`;
       }).join('')}
       ${day.type!=='rest' && (day.extraSessions||[]).length < 3 ? `<button class="week-day-add" style="margin-top:8px;border-style:dashed;color:var(--acc)" onclick="addExtraSession(${i})">➕ Ajouter une séance dans la journée</button>` : ''}
+      <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);display:flex;gap:4px;flex-wrap:wrap">
+        <button class="day-action-btn" onclick="copyDay(${i})" title="Copier ce jour">📋</button>
+        <button class="day-action-btn ${dayClipboard?'':'disabled'}" onclick="pasteDay(${i})" title="${dayClipboard?'Coller le jour copié':'Aucun jour copié'}">📥</button>
+        <button class="day-action-btn" onclick="saveDayAsTemplate(${i})" title="Sauver comme template">💾</button>
+        ${getDayTemplates().length ? `
+          <select onchange="if(this.value){applyDayTemplate(${i}, +this.value); this.value='';}" style="flex:1;min-width:0;font-size:0.66rem;padding:3px 5px">
+            <option value="">📂 Templates…</option>
+            ${getDayTemplates().map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}
+          </select>
+        ` : ''}
+      </div>
     </div>`;
   }
   document.getElementById('week-days-grid').innerHTML = html;
@@ -2776,6 +2890,23 @@ function removeExFromDay(dayIdx, exId, extraIdx){
   } else {
     plan.days[dayIdx].exercises = (plan.days[dayIdx].exercises||[]).filter(id=>id!==exId);
   }
+  saveWeekPlan(selectedWeekKey, plan);
+  renderWeekEditor();
+}
+
+// Réordonner un exo dans une journée (delta = -1 monte, +1 descend)
+function moveExInDay(dayIdx, exId, delta, extraIdx){
+  const plan = getWeekPlan(selectedWeekKey);
+  const arr = (typeof extraIdx === 'number')
+    ? (plan.days[dayIdx].extraSessions?.[extraIdx]?.exercises)
+    : plan.days[dayIdx].exercises;
+  if(!arr) return;
+  const idx = arr.indexOf(exId);
+  if(idx < 0) return;
+  const newIdx = idx + delta;
+  if(newIdx < 0 || newIdx >= arr.length) return;
+  arr.splice(idx, 1);
+  arr.splice(newIdx, 0, exId);
   saveWeekPlan(selectedWeekKey, plan);
   renderWeekEditor();
 }
@@ -3728,6 +3859,16 @@ function renderDuo(){
       <h3>📊 Volume sur 7 jours</h3>
       <div class="chart-wrap" style="height:200px"><canvas id="duo-chart"></canvas></div>
     </div>
+    <div class="card" style="margin-top:14px">
+      <h3>📈 Volume cumulé sur 6 semaines</h3>
+      <p class="section-sub">Tendance de progression</p>
+      <div class="chart-wrap" style="height:220px"><canvas id="duo-trend-chart"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>💪 Total cette semaine par muscle</h3>
+      <p class="section-sub">Qui travaille quoi</p>
+      <div class="chart-wrap" style="height:240px"><canvas id="duo-muscle-chart"></canvas></div>
+    </div>
   `;
 
   setTimeout(()=>{
@@ -3753,6 +3894,66 @@ function renderDuo(){
       ]},
       options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{x:{ticks:{color:'#64748b',font:{size:10}}},y:{ticks:{color:'#64748b',font:{size:9}}}}}
     });
+
+    // Volume cumulé 6 semaines
+    const trendCtx = document.getElementById('duo-trend-chart');
+    if(trendCtx){
+      const weekLabels = [];
+      const weekRanges = [];
+      for(let i=5; i>=0; i--){
+        const start = new Date(now); start.setDate(now.getDate() - (i+1)*7);
+        const end = new Date(now); end.setDate(now.getDate() - i*7);
+        weekLabels.push(i===0 ? 'Cette sem.' : `S-${i}`);
+        weekRanges.push({start, end});
+      }
+      const weekVol = (pid)=>{
+        const ws = JSON.parse(localStorage.getItem('sp_workouts_'+pid)||'[]');
+        return weekRanges.map(({start,end})=>{
+          return ws.filter(w=>{const d=new Date(w.date); return d>=start && d<end;}).reduce((s,w)=>s+(w.volume||0),0);
+        });
+      };
+      if(window._duoTrendChart) window._duoTrendChart.destroy();
+      window._duoTrendChart = new Chart(trendCtx, {
+        type:'line',
+        data:{labels:weekLabels, datasets:[
+          {label:p1.name, data:weekVol(p1.id), borderColor:colorA, backgroundColor:colorA+'22', fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colorA, borderWidth:2},
+          {label:p2.name, data:weekVol(p2.id), borderColor:colorB, backgroundColor:colorB+'22', fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colorB, borderWidth:2}
+        ]},
+        options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{x:{ticks:{color:'#64748b',font:{size:10}}},y:{ticks:{color:'#64748b',font:{size:9},callback:v=>v>=1000?(v/1000).toFixed(1)+'k':v}}}}
+      });
+    }
+
+    // Volume cette semaine par muscle (groupé)
+    const muscleCtx = document.getElementById('duo-muscle-chart');
+    if(muscleCtx){
+      const weekStart = new Date(now); weekStart.setDate(now.getDate()-7);
+      const muscleVolPerProfile = (pid)=>{
+        const ws = JSON.parse(localStorage.getItem('sp_workouts_'+pid)||'[]');
+        const out = {};
+        ws.filter(w=>new Date(w.date)>=weekStart).forEach(w=>{
+          const ex = exById(w.exerciseId);
+          if(!ex) return;
+          out[ex.muscle] = (out[ex.muscle]||0) + (w.volume||0);
+        });
+        return out;
+      };
+      const v1 = muscleVolPerProfile(p1.id);
+      const v2 = muscleVolPerProfile(p2.id);
+      const allMuscles = [...new Set([...Object.keys(v1), ...Object.keys(v2)])].sort();
+      if(allMuscles.length === 0){
+        muscleCtx.parentElement.innerHTML = '<div class="empty-state" style="padding:30px"><p>Pas de séance loggée cette semaine</p></div>';
+      } else {
+        if(window._duoMuscleChart) window._duoMuscleChart.destroy();
+        window._duoMuscleChart = new Chart(muscleCtx, {
+          type:'bar',
+          data:{labels:allMuscles, datasets:[
+            {label:p1.name, data:allMuscles.map(m=>v1[m]||0), backgroundColor:colorA, borderRadius:5},
+            {label:p2.name, data:allMuscles.map(m=>v2[m]||0), backgroundColor:colorB, borderRadius:5}
+          ]},
+          options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{x:{ticks:{color:'#64748b',font:{size:9},callback:v=>v>=1000?(v/1000).toFixed(1)+'k':v}}, y:{ticks:{color:'#64748b',font:{size:10}}}}}
+        });
+      }
+    }
   }, 50);
 }
 
@@ -4080,10 +4281,12 @@ function renderLogger(exId){
   const lastWorkout = state.exerciseWorkouts(exId)[0];
   const lastSets = lastWorkout?.sets || [];
   const setDurationHelp = parseSetDuration(ex.sets);
+  const suggestion = suggestNextProgression(exId);
   let html = `
     <div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px">
       Pour chaque série : poids × reps puis touche <strong>✓</strong> quand c'est fait. Bouton <strong>⏱</strong> pour lancer le chrono de la série${setDurationHelp?` (compte à rebours <strong>${setDurationHelp}s</strong>)`:''}. Le rest timer démarre auto après le ✓.
-    </div>`;
+    </div>
+    ${suggestion ? `<div style="padding:10px 14px;background:var(--acc-dim);border:1px solid var(--acc);border-radius:8px;margin-bottom:10px;font-size:0.82rem">${suggestion.msg}</div>` : ''}`;
   for(let i=0;i<setCount;i++){
     const last = lastSets[i] || {};
     const lastHint = (last.weight && last.reps) ? `<small style="font-size:0.62rem;color:var(--muted);margin-left:8px">dernière: ${last.weight}×${last.reps}</small>` : '';
@@ -4324,6 +4527,350 @@ function bestRMOfWorkout(w){
     if(rm > best) best = rm;
   });
   return best;
+}
+
+// ══════════════════════════════════════════════
+// HELPERS ANALYTICS — PRs, stagnation, progression, tonnage
+// ══════════════════════════════════════════════
+
+// Poids max soulevé sur une séance (peu importe les reps)
+function maxWeightOfWorkout(w){
+  let best = 0;
+  (w.sets||[]).forEach(s=>{ if((s.weight||0) > best) best = s.weight; });
+  return best;
+}
+
+// Retourne pour chaque exercice ayant déjà été pratiqué :
+//   { exId, exName, bestWeight, bestRM, bestSet, lastDate, sessions, history:[...] }
+function computeAllPRs(){
+  const groups = {};
+  state.workouts.forEach(w=>{
+    if(!groups[w.exerciseId]){
+      groups[w.exerciseId] = { exId:w.exerciseId, exName:w.exerciseName, sessions:0, bestWeight:0, bestRM:0, bestSet:null, lastDate:w.date, history:[] };
+    }
+    const g = groups[w.exerciseId];
+    g.sessions++;
+    if(new Date(w.date) > new Date(g.lastDate)) g.lastDate = w.date;
+    const mw = maxWeightOfWorkout(w);
+    const rm = bestRMOfWorkout(w);
+    if(mw > g.bestWeight){
+      g.bestWeight = mw;
+      // Trouve la série exacte qui a donné ce poids max
+      (w.sets||[]).forEach(s=>{ if((s.weight||0) === mw) g.bestSet = {weight:s.weight, reps:s.reps, date:w.date}; });
+    }
+    if(rm > g.bestRM) g.bestRM = rm;
+    g.history.push({date:w.date, maxW:mw, rm});
+  });
+  return Object.values(groups).sort((a,b)=>b.bestRM - a.bestRM);
+}
+
+// Détecte les exos en stagnation : aucun gain de bestRM sur les N dernières séances (window)
+function detectStagnation(minSessions=4, window=3){
+  const stale = [];
+  const groups = {};
+  state.workouts.forEach(w=>{
+    (groups[w.exerciseId] = groups[w.exerciseId] || []).push(w);
+  });
+  Object.entries(groups).forEach(([exId, sessions])=>{
+    if(sessions.length < minSessions) return;
+    // Trier par date asc
+    const sorted = [...sessions].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const recent = sorted.slice(-window);
+    const before = sorted.slice(-(window+1), -window);
+    if(!before.length) return;
+    const recentBest = Math.max(...recent.map(bestRMOfWorkout));
+    const beforeBest = bestRMOfWorkout(before[0]);
+    if(recentBest <= beforeBest){
+      const ex = exById(parseInt(exId));
+      stale.push({
+        exId: parseInt(exId),
+        exName: ex?.name || sorted[0].exerciseName,
+        currentBestRM: recentBest,
+        previousBestRM: beforeBest,
+        sessionsTracked: recent.length
+      });
+    }
+  });
+  return stale;
+}
+
+// Suggère la prochaine charge/reps pour un exo, basé sur la dernière séance
+// Stratégie : +2.5kg si tu as TOUTES les reps haut de fourchette, sinon mêmes poids/+1 rep
+function suggestNextProgression(exId){
+  const ex = exById(exId);
+  if(!ex) return null;
+  const sessions = state.exerciseWorkouts(exId);
+  if(!sessions.length) return null;
+  const last = sessions[0];
+  const lastSets = last.sets || [];
+  if(!lastSets.length) return null;
+  // Parse reps range : "4×8-10" → 8 (low), 10 (high)
+  const m = (ex.sets||'').match(/×\s*(\d+)\s*(?:-\s*(\d+))?/);
+  const lowRep = m ? parseInt(m[1]) : 8;
+  const highRep = m && m[2] ? parseInt(m[2]) : lowRep;
+  // Performance dernière séance : a-t-on atteint le haut de la fourchette ?
+  const allHigh = lastSets.every(s=>(s.reps||0) >= highRep);
+  const allLow = lastSets.every(s=>(s.reps||0) >= lowRep);
+  const heaviest = Math.max(...lastSets.map(s=>s.weight||0));
+  const phase = LS('phase_'+state.profile) || 'volume';
+  // Ajustement selon phase de périodisation
+  const incrementByPhase = { force: 5, volume: 2.5, peak: 1.25 };
+  const inc = incrementByPhase[phase] || 2.5;
+  if(allHigh){
+    return {
+      action:'increase_weight',
+      weight: heaviest + inc,
+      reps: lowRep,
+      msg: `🎯 Vise <strong>${heaviest+inc} kg × ${lowRep} reps</strong> (tu as fini ta dernière séance au top — +${inc} kg)`
+    };
+  } else if(allLow){
+    return {
+      action:'add_reps',
+      weight: heaviest,
+      reps: Math.min((lastSets[0].reps||lowRep)+1, highRep),
+      msg: `🔁 Vise <strong>${heaviest} kg × ${Math.min((lastSets[0].reps||lowRep)+1, highRep)} reps</strong> (gagne des reps avant d'ajouter du poids)`
+    };
+  } else {
+    return {
+      action:'consolidate',
+      weight: heaviest,
+      reps: lastSets[0].reps || lowRep,
+      msg: `💪 Consolide : <strong>${heaviest} kg × ${lastSets[0].reps||lowRep} reps</strong> (vise la régularité avant de progresser)`
+    };
+  }
+}
+
+// Tonnage par groupe musculaire sur les N dernières semaines
+// Renvoie { labels:['S-7','S-6'…'S0'], byMuscle: { Poitrine:[…], Dos:[…] } }
+function computeMuscleVolumeByWeek(weeks=8){
+  const now = new Date();
+  const buckets = [];
+  for(let i=weeks-1; i>=0; i--){
+    const start = new Date(now); start.setDate(now.getDate() - (i+1)*7);
+    const end = new Date(now); end.setDate(now.getDate() - i*7);
+    buckets.push({ label: i===0 ? 'Cette sem.' : `S-${i}`, start, end });
+  }
+  const byMuscle = {};
+  state.workouts.forEach(w=>{
+    const ex = exById(w.exerciseId);
+    if(!ex) return;
+    const m = ex.muscle;
+    if(!byMuscle[m]) byMuscle[m] = new Array(weeks).fill(0);
+    const wd = new Date(w.date);
+    const bIdx = buckets.findIndex(b=>wd>=b.start && wd<b.end);
+    if(bIdx >= 0) byMuscle[m][bIdx] += (w.volume||0);
+  });
+  return { labels: buckets.map(b=>b.label), byMuscle };
+}
+
+// ══════════════════════════════════════════════
+// TEMPLATES DE JOUR — sauvegarder/appliquer un mix type+exos+extras
+// ══════════════════════════════════════════════
+function getDayTemplates(){ return LS('dayTemplates_'+state.profile) || []; }
+function setDayTemplates(v){ SS('dayTemplates_'+state.profile, v); }
+
+function saveDayAsTemplate(dayIdx){
+  const plan = getWeekPlan(selectedWeekKey);
+  const day = plan.days[dayIdx];
+  if(!day || day.type === 'rest'){ toast('Choisis un jour avec une séance','warn'); return; }
+  const name = prompt('Nom du template (ex: Push lourd, Glutes A, …)');
+  if(!name) return;
+  const templates = getDayTemplates();
+  templates.unshift({
+    id: Date.now(),
+    name: name.trim(),
+    type: day.type,
+    exercises: [...(day.exercises||[])],
+    extraSessions: (day.extraSessions||[]).map(s=>({type:s.type, exercises:[...(s.exercises||[])]})),
+    climbing: !!day.climbing,
+    running: !!day.running,
+    gainage: !!day.gainage,
+    created: Date.now()
+  });
+  setDayTemplates(templates.slice(0, 20)); // max 20 templates
+  toast(`Template "${name}" enregistré ✓`,'success');
+  renderWeekEditor();
+}
+
+function applyDayTemplate(dayIdx, templateId){
+  const templates = getDayTemplates();
+  const t = templates.find(x=>x.id===templateId);
+  if(!t) return;
+  const plan = getWeekPlan(selectedWeekKey);
+  plan.days[dayIdx] = {
+    type: t.type,
+    exercises: [...t.exercises],
+    extraSessions: t.extraSessions ? t.extraSessions.map(s=>({type:s.type, exercises:[...s.exercises]})) : [],
+    climbing: t.climbing,
+    running: t.running,
+    gainage: t.gainage
+  };
+  saveWeekPlan(selectedWeekKey, plan);
+  toast(`Template "${t.name}" appliqué ✓`,'success');
+  renderWeekEditor();
+  renderCalendar();
+}
+
+function deleteDayTemplate(templateId){
+  setDayTemplates(getDayTemplates().filter(t=>t.id!==templateId));
+  renderWeekEditor();
+}
+
+// ══════════════════════════════════════════════
+// CLIPBOARD JOUR — copier/coller en mémoire (pas localStorage)
+// ══════════════════════════════════════════════
+let dayClipboard = null;
+
+function copyDay(dayIdx){
+  const plan = getWeekPlan(selectedWeekKey);
+  const d = plan.days[dayIdx];
+  if(!d || d.type === 'rest'){ toast('Choisis un jour avec une séance','warn'); return; }
+  dayClipboard = {
+    type: d.type,
+    exercises: [...(d.exercises||[])],
+    extraSessions: (d.extraSessions||[]).map(s=>({type:s.type, exercises:[...(s.exercises||[])]})),
+    climbing: !!d.climbing,
+    running: !!d.running,
+    gainage: !!d.gainage
+  };
+  toast(`Jour copié 📋 — colle-le où tu veux`,'success');
+  renderWeekEditor();
+}
+
+function pasteDay(dayIdx){
+  if(!dayClipboard){ toast('Rien à coller','warn'); return; }
+  const plan = getWeekPlan(selectedWeekKey);
+  plan.days[dayIdx] = {
+    type: dayClipboard.type,
+    exercises: [...dayClipboard.exercises],
+    extraSessions: dayClipboard.extraSessions.map(s=>({type:s.type, exercises:[...s.exercises]})),
+    climbing: dayClipboard.climbing,
+    running: dayClipboard.running,
+    gainage: dayClipboard.gainage
+  };
+  saveWeekPlan(selectedWeekKey, plan);
+  toast('Jour collé ✓','success');
+  renderWeekEditor();
+  renderCalendar();
+}
+
+// ══════════════════════════════════════════════
+// PÉRIODISATION — phase volume / force / peak (par profil)
+// ══════════════════════════════════════════════
+const PHASE_INFO = {
+  volume: { label:'📈 Volume', desc:'Hypertrophie — reps 8-12, charges modérées, +2.5 kg par palier', repsRange:'8-12', color:'#3b82f6' },
+  force:  { label:'💥 Force',   desc:'Force max — reps 3-6, charges lourdes, +5 kg par palier',   repsRange:'3-6',  color:'#ef4444' },
+  peak:   { label:'🎯 Peak',    desc:'Affûtage — reps 1-3, charges très lourdes, +1.25 kg par palier', repsRange:'1-3',  color:'#fbbf24' },
+};
+
+function getCurrentPhase(){ return LS('phase_'+state.profile) || 'volume'; }
+function setCurrentPhase(phase){
+  SS('phase_'+state.profile, phase);
+  renderPhaseUI();
+  refreshProgramUI();
+}
+function renderRecordsPage(){
+  const prs = computeAllPRs();
+  const stale = detectStagnation();
+  const cnt = document.getElementById('prs-count');
+  if(cnt) cnt.textContent = `${prs.length} exo${prs.length>1?'s':''} suivis`;
+
+  // Alertes de stagnation
+  const stalEl = document.getElementById('stagnation-alerts');
+  if(stalEl){
+    stalEl.innerHTML = stale.length ? `
+      <div class="card" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.3)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:1.5rem">⚠️</span>
+          <div>
+            <div style="font-weight:800;color:#fbbf24">${stale.length} exercice${stale.length>1?'s en':' en'} stagnation</div>
+            <div style="font-size:0.74rem;color:var(--muted)">Aucune progression du 1RM sur les 3+ dernières séances. Conseil : deload ou changement d'exo / rep range.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${stale.map(s=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border-radius:6px;font-size:0.78rem">
+              <span style="flex:1;font-weight:600">${s.exName}</span>
+              <span style="color:#fbbf24;font-weight:700">${s.currentBestRM} kg 1RM</span>
+              <span style="color:var(--muted);font-size:0.7rem">${s.sessionsTracked} séances</span>
+            </div>`).join('')}
+        </div>
+      </div>` : `
+      <div style="padding:14px 18px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:10px;font-size:0.85rem">
+        ✅ Aucune stagnation détectée — tu progresses sur tous tes exos suivis !
+      </div>`;
+  }
+
+  // Liste PR
+  const list = document.getElementById('prs-list');
+  if(list){
+    list.innerHTML = prs.length ? prs.map((p, i)=>{
+      const ex = exById(p.exId);
+      const muscle = ex?.muscle || '?';
+      const medal = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : `#${i+1}`;
+      const isStale = stale.some(s=>s.exId===p.exId);
+      const lastDateStr = new Date(p.lastDate).toLocaleDateString('fr', {day:'numeric', month:'short'});
+      return `<div class="ex-item" onclick="openExModal(${p.exId})" style="cursor:pointer">
+        <div class="ex-num" style="font-size:0.85rem">${medal}</div>
+        <div class="ex-body">
+          <div class="ex-name" style="display:flex;align-items:center;gap:6px">
+            ${p.exName}
+            ${isStale ? '<span class="badge" style="background:rgba(251,191,36,0.2);color:#fbbf24;font-size:0.6rem">⚠ stagnation</span>' : ''}
+          </div>
+          <div class="ex-meta">
+            <span class="badge badge-acc" style="font-size:0.65rem">${muscle}</span>
+            <span style="font-weight:800;color:var(--acc)">🏋️ ${p.bestWeight} kg max</span>
+            <span style="font-weight:700;color:#ef4444">💥 ${p.bestRM} kg 1RM</span>
+          </div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">
+            Meilleure série : ${p.bestSet?.weight}×${p.bestSet?.reps} reps · ${p.sessions} séances · dernier log ${lastDateStr}
+          </div>
+        </div>
+      </div>`;
+    }).join('') : `<div class="empty-state"><div class="icon">🏆</div><p>Aucun PR encore — log ta première séance pour commencer !</p></div>`;
+  }
+}
+
+function renderMuscleVolumeChart(){
+  const ctx = document.getElementById('chart-muscle-volume');
+  if(!ctx) return;
+  const data = computeMuscleVolumeByWeek(8);
+  const muscleColors = { 'Poitrine':'#3b82f6','Dos':'#10b981','Épaules':'#06b6d4','Biceps':'#a855f7','Triceps':'#f97316','Jambes':'#a78bfa','Fessiers':'#f472b6','Core':'#06b6d4','Lombaires':'#ec4899','Grip':'#64748b' };
+  const datasets = Object.entries(data.byMuscle)
+    .filter(([m,arr])=>arr.some(v=>v>0))
+    .map(([m,arr])=>({
+      label: m,
+      data: arr,
+      backgroundColor: (muscleColors[m]||'#64748b')+'cc',
+      borderColor: muscleColors[m]||'#64748b',
+      borderWidth: 1,
+      borderRadius: 4
+    }));
+  if(window._muscleChart) window._muscleChart.destroy();
+  window._muscleChart = new Chart(ctx, {
+    type:'bar',
+    data: { labels: data.labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels:{color:'#94a3b8', font:{size:10}} } },
+      scales: {
+        x: { stacked:true, ticks:{color:'#64748b', font:{size:10}} },
+        y: { stacked:true, ticks:{color:'#64748b', font:{size:10}, callback:v=>v>=1000?(v/1000).toFixed(1)+'k':v}, title:{display:true, text:'Volume (kg)', color:'#64748b'} }
+      }
+    }
+  });
+}
+
+function renderPhaseUI(){
+  const el = document.getElementById('phase-selector');
+  if(!el) return;
+  const cur = getCurrentPhase();
+  el.innerHTML = Object.entries(PHASE_INFO).map(([k,p])=>
+    `<button class="phase-btn ${cur===k?'active':''}" style="${cur===k?'border-color:'+p.color+';color:'+p.color:''}" onclick="setCurrentPhase('${k}')">${p.label}</button>`
+  ).join('');
+  const info = document.getElementById('phase-info');
+  if(info) info.innerHTML = `<strong style="color:${PHASE_INFO[cur].color}">${PHASE_INFO[cur].label}</strong> · ${PHASE_INFO[cur].desc}`;
 }
 
 function renderExerciseHistory(exId){
@@ -4647,7 +5194,8 @@ function goPage(id){
   document.querySelectorAll('.nav-btn').forEach(b=>{
     if(b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('active');
   });
-  if(id==='progression') renderProgressCharts();
+  if(id==='progression'){ renderProgressCharts(); renderMuscleVolumeChart(); }
+  if(id==='records') renderRecordsPage();
   if(id==='dashboard') renderDashboard();
   if(id==='programme') refreshProgramUI();
   if(id==='gainage') renderGainage();
@@ -4857,6 +5405,8 @@ function progNextWeek(){ progShiftWeek(1); }
 function progGoToCurrentWeek(){ progWeekKey = getISOWeek(new Date()); refreshProgramUI(); }
 
 function refreshProgramUI(){
+  // Mise à jour du sélecteur de phase
+  if(typeof renderPhaseUI === 'function') renderPhaseUI();
   // Semaine affichée — navigation indépendante du calendrier
   const weekKey = progGetWeekKey();
   const calPlan = getWeekPlan(weekKey);
@@ -4937,16 +5487,179 @@ function refreshProgramUI(){
 function launchSession(dayIdx){
   state.selectedDay = dayIdx;
   refreshProgramUI();
-  setTimeout(()=>{
-    const detail = document.getElementById('day-detail');
-    if(detail) detail.scrollIntoView({behavior:'smooth', block:'start'});
-    const firstEx = document.querySelector('#day-exercises-list .ex-item');
-    if(firstEx){
-      firstEx.click();
-    } else {
-      toast('Aucun exercice à lancer pour ce jour','warn');
-    }
-  }, 150);
+  // Lance directement le Workout Mode plein écran
+  workoutModeStart(dayIdx);
+}
+
+// ══════════════════════════════════════════════
+// WORKOUT MODE — séance plein écran guidée
+// ══════════════════════════════════════════════
+let workoutMode = { dayIdx:null, queue:[], idx:0 };
+
+function workoutModeStart(dayIdx){
+  const weekKey = progGetWeekKey();
+  const calPlan = getWeekPlan(weekKey);
+  const d = calPlan?.days?.[dayIdx];
+  if(!d){ toast('Aucun jour à lancer','warn'); return; }
+  // Construit la queue de tous les exos (séances primaire + extras dans l'ordre)
+  const sessions = getDaySessions(d);
+  const queue = [];
+  sessions.forEach((sess, sIdx)=>{
+    sess.exercises.forEach(exId=>{
+      queue.push({exId, sessionIdx:sIdx, sessionType:sess.type, sessionTotal:sess.exercises.length});
+    });
+  });
+  if(queue.length === 0){
+    toast('Aucun exercice à lancer pour ce jour','warn');
+    return;
+  }
+  workoutMode = { dayIdx, queue, idx: 0 };
+  document.getElementById('workout-mode-overlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  workoutModeRender();
+}
+
+function workoutModeClose(){
+  // Sauve les éventuelles séries en cours sur l'exo courant
+  const cur = workoutMode.queue[workoutMode.idx];
+  if(cur) workoutModeSaveCurrent(false);
+  document.getElementById('workout-mode-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  stopRestTimer(true);
+  stopAllSetChronos();
+}
+
+function workoutModeRender(){
+  const cur = workoutMode.queue[workoutMode.idx];
+  if(!cur) return;
+  const ex = exById(cur.exId);
+  if(!ex) return;
+  const weekKey = progGetWeekKey();
+  const day = getWeekPlan(weekKey).days[workoutMode.dayIdx];
+  const sessions = getDaySessions(day);
+  const sessLabel = SESSION_TYPES[cur.sessionType]?.label || cur.sessionType;
+  const sessEmoji = SESSION_TYPES[cur.sessionType]?.emoji || '💪';
+  // Header
+  document.getElementById('workout-mode-day').textContent = `${DAYS[workoutMode.dayIdx]} — ${sessEmoji} ${sessLabel}`;
+  document.getElementById('workout-mode-progress').textContent = `Exo ${workoutMode.idx+1}/${workoutMode.queue.length}${sessions.length>1?` · Séance ${cur.sessionIdx+1}/${sessions.length}`:''}`;
+  // Body
+  document.getElementById('workout-mode-name').textContent = ex.name;
+  document.getElementById('workout-mode-meta').innerHTML = `
+    <span class="badge badge-acc">${ex.muscle}</span>
+    <span class="badge ${ex.level==='avance'?'badge-red':ex.level==='inter'?'badge-yellow':'badge-green'}">${ex.level}</span>
+    <span class="badge badge-blue">📊 ${ex.sets}</span>
+  `;
+  document.getElementById('workout-mode-tip').textContent = '💡 ' + (ex.tips || 'Concentre-toi sur la technique');
+  // GIF
+  const gifPath = EX_GIFS[cur.exId];
+  const photoSlug = EX_PHOTOS[cur.exId];
+  const gifEl = document.getElementById('workout-mode-gif');
+  if(gifPath){
+    gifEl.innerHTML = `<img src="https://raw.githubusercontent.com/JahelCuadrado/ExerciseGymGifsDB/main/${gifPath}" alt="${ex.name}" onerror="this.outerHTML='<span class=ph>🏋️</span>'">`;
+  } else if(photoSlug){
+    gifEl.innerHTML = `<img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photoSlug}/0.jpg" alt="${ex.name}" onerror="this.outerHTML='<span class=ph>🏋️</span>'">`;
+  } else {
+    gifEl.innerHTML = '<span class="ph">🏋️</span>';
+  }
+  // Logger compact dans la fenêtre
+  workoutModeRenderLogger();
+  // Suggestion
+  const suggestion = suggestNextProgression(cur.exId);
+  // Boutons
+  document.getElementById('workout-mode-prev').disabled = workoutMode.idx === 0;
+  document.getElementById('workout-mode-next').textContent = workoutMode.idx === workoutMode.queue.length - 1 ? '✅ Terminer' : 'Suivant ⏭';
+}
+
+function workoutModeRenderLogger(){
+  const cur = workoutMode.queue[workoutMode.idx];
+  if(!cur) return;
+  const ex = exById(cur.exId);
+  const setCount = parseSetCount(ex.sets);
+  const setDuration = parseSetDuration(ex.sets);
+  const lastWorkout = state.exerciseWorkouts(cur.exId)[0];
+  const lastSets = lastWorkout?.sets || [];
+  const suggestion = suggestNextProgression(cur.exId);
+  let html = '';
+  if(suggestion){
+    html += `<div style="padding:8px 12px;background:var(--acc-dim);border:1px solid var(--acc);border-radius:8px;margin-bottom:10px;font-size:0.78rem">${suggestion.msg}</div>`;
+  }
+  for(let i=0;i<setCount;i++){
+    const last = lastSets[i] || {};
+    const lastHint = (last.weight && last.reps) ? `<small style="font-size:0.6rem;color:var(--muted);margin-left:6px">prev: ${last.weight}×${last.reps}</small>` : '';
+    html += `
+      <div class="logger-row" data-set="${i}">
+        <span class="logger-set-label">S${i+1}${lastHint}<span class="set-chrono-display" data-i="${i}"></span></span>
+        <input type="number" class="logger-w wm-w" data-i="${i}" placeholder="kg" step="0.5" min="0" inputmode="decimal" value="${last.weight||''}">
+        <span class="logger-x">×</span>
+        <input type="number" class="logger-r wm-r" data-i="${i}" placeholder="reps" min="0" max="50" inputmode="numeric" value="${last.reps||''}">
+        <button class="set-chrono" data-i="${i}" onclick="toggleSetChrono(this,${cur.exId})" title="Démarrer chrono série">⏱</button>
+        <button class="set-check" data-i="${i}" onclick="toggleSetDone(this,${cur.exId})" title="Marquer la série comme faite">○</button>
+      </div>`;
+  }
+  document.getElementById('workout-mode-logger').innerHTML = html;
+}
+
+function workoutModeSaveCurrent(verbose=true){
+  const cur = workoutMode.queue[workoutMode.idx];
+  if(!cur) return false;
+  const ex = exById(cur.exId);
+  const sets = [];
+  let hasData = false;
+  document.querySelectorAll('#workout-mode-logger .logger-row').forEach(row=>{
+    const w = parseFloat(row.querySelector('.logger-w').value) || 0;
+    const r = parseInt(row.querySelector('.logger-r').value) || 0;
+    sets.push({weight: w, reps: r});
+    if(w > 0 && r > 0) hasData = true;
+  });
+  if(!hasData){ return false; } // Pas de save si rien saisi (passer simplement à l'exo suivant)
+  const prs = detectPRs(cur.exId, sets.filter(s=>s.weight>0 && s.reps>0));
+  const volume = sets.reduce((s,set)=>s+(set.weight||0)*(set.reps||0),0);
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    exerciseId: cur.exId,
+    exerciseName: ex.name,
+    sets, volume,
+    prs: prs.length ? prs : undefined
+  };
+  const all = state.workouts;
+  all.unshift(entry);
+  state.setWorkouts(all);
+  if(prs.length && verbose) celebratePR(ex.name, prs);
+  return true;
+}
+
+function workoutModeNext(){
+  workoutModeSaveCurrent();
+  stopAllSetChronos();
+  if(workoutMode.idx >= workoutMode.queue.length - 1){
+    // Fin de séance
+    document.getElementById('workout-mode-overlay').style.display = 'none';
+    document.body.style.overflow = '';
+    stopRestTimer(true);
+    toast('🎉 Séance terminée — bien joué !', 'success', 4000);
+    if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+    if(document.getElementById('page-programme').classList.contains('active')) refreshProgramUI();
+    return;
+  }
+  workoutMode.idx++;
+  workoutModeRender();
+  document.querySelector('.workout-mode-body').scrollTo({top:0, behavior:'smooth'});
+}
+
+function workoutModePrev(){
+  workoutModeSaveCurrent();
+  stopAllSetChronos();
+  if(workoutMode.idx > 0){
+    workoutMode.idx--;
+    workoutModeRender();
+    document.querySelector('.workout-mode-body').scrollTo({top:0, behavior:'smooth'});
+  }
+}
+
+function workoutModeOpenDetails(){
+  const cur = workoutMode.queue[workoutMode.idx];
+  if(cur) openExModal(cur.exId);
 }
 
 function pickPlannedDay(i){
@@ -5185,6 +5898,48 @@ function playBeep(){
 // ══════════════════════════════════════════════
 // GAINAGE — séances guidées avec chrono
 // ══════════════════════════════════════════════
+// Mappings visuels pour les exos de gainage
+const GAINAGE_GIFS = {
+  'Planche sur les genoux':'abs/front-plank-with-twist.gif',
+  'Planche complète':'abs/front-plank-with-twist.gif',
+  'Planche bras tendus':'abs/front-plank-with-twist.gif',
+  'Planche bras tendus longue':'abs/front-plank-with-twist.gif',
+  'Planche touches d\'épaule':'abs/front-plank-with-twist.gif',
+  'RKC Plank':'abs/front-plank-with-twist.gif',
+  'Planche latérale genoux D':'abs/bodyweight-incline-side-plank.gif',
+  'Planche latérale genoux G':'abs/bodyweight-incline-side-plank.gif',
+  'Planche latérale droite':'abs/bodyweight-incline-side-plank.gif',
+  'Planche latérale gauche':'abs/bodyweight-incline-side-plank.gif',
+  'Planche latérale lestée D':'abs/bodyweight-incline-side-plank.gif',
+  'Planche latérale lestée G':'abs/bodyweight-incline-side-plank.gif',
+  'Pont fessier (statique)':'glutes/barbell-glute-bridge.gif',
+  'Mountain Climbers lents':'abs/bridge-mountain-climber-cross-body.gif',
+  'Ab Wheel Hold':'abs/barbell-standing-ab-rollerout.gif',
+};
+const GAINAGE_PHOTOS = {
+  'Planche sur les genoux':'Plank',
+  'Planche complète':'Plank',
+  'Planche bras tendus':'Pushups',
+  'Planche bras tendus longue':'Pushups',
+  'Planche touches d\'épaule':'Plank',
+  'RKC Plank':'Plank',
+  'Planche latérale genoux D':'Side_Bridge',
+  'Planche latérale genoux G':'Side_Bridge',
+  'Planche latérale droite':'Side_Bridge',
+  'Planche latérale gauche':'Side_Bridge',
+  'Planche latérale lestée D':'Side_Bridge',
+  'Planche latérale lestée G':'Side_Bridge',
+  'Bird Dog — droit':'Bird_Dog',
+  'Bird Dog — gauche':'Bird_Dog',
+  'Bird Dog dynamique':'Bird_Dog',
+  'Dead Bug':'Alternating_Floor_Quad_Press',
+  'Mountain Climbers lents':'Mountain_Climbers',
+  'Pont fessier (statique)':'Hip_Lift_With_Band',
+  'Hollow Hold':'Plank',
+  'Hollow Hold avancé':'Plank',
+  'Ab Wheel Hold':'Ab_Roller',
+};
+
 const GAINAGE_PROGRAMS = {
   debut: {
     label:'Débutant', emoji:'🌱', restSec:25, restBetweenRounds:60, rounds:2,
@@ -5273,6 +6028,25 @@ function renderGainage(){
   const cur = prog.exos[gainageState.exIdx] || prog.exos[0];
   document.getElementById('gainage-ex-name').textContent = cur.name;
   document.getElementById('gainage-ex-tip').textContent = cur.tip;
+  // GIF / photo de l'exo courant (ou icône rest si phase de repos)
+  const gifWrap = document.getElementById('gainage-gif-wrap');
+  if(gifWrap){
+    if(gainageState.phase === 'rest' || gainageState.phase === 'rest-round'){
+      gifWrap.className = 'gainage-gif-wrap rest-tint';
+      gifWrap.innerHTML = '<span class="ph">😮‍💨</span>';
+    } else {
+      gifWrap.className = 'gainage-gif-wrap';
+      const gif = GAINAGE_GIFS?.[cur.name];
+      const photo = GAINAGE_PHOTOS?.[cur.name];
+      if(gif){
+        gifWrap.innerHTML = `<img src="https://raw.githubusercontent.com/JahelCuadrado/ExerciseGymGifsDB/main/${gif}" alt="${cur.name}" onerror="this.outerHTML='${photo?`<img src=https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photo}/0.jpg onerror=\\'this.outerHTML=&quot;<span class=ph>🧘</span>&quot;\\'>`:'<span class=ph>🧘</span>'}'">`;
+      } else if(photo){
+        gifWrap.innerHTML = `<img src="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${photo}/0.jpg" alt="${cur.name}" onerror="this.outerHTML='<span class=ph>🧘</span>'">`;
+      } else {
+        gifWrap.innerHTML = '<span class="ph">🧘</span>';
+      }
+    }
+  }
 
   // Phase label
   const phaseLbl = document.getElementById('gainage-phase-label');
