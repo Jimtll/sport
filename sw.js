@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 20 — Suppression directe sur carte profil + bouton + compact à la place de "Nouveau profil"
-const CACHE_NAME = 'sportduo-cache-v20';
+// VERSION 21 — Multi-séances par jour + 114 exos (20+/muscle) + fix profil zombi après delete + 2 optims perf
+const CACHE_NAME = 'sportduo-cache-v21';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

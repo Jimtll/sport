@@ -1916,10 +1916,170 @@ const EXERCISES = [
   // DOS — tirages
   {id:58,name:'Tirage horizontal (poulie basse)',muscle:'Dos',level:'debut',sets:'4×10-12',tips:'Buste droit, tirer vers le nombril, contracter les omoplates 1s à la fin',muscles_worked:['Dorsal','Rhomboïdes','Trapèze moyen','Biceps']},
   {id:59,name:'Tirage vertical (poulie haute prise neutre)',muscle:'Dos',level:'debut',sets:'4×10-12',tips:'Prise neutre paumes face à face, tirer la barre vers la poitrine, légère inclinaison du tronc',muscles_worked:['Grand dorsal','Biceps','Brachial']},
+
+  // ════════════ POITRINE — VARIANTES (60-72) ════════════
+  {id:60,name:'Développé décliné barre',muscle:'Poitrine',level:'inter',sets:'4×6-10',tips:'Banc en déclin 15-30°, focus pec inférieur',muscles_worked:['Pect. inf.','Triceps']},
+  {id:61,name:'Pec deck (machine)',muscle:'Poitrine',level:'debut',sets:'3×12-15',tips:'Coudes calés, contraction max à la jonction des mains',muscles_worked:['Pectoraux']},
+  {id:62,name:'Pull-over haltère',muscle:'Poitrine',level:'inter',sets:'3×10-12',tips:'Allongé en travers du banc, haltère descend derrière la tête. Étire pec + dorsal',muscles_worked:['Pec. sternal','Grand dorsal']},
+  {id:63,name:'Pompes diamant',muscle:'Poitrine',level:'inter',sets:'3×AMRAP',tips:'Mains en losange sous la poitrine, focus triceps + pec intérieur',muscles_worked:['Triceps','Pec. int.']},
+  {id:64,name:'Pompes inclinées (pieds surélevés)',muscle:'Poitrine',level:'inter',sets:'3×12-15',tips:'Pieds sur un banc, mains au sol. Cible le pec supérieur',muscles_worked:['Pec. sup.','Delts ant.']},
+  {id:65,name:'Pompes déclinées (mains surélevées)',muscle:'Poitrine',level:'debut',sets:'3×12-20',tips:'Mains sur banc, pieds au sol. Variante facile, focus pec inf',muscles_worked:['Pectoraux','Triceps']},
+  {id:66,name:'Développé Smith machine',muscle:'Poitrine',level:'debut',sets:'4×8-12',tips:'Trajectoire guidée, idéal pour pousser lourd en sécurité',muscles_worked:['Pectoraux','Delts ant.','Triceps']},
+  {id:67,name:'Développé haltères prise neutre',muscle:'Poitrine',level:'debut',sets:'3×10-12',tips:'Paumes face à face, plus doux pour les épaules',muscles_worked:['Pectoraux','Triceps']},
+  {id:68,name:'Cross-over câble bas vers haut',muscle:'Poitrine',level:'inter',sets:'3×12-15',tips:'Poulies basses, montée diagonale. Cible pec supérieur',muscles_worked:['Pec. sup.']},
+  {id:69,name:'Pompes archer',muscle:'Poitrine',level:'avance',sets:'3×6-10/côté',tips:'Mains très écartées, descente sur un bras (l\'autre bras tendu)',muscles_worked:['Pectoraux','Triceps','Core']},
+  {id:70,name:'Développé incliné Smith',muscle:'Poitrine',level:'inter',sets:'4×8-10',tips:'Banc à 30-45°, trajectoire guidée Smith machine',muscles_worked:['Pec. sup.','Delts ant.']},
+  {id:71,name:'Écarté haltères allongé',muscle:'Poitrine',level:'debut',sets:'3×10-12',tips:'Légère flexion coude fixe, étire bien la poitrine',muscles_worked:['Pectoraux']},
+  {id:72,name:'Pompes lestées',muscle:'Poitrine',level:'inter',sets:'3×AMRAP',tips:'Disque sur le dos pour intensifier les pompes classiques',muscles_worked:['Pectoraux','Triceps']},
+
+  // ════════════ DOS — VARIANTES (73-84) ════════════
+  {id:73,name:'Tractions prise large',muscle:'Dos',level:'avance',sets:'4×6-8',tips:'Mains plus larges que les épaules, focus grand dorsal large',muscles_worked:['Grand dorsal','Rhomboïdes']},
+  {id:74,name:'Tractions prise serrée pronation',muscle:'Dos',level:'avance',sets:'4×6-10',tips:'Mains à largeur d\'épaules, focus partie centrale du dos',muscles_worked:['Grand dorsal','Trapèze moy.']},
+  {id:75,name:'Tractions prise neutre',muscle:'Dos',level:'inter',sets:'4×6-10',tips:'Poignées parallèles, plus douces pour les coudes',muscles_worked:['Grand dorsal','Brachial','Biceps']},
+  {id:76,name:'T-Bar Row',muscle:'Dos',level:'inter',sets:'4×8-10',tips:'Barre coincée dans un coin, tirer vers le ventre dos plat',muscles_worked:['Dorsal','Rhomboïdes','Trapèze']},
+  {id:77,name:'Smith machine row',muscle:'Dos',level:'debut',sets:'4×10-12',tips:'Penché vers l\'avant, tirer la barre Smith vers le bas du sternum',muscles_worked:['Dorsal','Rhomboïdes']},
+  {id:78,name:'Pendlay Row',muscle:'Dos',level:'avance',sets:'4×5-8',tips:'Reset au sol à chaque rep, tronc parallèle au sol, explosif',muscles_worked:['Dorsal','Lombaires','Rhomboïdes']},
+  {id:79,name:'Tirage 1 bras câble',muscle:'Dos',level:'debut',sets:'3×12/côté',tips:'Travail unilatéral, amplitude max et contraction',muscles_worked:['Grand dorsal','Biceps']},
+  {id:80,name:'Inverse Rowing TRX/anneaux',muscle:'Dos',level:'debut',sets:'3×AMRAP',tips:'Suspendu à des sangles, tirer le corps vers le haut. Excellente alternative aux tractions',muscles_worked:['Dorsal','Rhomboïdes','Biceps']},
+  {id:81,name:'Dumbbell Pullover dos',muscle:'Dos',level:'inter',sets:'3×10-12',tips:'Variante dos : amener l\'haltère plus bas en gardant les coudes plus serrés',muscles_worked:['Grand dorsal','Triceps long. tête']},
+  {id:82,name:'Meadows Row',muscle:'Dos',level:'avance',sets:'3×8-10/côté',tips:'Barre dans un coin, prise pronation, mouvement unilatéral large',muscles_worked:['Dorsal','Rhomboïdes','Trapèze']},
+  {id:83,name:'Hyperextension lestée',muscle:'Dos',level:'inter',sets:'3×10-12',tips:'Banc 45° avec disque au torse, focus lombaires + fessiers + ischio',muscles_worked:['Érecteurs','Fessiers','Ischio']},
+  {id:84,name:'Cable Straight Arm Pulldown',muscle:'Dos',level:'debut',sets:'3×12-15',tips:'Bras tendus, tirer la barre depuis la poulie haute jusqu\'aux cuisses. Isole le grand dorsal',muscles_worked:['Grand dorsal']},
+
+  // ════════════ ÉPAULES — VARIANTES (85-97) ════════════
+  {id:85,name:'Développé haltères assis',muscle:'Épaules',level:'inter',sets:'4×8-10',tips:'Banc dossier 90°, descendre les haltères au niveau des oreilles',muscles_worked:['Delts ant.','Delts lat.','Triceps']},
+  {id:86,name:'Développé Smith assis',muscle:'Épaules',level:'debut',sets:'4×8-12',tips:'Smith machine derrière la nuque ou devant — guidage stable',muscles_worked:['Delts ant.','Triceps']},
+  {id:87,name:'Élévations latérales câble',muscle:'Épaules',level:'debut',sets:'4×12-15',tips:'Poulie basse, tension constante. Excellente alternative aux haltères',muscles_worked:['Delts lat.']},
+  {id:88,name:'Machine shoulder press',muscle:'Épaules',level:'debut',sets:'4×10-12',tips:'Trajectoire fixe, idéal pour débutants ou poussée à intensité élevée',muscles_worked:['Delts ant.','Triceps']},
+  {id:89,name:'Reverse Pec Deck',muscle:'Épaules',level:'debut',sets:'4×12-15',tips:'Machine pec deck à l\'envers : focus deltoïdes postérieurs et rhomboïdes',muscles_worked:['Delts post.','Rhomboïdes']},
+  {id:90,name:'Élévations frontales haltères',muscle:'Épaules',level:'debut',sets:'3×12-15',tips:'Bras tendus devant, monter à hauteur d\'épaule. Cible delts antérieurs',muscles_worked:['Delts ant.']},
+  {id:91,name:'Push Press barre',muscle:'Épaules',level:'avance',sets:'4×4-6',tips:'Légère flexion des genoux puis poussée explosive verticale',muscles_worked:['Delts ant.','Triceps','Quadriceps']},
+  {id:92,name:'Élévations latérales 1 bras câble',muscle:'Épaules',level:'inter',sets:'3×12/côté',tips:'Poulie basse derrière le corps, élévation latérale unilatérale stricte',muscles_worked:['Delts lat.']},
+  {id:93,name:'Landmine Press 1 bras',muscle:'Épaules',level:'inter',sets:'3×10/côté',tips:'Barre dans un coin, pousser 1 bras en diagonale ascendante',muscles_worked:['Delts ant.','Pec. sup.','Triceps']},
+  {id:94,name:'Élévations latérales banc incliné',muscle:'Épaules',level:'inter',sets:'3×12-15',tips:'Couché sur le côté sur un banc incliné, élévation pure du bras supérieur',muscles_worked:['Delts lat.']},
+  {id:95,name:'Z Press',muscle:'Épaules',level:'avance',sets:'3×6-8',tips:'Assis au sol jambes tendues, développé sans aide du tronc',muscles_worked:['Delts ant.','Triceps','Core']},
+  {id:96,name:'Bradford Press',muscle:'Épaules',level:'avance',sets:'3×8-10',tips:'Alterne barre devant et derrière la nuque sans verrouiller',muscles_worked:['Delts ant.','Delts lat.','Triceps']},
+  {id:97,name:'Disque lever frontal',muscle:'Épaules',level:'debut',sets:'3×12-15',tips:'Tenir un disque à 9h-3h, élévation frontale. Bonne alternative haltères',muscles_worked:['Delts ant.']},
+
+  // ════════════ BICEPS — VARIANTES (98-113) ════════════
+  {id:98,name:'Curl pupitre (Scott curl)',muscle:'Biceps',level:'inter',sets:'4×8-10',tips:'Bras calé sur pupitre, isolation parfaite, pas de triche',muscles_worked:['Biceps','Brachial']},
+  {id:99,name:'Curl haltère incliné',muscle:'Biceps',level:'inter',sets:'3×10-12',tips:'Banc incliné 45-60°, bras pendent → étire le biceps en bas',muscles_worked:['Biceps','Brachial']},
+  {id:100,name:'Curl concentré',muscle:'Biceps',level:'debut',sets:'3×10-12/côté',tips:'Assis, coude calé contre la cuisse, isolation maximale du biceps',muscles_worked:['Biceps']},
+  {id:101,name:'Curl spider',muscle:'Biceps',level:'inter',sets:'3×10-12',tips:'Allongé face contre un banc incliné, bras pendent à la verticale',muscles_worked:['Biceps']},
+  {id:102,name:'Drag Curl',muscle:'Biceps',level:'inter',sets:'3×10-12',tips:'Barre glisse le long du corps, coudes reculent. Isole vraiment le biceps',muscles_worked:['Biceps']},
+  {id:103,name:'Curl Zottman',muscle:'Biceps',level:'inter',sets:'3×10/côté',tips:'Monte en supination, descend en pronation. Travaille biceps + avant-bras',muscles_worked:['Biceps','Brachioradial','Avant-bras']},
+  {id:104,name:'Curl 21 (séries 7-7-7)',muscle:'Biceps',level:'avance',sets:'3×21',tips:'7 reps bas → mi, 7 reps mi → haut, 7 reps complètes. Brûlure intense',muscles_worked:['Biceps','Brachial']},
+  {id:105,name:'Curl câble bas barre droite',muscle:'Biceps',level:'debut',sets:'3×12-15',tips:'Tension constante, idéal en fin de séance pour la congestion',muscles_worked:['Biceps']},
+  {id:106,name:'Curl câble 1 bras prise neutre',muscle:'Biceps',level:'debut',sets:'3×12/côté',tips:'Travail unilatéral à la poulie basse, focus sur le pic du biceps',muscles_worked:['Biceps','Brachial']},
+  {id:107,name:'Bayesian curl (câble derrière le corps)',muscle:'Biceps',level:'inter',sets:'3×10-12/côté',tips:'Poulie basse, dos à la machine, bras tendu derrière → étire le biceps',muscles_worked:['Biceps long. tête']},
+  {id:108,name:'Curl haltères assis',muscle:'Biceps',level:'debut',sets:'3×10-12',tips:'Assis sur un banc, élimine la triche du tronc',muscles_worked:['Biceps']},
+  {id:109,name:'Curl prise large',muscle:'Biceps',level:'inter',sets:'3×10-12',tips:'Barre EZ ou droite prise très large, focus biceps interne',muscles_worked:['Biceps (court. tête)']},
+  {id:110,name:'Curl prise étroite',muscle:'Biceps',level:'inter',sets:'3×10-12',tips:'Mains rapprochées, focus biceps externe (longue tête)',muscles_worked:['Biceps (long. tête)']},
+  {id:111,name:'Chin-up (traction supination)',muscle:'Biceps',level:'inter',sets:'4×6-10',tips:'Prise supination étroite à la barre fixe — excellent biceps + dos',muscles_worked:['Biceps','Grand dorsal']},
+  {id:112,name:'Curl marteau câble corde',muscle:'Biceps',level:'debut',sets:'3×12',tips:'Poulie basse + corde, prise neutre, travaille brachioradial',muscles_worked:['Brachioradial','Brachial']},
+  {id:113,name:'Curl Larry Scott machine',muscle:'Biceps',level:'debut',sets:'3×10-12',tips:'Machine dédiée, isolation parfaite, pas de triche possible',muscles_worked:['Biceps','Brachial']},
+
+  // ════════════ TRICEPS — VARIANTES (114-129) ════════════
+  {id:114,name:'Extension haltère au-dessus de la tête 1 main',muscle:'Triceps',level:'debut',sets:'3×10-12/côté',tips:'Bras tendu vers le plafond, haltère descend derrière la tête',muscles_worked:['Triceps long. tête']},
+  {id:115,name:'French Press EZ',muscle:'Triceps',level:'inter',sets:'3×8-10',tips:'Allongé, barre EZ descend vers le front. Coudes fixes',muscles_worked:['Triceps long. tête']},
+  {id:116,name:'Close-Grip Bench Press',muscle:'Triceps',level:'inter',sets:'4×8-10',tips:'Bench classique mais prise à largeur d\'épaules, coudes proches du corps',muscles_worked:['Triceps','Pec. int.']},
+  {id:117,name:'JM Press',muscle:'Triceps',level:'avance',sets:'3×8-10',tips:'Mix bench + skull crusher. Barre EZ descend vers la gorge en pliant les coudes',muscles_worked:['Triceps','Pectoraux']},
+  {id:118,name:'Dips parallèles lestés',muscle:'Triceps',level:'inter',sets:'4×6-10',tips:'Tronc droit (pas penché), coudes vers l\'arrière, focus triceps',muscles_worked:['Triceps','Pec. inf.']},
+  {id:119,name:'Push down corde',muscle:'Triceps',level:'debut',sets:'4×12-15',tips:'Poulie haute + corde, écarter les mains en bas pour contraction max',muscles_worked:['Triceps']},
+  {id:120,name:'Push down barre droite',muscle:'Triceps',level:'debut',sets:'4×10-12',tips:'Coudes fixes, extension complète, contraction 1s en bas',muscles_worked:['Triceps']},
+  {id:121,name:'Push down prise inversée',muscle:'Triceps',level:'inter',sets:'3×12-15',tips:'Prise supination à la barre droite, cible le chef médian',muscles_worked:['Triceps (chef médian)']},
+  {id:122,name:'Kickback haltère',muscle:'Triceps',level:'debut',sets:'3×12-15/côté',tips:'Bras le long du corps puis extension complète vers l\'arrière',muscles_worked:['Triceps']},
+  {id:123,name:'Kickback câble',muscle:'Triceps',level:'debut',sets:'3×12-15/côté',tips:'Variante câble, tension plus constante qu\'en haltère',muscles_worked:['Triceps']},
+  {id:124,name:'Triceps à la poulie haute corde au-dessus tête',muscle:'Triceps',level:'inter',sets:'3×12',tips:'Dos à la poulie haute, corde derrière la nuque, extension vers le haut',muscles_worked:['Triceps long. tête']},
+  {id:125,name:'Tate Press haltères',muscle:'Triceps',level:'inter',sets:'3×10-12',tips:'Allongé, haltères descendent vers les épaules coudes vers l\'extérieur',muscles_worked:['Triceps']},
+  {id:126,name:'Floor Press triceps',muscle:'Triceps',level:'inter',sets:'4×8',tips:'Allongé au sol (ROM réduit), focus triceps en bloquant les coudes au sol',muscles_worked:['Triceps','Pectoraux']},
+  {id:127,name:'Dips banc lesté',muscle:'Triceps',level:'inter',sets:'3×10-15',tips:'Mains sur un banc, jambes tendues, disque sur les cuisses pour lester',muscles_worked:['Triceps','Delts ant.']},
+  {id:128,name:'Triceps machine assistée',muscle:'Triceps',level:'debut',sets:'3×10-12',tips:'Machine spécifique triceps, idéal pour la technique au début',muscles_worked:['Triceps']},
+  {id:129,name:'Reverse Grip Push Down',muscle:'Triceps',level:'inter',sets:'3×12',tips:'Prise supination, mains très serrées, focus chef médian + long',muscles_worked:['Triceps']},
+
+  // ════════════ JAMBES — VARIANTES (130-144) ════════════
+  {id:130,name:'Front Squat',muscle:'Jambes',level:'avance',sets:'4×5-8',tips:'Barre sur le devant des épaules, tronc bien vertical, focus quadris',muscles_worked:['Quadriceps','Fessiers','Core']},
+  {id:131,name:'Goblet Squat',muscle:'Jambes',level:'debut',sets:'3×10-12',tips:'Haltère ou kettlebell sous le menton, descente profonde. Idéal pour apprendre',muscles_worked:['Quadriceps','Fessiers']},
+  {id:132,name:'Hack Squat machine',muscle:'Jambes',level:'inter',sets:'4×8-12',tips:'Machine guidée, focus quadriceps sans solliciter les lombaires',muscles_worked:['Quadriceps','Fessiers']},
+  {id:133,name:'Pendulum Squat',muscle:'Jambes',level:'inter',sets:'4×10-12',tips:'Machine moderne mimant le squat libre avec trajectoire courbe',muscles_worked:['Quadriceps','Fessiers']},
+  {id:134,name:'Sissy Squat',muscle:'Jambes',level:'inter',sets:'3×10-15',tips:'Genoux avancent vers l\'avant, talons en l\'air. Isole les quadriceps',muscles_worked:['Quadriceps']},
+  {id:135,name:'Leg Extension',muscle:'Jambes',level:'debut',sets:'4×12-15',tips:'Machine, extension complète et contraction 1s en haut',muscles_worked:['Quadriceps']},
+  {id:136,name:'Leg Curl assis',muscle:'Jambes',level:'debut',sets:'4×10-15',tips:'Machine assise, flexion des genoux. Plus efficace que la version couchée',muscles_worked:['Ischio-jambiers']},
+  {id:137,name:'Leg Curl debout',muscle:'Jambes',level:'debut',sets:'3×12-15/côté',tips:'Machine debout, travail unilatéral des ischios',muscles_worked:['Ischio-jambiers']},
+  {id:138,name:'RDL haltères',muscle:'Jambes',level:'inter',sets:'3×10-12',tips:'Romanian deadlift avec haltères, légère flexion des genoux, focus ischios',muscles_worked:['Ischio-jambiers','Fessiers','Lombaires']},
+  {id:139,name:'Fentes arrière haltères',muscle:'Jambes',level:'debut',sets:'3×10/côté',tips:'Pas en arrière contrôlé, focus quadriceps avant et fessier',muscles_worked:['Quadriceps','Fessiers']},
+  {id:140,name:'Mollets assis',muscle:'Jambes',level:'debut',sets:'4×12-15',tips:'Machine mollets assise, cible le soléaire (chef profond du mollet)',muscles_worked:['Soléaire']},
+  {id:141,name:'Mollets à la presse',muscle:'Jambes',level:'debut',sets:'4×15-20',tips:'Pieds tendus sur la plateforme de la presse, extension du mollet',muscles_worked:['Gastrocnémiens']},
+  {id:142,name:'Step-up haltères',muscle:'Jambes',level:'debut',sets:'3×10/côté',tips:'Monter sur un banc avec haltères, focus quadriceps unilatéral',muscles_worked:['Quadriceps','Fessiers']},
+  {id:143,name:'Pistol Squat',muscle:'Jambes',level:'avance',sets:'3×5-8/côté',tips:'Squat 1 jambe (l\'autre tendue devant). Force, équilibre, mobilité',muscles_worked:['Quadriceps','Fessiers','Core']},
+  {id:144,name:'Box Jump',muscle:'Jambes',level:'inter',sets:'4×5',tips:'Saut explosif sur une box, focus puissance des jambes',muscles_worked:['Quadriceps','Fessiers','Mollets']},
+
+  // ════════════ FESSIERS — VARIANTES SUPP (145-152) ════════════
+  {id:145,name:'B-stance Hip Thrust',muscle:'Fessiers',level:'inter',sets:'4×10-12/côté',tips:'1 pied à plat (le travailleur) + 1 pied sur la pointe. Charge focus 1 fesse',muscles_worked:['Grand fessier','Ischio']},
+  {id:146,name:'Reverse Hyperextension',muscle:'Fessiers',level:'inter',sets:'3×12-15',tips:'Sur banc avec hanches en bord, jambes oscillent vers l\'arrière',muscles_worked:['Grand fessier','Ischio','Lombaires']},
+  {id:147,name:'Cable Pull-Through',muscle:'Fessiers',level:'debut',sets:'3×12-15',tips:'Dos à la poulie basse, charnière de hanche, focus contraction fesses en haut',muscles_worked:['Grand fessier','Ischio']},
+  {id:148,name:'Single Leg Hip Thrust',muscle:'Fessiers',level:'inter',sets:'3×10/côté',tips:'1 jambe sur banc, l\'autre tendue. Très intense unilatéralement',muscles_worked:['Grand fessier']},
+  {id:149,name:'Step-up haut focus fessier',muscle:'Fessiers',level:'debut',sets:'3×10/côté',tips:'Banc HAUT (>50cm), pousser par le talon. Focus glute',muscles_worked:['Grand fessier','Quadriceps']},
+  {id:150,name:'Cable Abduction debout',muscle:'Fessiers',level:'debut',sets:'3×15/côté',tips:'Cheville attachée à poulie basse, jambe abductée latéralement',muscles_worked:['Moyen fessier']},
+  {id:151,name:'Frog Pump',muscle:'Fessiers',level:'debut',sets:'3×20',tips:'Plantes de pieds collées, genoux écartés, poussée hanches vers le haut',muscles_worked:['Grand fessier']},
+  {id:152,name:'Squat sumo barre',muscle:'Fessiers',level:'inter',sets:'4×8-10',tips:'Pieds très écartés, pointes vers l\'extérieur. Cible adducteurs + fessiers',muscles_worked:['Fessiers','Adducteurs','Quadriceps']},
+
+  // ════════════ CORE — VARIANTES (153-167) ════════════
+  {id:153,name:'Crunch sol',muscle:'Core',level:'debut',sets:'3×15-20',tips:'Genoux fléchis, mains derrière la tête (ne tirer PAS sur la nuque)',muscles_worked:['Rectus abdominis']},
+  {id:154,name:'V-up',muscle:'Core',level:'inter',sets:'3×10-15',tips:'Position V : bras et jambes se rejoignent, contraction explosive',muscles_worked:['Rectus','Hip flexors']},
+  {id:155,name:'Bicycle Crunch',muscle:'Core',level:'debut',sets:'3×20',tips:'Allongé, alterne coude-genou opposé. Travaille obliques',muscles_worked:['Rectus','Obliques']},
+  {id:156,name:'Toe Touch',muscle:'Core',level:'debut',sets:'3×15',tips:'Jambes verticales, mains tendues touchent les pieds',muscles_worked:['Rectus abdominis']},
+  {id:157,name:'Sit-up lesté',muscle:'Core',level:'inter',sets:'3×10-12',tips:'Disque au torse, sit-up complet contrôlé',muscles_worked:['Rectus','Hip flexors']},
+  {id:158,name:'Pallof Press',muscle:'Core',level:'debut',sets:'3×12/côté',tips:'Anti-rotation : poulie latérale, mains au sternum, pousser droit devant',muscles_worked:['Obliques','Core profond']},
+  {id:159,name:'Hollow Hold',muscle:'Core',level:'inter',sets:'3×30-45s',tips:'Sur le dos, lombaires plaqués, bras et jambes tendus en suspension',muscles_worked:['Rectus','Core profond']},
+  {id:160,name:'L-Sit suspension',muscle:'Core',level:'avance',sets:'3×15-30s',tips:'Suspendu à la barre ou sur barres parallèles, jambes tendues à l\'horizontale',muscles_worked:['Rectus','Hip flexors']},
+  {id:161,name:'Hanging knee raise',muscle:'Core',level:'debut',sets:'3×12-15',tips:'Suspendu, ramener les genoux à la poitrine. Plus facile que jambes tendues',muscles_worked:['Rectus','Hip flexors']},
+  {id:162,name:'Cable Woodchopper',muscle:'Core',level:'inter',sets:'3×12/côté',tips:'Poulie haute, mouvement diagonal de la rotation. Anti-rotation pure',muscles_worked:['Obliques','Core entier']},
+  {id:163,name:'Side Bend haltère',muscle:'Core',level:'debut',sets:'3×12/côté',tips:'Haltère 1 main, inclinaison latérale du tronc',muscles_worked:['Obliques (carré des lombes)']},
+  {id:164,name:'Reverse Crunch',muscle:'Core',level:'debut',sets:'3×15',tips:'Allongé, ramener les genoux vers la poitrine en décollant le bassin',muscles_worked:['Rectus inf.','Hip flexors']},
+  {id:165,name:'Copenhagen Plank',muscle:'Core',level:'avance',sets:'3×20-30s/côté',tips:'Planche latérale avec jambe supérieure sur un banc, intense adducteurs+core',muscles_worked:['Obliques','Adducteurs','Core']},
+  {id:166,name:'Pike Up sliders',muscle:'Core',level:'inter',sets:'3×10-12',tips:'Position planche, glisser les pieds vers les mains avec sliders/serviette',muscles_worked:['Rectus','Hip flexors']},
+  {id:167,name:'Plank avec touche d\'épaule',muscle:'Core',level:'inter',sets:'3×20 touches',tips:'Planche bras tendus, alterne touche d\'épaule opposée sans bouger les hanches',muscles_worked:['Core','Obliques']},
+
+  // ════════════ LOMBAIRES — VARIANTES (168-173) ════════════
+  {id:168,name:'Jefferson Curl',muscle:'Lombaires',level:'avance',sets:'3×5',tips:'Charnière lente vertèbre par vertèbre avec charge légère — mobilité contrôlée',muscles_worked:['Érecteurs','Mobilité rachis']},
+  {id:169,name:'Reverse Hyperextension lombaires',muscle:'Lombaires',level:'inter',sets:'3×12-15',tips:'Banc dédié, jambes oscillent en arrière. Décharge bien les disques',muscles_worked:['Érecteurs','Fessiers']},
+  {id:170,name:'Stir the Pot',muscle:'Lombaires',level:'inter',sets:'3×10 cercles/sens',tips:'Avant-bras sur swiss ball en planche, dessine de petits cercles. Anti-extension',muscles_worked:['Core profond','Lombaires']},
+  {id:171,name:'45° Back Extension lesté',muscle:'Lombaires',level:'inter',sets:'3×12-15',tips:'Banc 45° avec disque au torse. Charge légère, contrôle parfait',muscles_worked:['Érecteurs','Fessiers','Ischio']},
+  {id:172,name:'Single Leg RDL',muscle:'Lombaires',level:'inter',sets:'3×8/côté',tips:'1 jambe en RDL, l\'autre tendue derrière. Travaille équilibre + chaîne post.',muscles_worked:['Lombaires','Ischio','Fessier']},
+  {id:173,name:'Dead Bug lesté',muscle:'Lombaires',level:'inter',sets:'3×10/côté',tips:'Dead bug classique avec haltères légers dans les mains. Renforce le transverse',muscles_worked:['Core profond','Lombaires']},
+
+  // ════════════ COMPLÉMENTS pour atteindre 20+ par muscle ════════════
+  // POITRINE (174-175)
+  {id:174,name:'Développé décliné haltères',muscle:'Poitrine',level:'inter',sets:'3×10-12',tips:'Banc en déclin, haltères neutres ou pronation. Cible pec inférieur',muscles_worked:['Pec. inf.','Triceps']},
+  {id:175,name:'Reverse Grip Bench Press',muscle:'Poitrine',level:'inter',sets:'4×8-10',tips:'Bench prise supination — cible étonnamment le pec supérieur',muscles_worked:['Pec. sup.','Biceps']},
+  // BICEPS (176)
+  {id:176,name:'Curl machine biceps',muscle:'Biceps',level:'debut',sets:'4×10-12',tips:'Machine avec coussin d\'appui, isolation parfaite. Idéal en fin de séance',muscles_worked:['Biceps']},
+  // FESSIERS (177)
+  {id:177,name:'Donkey Kicks chargés',muscle:'Fessiers',level:'debut',sets:'3×15/côté',tips:'À 4 pattes, haltère derrière le genou. Extension de hanche pure',muscles_worked:['Grand fessier']},
+  // JAMBES (178)
+  {id:178,name:'Hip Adductor machine',muscle:'Jambes',level:'debut',sets:'3×15-20',tips:'Machine adductors : serrer les jambes contre les coussins',muscles_worked:['Adducteurs']},
+  // TRICEPS (179)
+  {id:179,name:'Diamond Push-up',muscle:'Triceps',level:'inter',sets:'3×AMRAP',tips:'Pompes mains en losange sous le sternum, focus triceps',muscles_worked:['Triceps','Pec. int.']},
+  // ÉPAULES (180)
+  {id:180,name:'Egyptian Lateral Raise',muscle:'Épaules',level:'inter',sets:'3×12/côté',tips:'Une main tient un support, l\'autre fait une élévation latérale → plus d\'amplitude et d\'isolation',muscles_worked:['Delts lat.']},
+  // LOMBAIRES (181-188) — passer de 12 à 20
+  {id:181,name:'Kettlebell Swing',muscle:'Lombaires',level:'inter',sets:'4×15',tips:'Charnière de hanche explosive, kettlebell se balance jusqu\'à hauteur d\'épaules',muscles_worked:['Lombaires','Fessiers','Ischio']},
+  {id:182,name:'Glute-Ham Raise',muscle:'Lombaires',level:'avance',sets:'3×6-10',tips:'Banc GHR, descente lente du tronc + flexion des genoux. Renforce chaîne post.',muscles_worked:['Ischio','Fessiers','Lombaires']},
+  {id:183,name:'Nordic Curl',muscle:'Lombaires',level:'avance',sets:'3×5',tips:'À genoux pieds bloqués, descente excentrique très lente du tronc',muscles_worked:['Ischio','Lombaires']},
+  {id:184,name:'Sumo Deadlift',muscle:'Lombaires',level:'avance',sets:'4×5-8',tips:'Pieds très écartés, prise mains entre les jambes. Moins de stress lombaires',muscles_worked:['Fessiers','Quadri','Lombaires','Adducteurs']},
+  {id:185,name:'Trap Bar Deadlift',muscle:'Lombaires',level:'inter',sets:'4×5-8',tips:'Hexagonal bar, position plus verticale, moins risqué pour les lombaires',muscles_worked:['Quadri','Fessiers','Lombaires','Trapèze']},
+  {id:186,name:'Rack Pull',muscle:'Lombaires',level:'inter',sets:'4×6-8',tips:'Soulevé de terre partiel (barre sur racks au-dessus des genoux). Charges lourdes possibles',muscles_worked:['Lombaires','Trapèze','Fessiers']},
+  {id:187,name:'Soulevé de terre déficit',muscle:'Lombaires',level:'avance',sets:'3×5-6',tips:'Debout sur un disque (deficit ~5cm), amplitude plus grande. Avancé seulement',muscles_worked:['Lombaires','Fessiers','Ischio']},
+  {id:188,name:'Single Leg Hip Bridge',muscle:'Lombaires',level:'debut',sets:'3×12/côté',tips:'Pont fessier sur 1 jambe, l\'autre tendue. Travail croisé hanche/lombaire',muscles_worked:['Fessiers','Lombaires','Core']},
 ];
 
 const MUSCLES_LUI = ['Tous','Dos','Épaules','Grip','Poitrine','Biceps','Triceps','Jambes','Core'];
 const MUSCLES_ALEX = ['Tous','Fessiers','Lombaires','Core','Dos','Jambes','Épaules','Poitrine'];
+
+// Index O(1) pour lookup rapide (188 exos × nombreux .find() partout dans le code)
+const EXERCISES_BY_ID = new Map(EXERCISES.map(e=>[e.id, e]));
+function exById(id){ return EXERCISES_BY_ID.get(id); }
 
 // ══════════════════════════════════════════════
 // DÉTAILS EXERCICES — vidéos, muscles, étapes
@@ -2404,12 +2564,35 @@ function renderWeekEditor(){
         ${hasGainage?`<button class="gainage-log-btn" onclick="goPage('gainage')">📝 Lancer</button>`:''}
       </div>
       <div class="week-day-exercises">
+        ${day.type !== 'rest' ? `<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px">Séance 1 · ${SESSION_TYPES[day.type]?.label||day.type}</div>` : ''}
         ${(day.exercises||[]).map(exId=>{
-          const ex = EXERCISES.find(e=>e.id===exId);
+          const ex = exById(exId);
           return ex ? `<div class="week-ex-chip"><span title="${ex.name}">${ex.name}</span><button onclick="removeExFromDay(${i},${exId})">×</button></div>` : '';
         }).join('')}
       </div>
       ${day.type!=='rest' ? `<button class="week-day-add" onclick="openPicker(${i})">+ Ajouter exercice</button>` : ''}
+      ${(day.extraSessions||[]).map((extra, ei)=>{
+        const sess = SESSION_TYPES[extra.type] || SESSION_TYPES.rest;
+        return `
+        <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border)">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;flex:1">Séance ${ei+2}</div>
+            <button onclick="removeExtraSession(${i},${ei})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0 4px" title="Retirer cette séance">🗑</button>
+          </div>
+          <select onchange="setExtraSessionType(${i}, ${ei}, this.value)">
+            ${Object.entries(SESSION_TYPES).filter(([k])=>k!=='rest').map(([k,v])=>`<option value="${k}" ${extra.type===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
+          </select>
+          <div class="session-color-bar" style="background:${sess.color};margin-top:4px"></div>
+          <div class="week-day-exercises">
+            ${(extra.exercises||[]).map(exId=>{
+              const ex = exById(exId);
+              return ex ? `<div class="week-ex-chip"><span title="${ex.name}">${ex.name}</span><button onclick="removeExFromDay(${i},${exId},${ei})">×</button></div>` : '';
+            }).join('')}
+          </div>
+          <button class="week-day-add" onclick="openPicker(${i}, ${ei})">+ Ajouter exercice</button>
+        </div>`;
+      }).join('')}
+      ${day.type!=='rest' && (day.extraSessions||[]).length < 3 ? `<button class="week-day-add" style="margin-top:8px;border-style:dashed;color:var(--acc)" onclick="addExtraSession(${i})">➕ Ajouter une séance dans la journée</button>` : ''}
     </div>`;
   }
   document.getElementById('week-days-grid').innerHTML = html;
@@ -2574,17 +2757,70 @@ function renderClimbHistory(){
 function setDayType(dayIdx, type){
   const plan = getWeekPlan(selectedWeekKey);
   plan.days[dayIdx].type = type;
-  if(type==='rest') plan.days[dayIdx].exercises = [];
+  if(type==='rest'){
+    plan.days[dayIdx].exercises = [];
+  } else if(!(plan.days[dayIdx].exercises||[]).length){
+    // Auto-suggestion : 4 exos pour ce type si vide
+    plan.days[dayIdx].exercises = exercisesForType(type, 4);
+  }
   saveWeekPlan(selectedWeekKey, plan);
   renderWeekEditor();
   renderCalendar();
 }
 
-function removeExFromDay(dayIdx, exId){
+function removeExFromDay(dayIdx, exId, extraIdx){
   const plan = getWeekPlan(selectedWeekKey);
-  plan.days[dayIdx].exercises = (plan.days[dayIdx].exercises||[]).filter(id=>id!==exId);
+  if(typeof extraIdx === 'number'){
+    const sess = plan.days[dayIdx].extraSessions?.[extraIdx];
+    if(sess) sess.exercises = (sess.exercises||[]).filter(id=>id!==exId);
+  } else {
+    plan.days[dayIdx].exercises = (plan.days[dayIdx].exercises||[]).filter(id=>id!==exId);
+  }
   saveWeekPlan(selectedWeekKey, plan);
   renderWeekEditor();
+}
+
+// === MULTI-SÉANCES PAR JOUR ===
+function addExtraSession(dayIdx){
+  const plan = getWeekPlan(selectedWeekKey);
+  if(!plan.days[dayIdx].extraSessions) plan.days[dayIdx].extraSessions = [];
+  // Auto-suggérer le type le plus complémentaire (par défaut "arms" si Push, "core" sinon)
+  const primaryType = plan.days[dayIdx].type;
+  const complements = { push:'pull', pull:'push', upper:'lower', lower:'upper', chest:'back', back:'arms', legs:'core', glutes:'core' };
+  const defaultType = complements[primaryType] || 'arms';
+  plan.days[dayIdx].extraSessions.push({
+    type: defaultType,
+    exercises: exercisesForType(defaultType, 4)
+  });
+  saveWeekPlan(selectedWeekKey, plan);
+  renderWeekEditor();
+  renderCalendar();
+}
+
+function removeExtraSession(dayIdx, extraIdx){
+  const plan = getWeekPlan(selectedWeekKey);
+  if(plan.days[dayIdx].extraSessions){
+    plan.days[dayIdx].extraSessions.splice(extraIdx, 1);
+    if(plan.days[dayIdx].extraSessions.length===0) delete plan.days[dayIdx].extraSessions;
+  }
+  saveWeekPlan(selectedWeekKey, plan);
+  renderWeekEditor();
+  renderCalendar();
+}
+
+function setExtraSessionType(dayIdx, extraIdx, type){
+  const plan = getWeekPlan(selectedWeekKey);
+  const sess = plan.days[dayIdx].extraSessions?.[extraIdx];
+  if(!sess) return;
+  sess.type = type;
+  if(type==='rest'){
+    sess.exercises = [];
+  } else if(!(sess.exercises||[]).length){
+    sess.exercises = exercisesForType(type, 4);
+  }
+  saveWeekPlan(selectedWeekKey, plan);
+  renderWeekEditor();
+  renderCalendar();
 }
 
 async function clearWeek(){
@@ -2693,9 +2929,9 @@ function mapDayLabelToType(label){
   return 'custom';
 }
 
-function exercisesForType(type){
-  // Même logique que renderDayDetail mais retourne les IDs
-  const fakeLabel = type;
+function exercisesForType(type, count=4){
+  // Renvoie `count` IDs d'exercices recommandés pour ce type de séance.
+  // Sélection équilibrée : 1 exo par muscle ciblé, niveau débutant/inter en priorité.
   const muscleMap = {
     push: ['Poitrine','Épaules','Triceps'],
     pull: ['Dos','Biceps','Grip'],
@@ -2715,7 +2951,63 @@ function exercisesForType(type){
   };
   const muscles = muscleMap[type] || [];
   if(!muscles.length) return [];
-  return EXERCISES.filter(e=>muscles.includes(e.muscle)).slice(0,6).map(e=>e.id);
+  // Stratégie : prioriser les exos "essentiels" en mixant les niveaux
+  const priority = ['inter','debut','avance'];
+  const picked = [];
+  const seenNames = new Set();
+  // Boucle : tour à tour sur chaque muscle ciblé, on ajoute le meilleur exo non encore pris
+  let safety = 0;
+  while(picked.length < count && safety < 50){
+    let added = false;
+    for(const muscle of muscles){
+      if(picked.length >= count) break;
+      const candidate = EXERCISES.find(e=>
+        e.muscle===muscle
+        && !picked.includes(e.id)
+        && !seenNames.has(e.name)
+        && priority.includes(e.level)
+      );
+      if(candidate){
+        picked.push(candidate.id);
+        seenNames.add(candidate.name);
+        added = true;
+      }
+    }
+    if(!added) break;
+    safety++;
+  }
+  // Compléter si pas assez
+  if(picked.length < count){
+    const remaining = EXERCISES
+      .filter(e=>muscles.includes(e.muscle) && !picked.includes(e.id))
+      .slice(0, count-picked.length)
+      .map(e=>e.id);
+    picked.push(...remaining);
+  }
+  return picked;
+}
+
+// Helper : sessions du jour (primaire + extras). Retourne un tableau unifié.
+function getDaySessions(day){
+  const sessions = [];
+  if(day && day.type && day.type !== 'rest'){
+    sessions.push({type: day.type, exercises: day.exercises||[], isPrimary: true});
+  }
+  (day?.extraSessions || []).forEach((s, idx)=>{
+    if(s && s.type && s.type !== 'rest'){
+      sessions.push({type: s.type, exercises: s.exercises||[], extraIdx: idx});
+    }
+  });
+  return sessions;
+}
+
+// Helper : un plan a-t-il du contenu réel (séance non-rest OU exos OU extra-sessions) ?
+function hasPlanContent(plan){
+  return !!(plan && plan.days?.some(d=>
+    d.type !== 'rest'
+    || (d.exercises||[]).length > 0
+    || (d.extraSessions||[]).length > 0
+  ));
 }
 
 function generateWeek(){
@@ -2745,18 +3037,26 @@ function generateWeek(){
 
 // ── PICKER EXERCICES ──
 let pickerDayIdx = null;
+let pickerExtraIdx = null; // si non-null, on ajoute à day.extraSessions[extraIdx]
 let pickerSelected = new Set();
 let pickerMuscleFilter = 'Tous';
 
-function openPicker(dayIdx){
+function openPicker(dayIdx, extraIdx){
   pickerDayIdx = dayIdx;
+  pickerExtraIdx = (typeof extraIdx === 'number') ? extraIdx : null;
   pickerSelected = new Set();
   pickerMuscleFilter = 'Tous';
   document.getElementById('picker-search').value = '';
   const plan = getWeekPlan(selectedWeekKey);
   const day = plan.days[dayIdx];
-  const sessType = SESSION_TYPES[day.type];
-  document.getElementById('picker-meta').innerHTML = `<span class="badge badge-acc">${sessType.emoji} ${sessType.label}</span>`;
+  const targetType = pickerExtraIdx !== null
+    ? (day.extraSessions?.[pickerExtraIdx]?.type || 'custom')
+    : day.type;
+  const sessType = SESSION_TYPES[targetType] || SESSION_TYPES.custom;
+  const sessLabel = pickerExtraIdx !== null
+    ? `Séance ${pickerExtraIdx+2} · ${sessType.emoji} ${sessType.label}`
+    : `${sessType.emoji} ${sessType.label}`;
+  document.getElementById('picker-meta').innerHTML = `<span class="badge badge-acc">${sessLabel}</span>`;
   // Muscle tabs
   const muscles = ['Tous','Poitrine','Dos','Épaules','Biceps','Triceps','Jambes','Fessiers','Core','Lombaires','Grip'];
   document.getElementById('picker-muscles').innerHTML = muscles.map(m=>
@@ -2800,7 +3100,12 @@ function togglePickerSelect(exId){
 function confirmPicker(){
   const plan = getWeekPlan(selectedWeekKey);
   const day = plan.days[pickerDayIdx];
-  day.exercises = [...new Set([...(day.exercises||[]), ...pickerSelected])];
+  if(pickerExtraIdx !== null){
+    const sess = day.extraSessions?.[pickerExtraIdx];
+    if(sess) sess.exercises = [...new Set([...(sess.exercises||[]), ...pickerSelected])];
+  } else {
+    day.exercises = [...new Set([...(day.exercises||[]), ...pickerSelected])];
+  }
   saveWeekPlan(selectedWeekKey, plan);
   closePicker();
   renderWeekEditor();
@@ -2910,7 +3215,7 @@ function copyWeekForClaude(){
     } else {
       const sessName = SESSION_TYPES[d.type]?.label || d.type;
       const exs = (d.exercises||[]).map(id=>{
-        const ex = EXERCISES.find(e=>e.id===id);
+        const ex = exById(id);
         return ex ? `${ex.name} (${ex.sets})` : null;
       }).filter(Boolean);
       text += `${days[i]} ${dateStr} : ${sessName}${climb}\n`;
@@ -2974,7 +3279,7 @@ async function analyzeWithClaude(){
   const summary = plan.days.map((d,i)=>{
     const day = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][i];
     if(d.type==='rest') return `${day}: Repos`;
-    const exs = (d.exercises||[]).map(id=>EXERCISES.find(e=>e.id===id)?.name).filter(Boolean).join(', ');
+    const exs = (d.exercises||[]).map(id=>exById(id)?.name).filter(Boolean).join(', ');
     return `${day}: ${SESSION_TYPES[d.type]?.label} (${exs||'aucun exercice'})`;
   }).join('\n');
   const prompt = `Tu es un coach sportif. Analyse cette semaine d'entraînement et donne 5-7 conseils concrets en français, en bullet points.\n\nProfil : ${profile.name}, ${profile.poids}kg, ${profile.taille}cm — Objectif : ${profile.goal}\nSéances cibles : ${profile.seancesTarget}/sem\n\nSemaine planifiée :\n${summary}\n\nDonne un avis bref, professionnel, sur l'équilibre, la récupération, l'adéquation à l'objectif, les améliorations possibles.`;
@@ -3014,9 +3319,17 @@ async function analyzeWithClaude(){
 let currentExId = null;
 
 function openExModal(exId){
-  const ex = EXERCISES.find(e=>e.id===exId);
-  const det = EX_DETAILS[exId];
-  if(!ex||!det) return;
+  const ex = exById(exId);
+  if(!ex) return;
+  // Détails optionnels : si absent, on génère un fallback minimal depuis les champs d'EXERCISES.
+  // Permet d'ajouter des exercices sans devoir remplir 5 sections détaillées.
+  const det = EX_DETAILS[exId] || {
+    yt: null,
+    primary: [],
+    secondary: [],
+    steps: [ex.tips || 'Exécution standard de l\'exercice.', `Séries : ${ex.sets}`],
+    mistakes: ['Aucun détail spécifique enregistré — réfère-toi aux tutos vidéos.']
+  };
   currentExId = exId;
 
   document.getElementById('m-title').textContent = ex.name;
@@ -3149,7 +3462,7 @@ let restTimerDuration = 0;
 let restNotifTimeout = null;
 
 function getRecommendedRest(exId, weight){
-  const ex = EXERCISES.find(e=>e.id===exId);
+  const ex = exById(exId);
   if(!ex) return 90;
   const muscle = ex.muscle;
   // Compound lourds → 2-3 min
@@ -3761,7 +4074,7 @@ function celebratePR(exerciseName, prs){
 }
 
 function renderLogger(exId){
-  const ex = EXERCISES.find(e=>e.id===exId);
+  const ex = exById(exId);
   if(!ex) return;
   const setCount = parseSetCount(ex.sets);
   const lastWorkout = state.exerciseWorkouts(exId)[0];
@@ -3806,7 +4119,7 @@ function toggleSetDone(btn, exId){
   btn.textContent = done ? '✓' : '○';
   // Si la série est marquée comme faite, on s'assure que les valeurs sont saisies
   if(done){
-    const ex = EXERCISES.find(e=>e.id===exId);
+    const ex = exById(exId);
     const w = parseFloat(row.querySelector('.logger-w').value) || 0;
     const r = parseInt(row.querySelector('.logger-r').value) || 0;
     // Pour les exos time-based (planche, dead hang...), un seul des deux suffit
@@ -3847,7 +4160,7 @@ function toggleSetChrono(btn, exId){
   // Stoppe tout autre chrono d'abord
   if(activeSetChrono) stopSetChrono(activeSetChrono.row);
 
-  const ex = EXERCISES.find(e=>e.id===exId);
+  const ex = exById(exId);
   const target = parseSetDuration(ex?.sets);
   const startTime = Date.now();
   const mode = target ? 'down' : 'up';
@@ -3963,7 +4276,7 @@ function prefillLastWeights(exId){
 }
 
 function saveLogger(exId){
-  const ex = EXERCISES.find(e=>e.id===exId);
+  const ex = exById(exId);
   const sets = [];
   let hasData = false;
   document.querySelectorAll('.logger-row').forEach(row=>{
@@ -4396,7 +4709,7 @@ function renderDashboard(){
   const split = SPLITS[splitKey];
   const weekKey = (typeof getISOWeek==='function') ? getISOWeek(new Date()) : null;
   const calPlan = weekKey ? getWeekPlan(weekKey) : null;
-  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest');
+  const hasCustomPlan = hasPlanContent(calPlan);
 
   document.getElementById('dash-prog-name').textContent = hasCustomPlan
     ? `📆 ${weekKey} (custom)`
@@ -4547,7 +4860,7 @@ function refreshProgramUI(){
   // Semaine affichée — navigation indépendante du calendrier
   const weekKey = progGetWeekKey();
   const calPlan = getWeekPlan(weekKey);
-  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest' || (d.exercises||[]).length>0);
+  const hasCustomPlan = hasPlanContent(calPlan);
   const isCurrentWeek = weekKey === getISOWeek(new Date());
 
   // Label semaine + dates
@@ -4581,18 +4894,24 @@ function refreshProgramUI(){
     let label, sub, color, isRest, isClimb, exCount = 0;
     if(hasCustomPlan){
       const d = calPlan.days[i] || {type:'rest', exercises:[]};
-      const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-      const extras = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'') + (d.gainage?' + 🧘':'');
-      label = sess.emoji+' '+sess.label + extras;
-      exCount = (d.exercises||[]).length;
+      const sessions = getDaySessions(d);
+      // Label = sessions concatenées
+      const sessLabels = sessions.map(s=>{
+        const st = SESSION_TYPES[s.type] || SESSION_TYPES.rest;
+        return st.emoji+' '+st.label;
+      });
+      const extrasSym = (d.climbing?' + 🧗':'') + (d.running?' + 🏃':'') + (d.gainage?' + 🧘':'');
+      label = (sessLabels.length ? sessLabels.join(' + ') : '🛌 Repos') + extrasSym;
+      exCount = sessions.reduce((s,sess)=>s+sess.exercises.length, 0);
       const subParts = [];
-      if(d.type!=='rest') subParts.push(`${exCount} exo${exCount>1?'s':''}`);
+      if(sessions.length>1) subParts.push(`${sessions.length} séances`);
+      if(exCount>0) subParts.push(`${exCount} exo${exCount>1?'s':''}`);
       if(d.climbing) subParts.push('🧗');
       if(d.running) subParts.push('🏃');
       if(d.gainage) subParts.push('🧘');
-      sub = subParts.length ? subParts.join(' + ') : 'Récupération';
-      color = sess.color;
-      isRest = d.type==='rest' && !d.climbing && !d.running && !d.gainage;
+      sub = subParts.length ? subParts.join(' · ') : 'Récupération';
+      color = sessions[0] ? (SESSION_TYPES[sessions[0].type]?.color || 'var(--muted)') : 'var(--muted)';
+      isRest = sessions.length===0 && !d.climbing && !d.running && !d.gainage;
       isClimb = d.type==='climbing' || d.climbing;
     } else {
       label = tplDay.l;
@@ -4643,14 +4962,23 @@ function selectDay(i){
   // Titre selon source : custom plan > split template
   const weekKey = progGetWeekKey();
   const calPlan = getWeekPlan(weekKey);
-  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest' || (d.exercises||[]).length>0);
+  const hasCustomPlan = hasPlanContent(calPlan);
   let title;
   if(hasCustomPlan){
     const d = calPlan.days[i] || {type:'rest'};
-    const sess = SESSION_TYPES[d.type] || SESSION_TYPES.rest;
-    title = `${DAYS[i]} — ${sess.emoji} ${sess.label}`;
+    const sessions = getDaySessions(d);
+    if(sessions.length === 0){
+      title = `${DAYS[i]} — 🛌 Repos`;
+    } else {
+      const labels = sessions.map(s=>{
+        const st = SESSION_TYPES[s.type] || SESSION_TYPES.rest;
+        return `${st.emoji} ${st.label}`;
+      }).join(' + ');
+      title = `${DAYS[i]} — ${labels}`;
+    }
   } else {
-    const splitKey = state.splits[state.pid];
+    let splitKey = state.splits[state.pid];
+    if(!splitKey || !SPLITS[splitKey]){ splitKey = splitsForProfile(state.pid)[0]; }
     title = `${DAYS[i]} — ${SPLITS[splitKey].days[i].l}`;
   }
   document.getElementById('day-detail').style.display='block';
@@ -4664,37 +4992,56 @@ function renderDayDetail(i){
   // Plan custom de la semaine affichée par Programme
   const weekKey = progGetWeekKey();
   const calPlan = getWeekPlan(weekKey);
-  const hasCustomPlan = calPlan && calPlan.days?.some(d=>d.type!=='rest' || (d.exercises||[]).length>0);
+  const hasCustomPlan = hasPlanContent(calPlan);
 
   if(hasCustomPlan){
     const d = calPlan.days[i] || {type:'rest', exercises:[]};
-    if(d.type==='rest'){
+    const sessions = getDaySessions(d);
+    if(sessions.length===0){
+      if(d.climbing){
+        const isAlex = state.pid==='alexandra';
+        list.innerHTML=`<div class="empty-state"><div class="icon">🧗</div><p>Séance escalade · ${isAlex?'Core naturel, dos stabilisateur, grip':'Grip, dos, biceps fonctionnels'}</p></div>`;
+        return;
+      }
       list.innerHTML='<div class="empty-state"><div class="icon">🛌</div><p>Repos · Récupération active</p></div>';
       return;
     }
-    if(d.type==='climbing'){
-      const isAlex = state.pid==='alexandra';
-      list.innerHTML=`<div class="empty-state"><div class="icon">🧗</div><p>Séance escalade · ${isAlex?'Core naturel, dos stabilisateur, grip':'Grip, dos, biceps fonctionnels'}</p></div>`;
-      return;
-    }
-    const exsCustom = (d.exercises||[]).map(id=>EXERCISES.find(e=>e.id===id)).filter(Boolean);
-    if(!exsCustom.length){
+    // Rendu : grouper par séance avec un séparateur s'il y en a plusieurs
+    let exGlobalIdx = 0;
+    const blocks = sessions.map((sess, sIdx)=>{
+      const sessType = SESSION_TYPES[sess.type] || SESSION_TYPES.custom;
+      const exs = sess.exercises.map(id=>exById(id)).filter(Boolean);
+      const sessionHeader = sessions.length > 1
+        ? `<div style="font-size:0.7rem;color:${sessType.color};font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin:${sIdx>0?'14px':'0'} 0 6px;display:flex;align-items:center;gap:6px;padding-bottom:4px;border-bottom:1px solid var(--border)">
+          <span style="font-size:1rem">${sessType.emoji}</span>
+          <span>Séance ${sIdx+1} · ${sessType.label}</span>
+          <span style="margin-left:auto;color:var(--muted);font-size:0.66rem;font-weight:600">${exs.length} exo${exs.length>1?'s':''}</span>
+        </div>`
+        : '';
+      const exHtml = exs.length === 0
+        ? `<div style="color:var(--muted);font-size:0.78rem;padding:8px;text-align:center;font-style:italic">Aucun exercice — édite dans le calendrier</div>`
+        : exs.map((ex)=>{
+            const num = ++exGlobalIdx;
+            return `<div class="ex-item" onclick="openExModal(${ex.id})">
+              <div class="ex-num">${num}</div>
+              <div class="ex-body">
+                <div class="ex-name">${ex.name}</div>
+                <div class="ex-meta"><span class="badge badge-acc" style="font-size:0.65rem">${ex.muscle}</span><span>📊 ${ex.sets}</span><span class="badge ${ex.level==='avance'?'badge-red':ex.level==='inter'?'badge-yellow':'badge-green'}" style="font-size:0.65rem">${ex.level}</span></div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-top:4px">💡 ${ex.tips}</div>
+                <div class="ex-sets">${ex.muscles_worked.map(m=>`<span class="set-badge">${m}</span>`).join('')}</div>
+                <div class="open-hint">▶ Animation · muscles · logger ma perf</div>
+              </div>
+            </div>`;
+          }).join('');
+      return sessionHeader + exHtml;
+    }).join('');
+    if(exGlobalIdx === 0){
       list.innerHTML=`<div class="empty-state"><div class="icon">📝</div><p>Aucun exercice planifié pour ce jour.</p>
         <button class="btn btn-primary btn-sm" onclick="goPage('calendrier')" style="margin-top:10px">✏️ Ajouter dans le calendrier</button>
       </div>`;
       return;
     }
-    list.innerHTML = exsCustom.map((ex,idx)=>`
-      <div class="ex-item" onclick="openExModal(${ex.id})">
-        <div class="ex-num">${idx+1}</div>
-        <div class="ex-body">
-          <div class="ex-name">${ex.name}</div>
-          <div class="ex-meta"><span class="badge badge-acc" style="font-size:0.65rem">${ex.muscle}</span><span>📊 ${ex.sets}</span><span class="badge ${ex.level==='avance'?'badge-red':ex.level==='inter'?'badge-yellow':'badge-green'}" style="font-size:0.65rem">${ex.level}</span></div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px">💡 ${ex.tips}</div>
-          <div class="ex-sets">${ex.muscles_worked.map(m=>`<span class="set-badge">${m}</span>`).join('')}</div>
-          <div class="open-hint">▶ Animation · muscles · logger ma perf</div>
-        </div>
-      </div>`).join('');
+    list.innerHTML = blocks;
     return;
   }
 
@@ -5471,7 +5818,8 @@ const cloud = {
 
   // Push : par défaut tous les profils (pour cohérence cloud)
   // Si onlyActive=true, ne push QUE le profil actif (perf, déclenché par auto-sync)
-  async push(onlyActive=false){
+  // deletedIds: tableau d'IDs de profils supprimés à effacer côté gist
+  async push(onlyActive=false, deletedIds=[]){
     if(!this.token) return false;
     setSyncStatus('syncing');
     try {
@@ -5490,6 +5838,11 @@ const cloud = {
       const toPush = onlyActive ? profiles.filter(p=>p.id===state.pid) : profiles;
       toPush.forEach(p=>{
         files[gistFileForProfile(p.id)] = { content: JSON.stringify(this.collectDataForProfile(p.id)) };
+      });
+      // Marquage explicite des profils supprimés : null dans files demande la
+      // suppression du fichier côté GitHub Gist.
+      (deletedIds||[]).forEach(did=>{
+        files[gistFileForProfile(did)] = null;
       });
       await this._api(`/gists/${id}`, {
         method:'PATCH',
@@ -5864,7 +6217,7 @@ function closeProfileModal(){
 async function deleteProfile(id){
   const profile = getProfile(id);
   if(!await confirmDialog(`Supprimer le profil "${profile?.name||id}" ?\n\nToutes ses données (workouts, escalade, course, planning) seront EFFACÉES.`, {danger:true, okLabel:'Supprimer'})) return;
-  // Supprime toutes les données du profil
+  // Supprime toutes les données du profil (toutes les clés localStorage suffixées _<id>)
   const keys = [];
   for(let i=0; i<localStorage.length; i++){
     const k = localStorage.key(i);
@@ -5879,6 +6232,20 @@ async function deleteProfile(id){
   }
   toast('Profil supprimé','info');
   closeProfileModal();
+
+  // ⚠️ CRITIQUE : push immédiat (avec suppression explicite du fichier gist du
+  // profil supprimé) AVANT le reload, sinon l'autoBootstrapSync au reload fait
+  // un pull qui re-télécharge l'ancien profileList depuis le gist → le profil
+  // revient comme un zombie.
+  if(cloud.token){
+    try {
+      // Annule le scheduleSync debounce en attente
+      if(typeof syncTimer !== 'undefined' && syncTimer){ clearTimeout(syncTimer); syncTimer = null; }
+      await cloud.push(false, [id]); // false = tous les profils restants + supprime l'ancien fichier gist
+    } catch(e){
+      console.warn('Push de suppression échoué (le reload pourrait restaurer le profil) :', e);
+    }
+  }
   setTimeout(()=>location.reload(), 500);
 }
 
