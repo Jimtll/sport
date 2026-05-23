@@ -1322,10 +1322,6 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
     </div>
   </div>
   <div class="card" style="margin-top:16px">
-    <div class="section-header"><h3>Plan repas suggéré</h3><button class="btn btn-secondary btn-sm" onclick="genMeals()">🔄 Générer</button></div>
-    <div id="meals-plan"></div>
-  </div>
-  <div class="card" style="margin-top:16px">
     <h3>Aliments riches en protéines (pour 100g)</h3>
     <div id="food-table-wrap"></div>
   </div>
@@ -5935,7 +5931,7 @@ const GAINAGE_GIFS = {
 
 const GAINAGE_PROGRAMS = {
   debut: {
-    label:'Débutant', emoji:'🌱', restSec:25, restBetweenRounds:60, rounds:2,
+    label:'Débutant', emoji:'🌱', restSec:15, restBetweenRounds:60, rounds:2,
     desc:'Découverte du gainage. 7 exos × 2 tours, maintiens 25-35s.',
     exos:[
       {name:'Planche sur les genoux', dur:30, tip:'Avant-bras et genoux au sol, corps en ligne droite, abdos contractés'},
@@ -5948,7 +5944,7 @@ const GAINAGE_PROGRAMS = {
     ]
   },
   inter: {
-    label:'Intermédiaire', emoji:'💪', restSec:20, restBetweenRounds:60, rounds:2,
+    label:'Intermédiaire', emoji:'💪', restSec:15, restBetweenRounds:60, rounds:2,
     desc:'Progression solide. 7 exos × 2 tours, maintiens 45-60s.',
     exos:[
       {name:'Planche complète', dur:60, tip:'Avant-bras au sol, pieds tendus, ligne droite parfaite'},
@@ -5961,7 +5957,7 @@ const GAINAGE_PROGRAMS = {
     ]
   },
   avance: {
-    label:'Avancé', emoji:'🔥', restSec:15, restBetweenRounds:45, rounds:2,
+    label:'Avancé', emoji:'🔥', restSec:15, restBetweenRounds:60, rounds:2,
     desc:'Niveau haut. 7 exos × 2 tours, maintiens 60-90s, tension max.',
     exos:[
       {name:'Planche bras tendus longue', dur:90, tip:'Mains au sol, ligne droite parfaite, respiration profonde'},
@@ -6385,11 +6381,15 @@ function macro(label,color,val,unit,pct){
 }
 
 function genMeals(){
+  // La section Plan repas a été retirée de l'UI à la demande de l'utilisateur.
+  // Guard : on no-op si le conteneur est absent (compat code legacy).
+  const container = document.getElementById('meals-plan');
+  if(!container) return;
   const tier = getObjectiveTier();
   const profileKey = (state.pid && MEALS[state.pid]) ? state.pid : (state.pid==='alexandra'?'alexandra':'lui');
   const meals = MEALS[profileKey]?.[tier] || MEALS.lui.maintien;
   const tierLabel = {perte:'🔥 Perte de poids', maintien:'⚖️ Maintien', prise:'💪 Prise de masse'}[tier];
-  document.getElementById('meals-plan').innerHTML = `
+  container.innerHTML = `
     <div style="font-size:0.74rem;color:var(--muted);margin-bottom:10px">Plan adapté à l'objectif : <strong style="color:var(--acc)">${tierLabel}</strong> · ${meals.length} repas/jour</div>
     ${meals.map(m=>`
     <div class="card-sm" style="margin-bottom:8px">
