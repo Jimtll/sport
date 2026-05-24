@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 24 — Gainage 15s entre exos partout + retrait Plan repas Nutrition (calcul kcal/macros conservé)
-const CACHE_NAME = 'sportduo-cache-v24';
+// VERSION 25 — 4 features : pause inter-exos workout mode + 129 photos nouveaux exos + bouton copier S1 + favoris
+const CACHE_NAME = 'sportduo-cache-v25';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

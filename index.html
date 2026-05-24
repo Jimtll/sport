@@ -180,8 +180,11 @@ input[type=range]:focus{border:none}
 .muscle-tab{padding:5px 13px;border-radius:99px;font-size:0.74rem;font-weight:600;cursor:pointer;background:var(--surface2);border:1px solid var(--border);color:var(--muted);transition:all 0.15s}
 .muscle-tab.active{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
 .ex-list{display:flex;flex-direction:column;gap:8px}
-.ex-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:border-color 0.15s}
+.ex-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:border-color 0.15s;position:relative}
 .ex-item:hover{border-color:var(--border2)}
+.ex-fav-btn{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;padding:4px 6px;border-radius:50%;transition:all 0.15s}
+.ex-fav-btn:hover{color:#fbbf24;transform:scale(1.15)}
+.ex-fav-btn.is-fav{color:#fbbf24;text-shadow:0 0 8px rgba(251,191,36,0.5)}
 .ex-num{width:28px;height:28px;border-radius:8px;background:var(--acc-dim);color:var(--acc);font-size:0.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:background 0.3s,color 0.3s}
 .ex-body{flex:1;min-width:0}
 .ex-name{font-size:0.88rem;font-weight:700;margin-bottom:3px}
@@ -393,6 +396,14 @@ tr:hover td{background:rgba(255,255,255,0.02)}
   .workout-mode-name{font-size:1.4rem}
   .workout-mode-gif{max-width:340px}
 }
+.workout-rest-body{justify-content:center;align-items:center;gap:24px;text-align:center}
+.rest-countdown{font-size:5rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-0.04em;color:var(--green);text-shadow:0 0 30px rgba(16,185,129,0.4);line-height:1}
+.rest-countdown.almost{color:#fbbf24;text-shadow:0 0 30px rgba(251,191,36,0.4)}
+.rest-countdown.done{color:#ef4444;animation:pulseDone 0.5s ease-in-out infinite}
+@keyframes pulseDone{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.rest-presets{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.rest-preset{padding:8px 14px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:0.82rem;font-weight:700;cursor:pointer;color:var(--muted2);transition:all 0.15s}
+.rest-preset:hover,.rest-preset.active{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
 .week-day.has-running{border-color:#3b82f6;box-shadow:inset 0 0 0 1px rgba(59,130,246,0.3)}
 .week-day.has-running.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3),inset 0 0 0 2px rgba(59,130,246,0.3)}
 .week-day.has-running .run-toggle{background:rgba(59,130,246,0.18);color:#60a5fa;font-weight:700}
@@ -1338,17 +1349,34 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
       <button class="workout-mode-close" onclick="workoutModeClose()" title="Quitter le mode séance">✕</button>
     </div>
   </div>
-  <div class="workout-mode-body">
+  <div class="workout-mode-body" id="workout-mode-body-exo">
     <div class="workout-mode-name" id="workout-mode-name">—</div>
     <div class="workout-mode-meta" id="workout-mode-meta"></div>
     <div class="workout-mode-gif" id="workout-mode-gif"></div>
     <div class="workout-mode-tip" id="workout-mode-tip"></div>
     <div class="workout-mode-logger" id="workout-mode-logger"></div>
   </div>
+  <!-- Écran REPOS inter-exercices -->
+  <div class="workout-mode-body workout-rest-body" id="workout-mode-body-rest" style="display:none">
+    <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:20px">⏱ Pause inter-exercices</div>
+    <div class="rest-countdown" id="rest-countdown">1:00</div>
+    <div style="font-size:0.78rem;color:var(--muted);text-align:center">Prochain : <strong id="rest-next-name" style="color:var(--text)">—</strong></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+      <button class="btn btn-secondary btn-sm" onclick="workoutRestAdjust(-15)">−15s</button>
+      <button class="btn btn-secondary btn-sm" onclick="workoutRestAdjust(15)">+15s</button>
+      <button class="btn btn-secondary btn-sm" onclick="workoutRestAdjust(30)">+30s</button>
+    </div>
+    <div class="rest-presets">
+      <button class="rest-preset" data-sec="60" onclick="workoutRestSet(60)">1:00</button>
+      <button class="rest-preset" data-sec="90" onclick="workoutRestSet(90)">1:30</button>
+      <button class="rest-preset" data-sec="120" onclick="workoutRestSet(120)">2:00</button>
+      <button class="rest-preset" data-sec="180" onclick="workoutRestSet(180)">3:00</button>
+    </div>
+  </div>
   <div class="workout-mode-footer">
     <button class="btn btn-secondary" id="workout-mode-prev" onclick="workoutModePrev()">⏮ Précédent</button>
-    <button class="btn btn-ghost" onclick="workoutModeOpenDetails()">📖 Détails</button>
-    <button class="btn btn-primary" id="workout-mode-next" onclick="workoutModeNext()">Suivant ⏭</button>
+    <button class="btn btn-ghost" id="workout-mode-details-btn" onclick="workoutModeOpenDetails()">📖 Détails</button>
+    <button class="btn btn-primary" id="workout-mode-next" onclick="workoutModeNextBtn()">Suivant ⏭</button>
   </div>
 </div>
 
@@ -2409,6 +2437,60 @@ const EX_PHOTOS = {
   57:'Romanian_Deadlift',
   58:'Seated_Cable_Rows',
   59:'Wide-Grip_Lat_Pulldown',
+  // POITRINE (60-72, 174-175)
+  60:'Decline_Barbell_Bench_Press', 61:'Butterfly', 62:'Dumbbell_Pullover',
+  63:'Pushups_Close_Triceps_Position', 64:'Decline_Pushup', 65:'Pushups',
+  66:'Smith_Machine_Bench_Press', 67:'Dumbbell_Bench_Press', 68:'Low_Cable_Crossover',
+  69:'Pushups', 70:'Smith_Machine_Incline_Bench_Press', 71:'Dumbbell_Flyes',
+  72:'Weighted_Pushups', 174:'Decline_Dumbbell_Bench_Press', 175:'Reverse-Grip_Bench_Press',
+  // DOS (73-84)
+  73:'Wide-Grip_Pullup', 74:'Close-Grip_Front_Lat_Pulldown', 75:'Reverse_Grip_Bent-Over_Rows',
+  76:'T-Bar_Row', 77:'Bent_Over_Barbell_Row', 78:'Pendlay_Row',
+  79:'Standing_One-Arm_Cable_Row', 80:'Pullups', 81:'Dumbbell_Pullover',
+  82:'Wide-Grip_Lat_Pulldown', 83:'Hyperextensions_Back_Extensions', 84:'Straight-Arm_Pulldown',
+  // ÉPAULES (85-97, 180)
+  85:'Seated_Dumbbell_Press', 86:'Smith_Machine_Overhead_Shoulder_Press', 87:'Cable_Side_Lateral_Raise',
+  88:'Machine_Shoulder_Military_Press', 89:'Reverse_Flyes', 90:'Front_Dumbbell_Raise',
+  91:'Push_Press', 92:'Cable_Side_Lateral_Raise', 93:'Landmine_Press',
+  94:'Side_Lying_Lateral_Raise', 95:'Z_Press', 96:'Bradford_Rocky_Presses',
+  97:'Plate_Front_Raise', 180:'Side_Lateral_Raise',
+  // BICEPS (98-113, 176)
+  98:'Preacher_Curl', 99:'Incline_Dumbbell_Curl', 100:'Concentration_Curls',
+  101:'Spider_Curl', 102:'Drag_Curl', 103:'Zottman_Curl',
+  104:'21s', 105:'Cable_Curl', 106:'Standing_One-Arm_Cable_Curl',
+  107:'Cable_Curl', 108:'Seated_Dumbbell_Curl', 109:'Wide-Grip_Standing_Barbell_Curl',
+  110:'Narrow-Grip_Standing_Barbell_Curl', 111:'Chin-Up', 112:'Hammer_Curls',
+  113:'Machine_Bicep_Curl', 176:'Machine_Bicep_Curl',
+  // TRICEPS (114-129, 179)
+  114:'Tricep_Dumbbell_Kickback', 115:'EZ-Bar_Skullcrusher', 116:'Close-Grip_Barbell_Bench_Press',
+  117:'Lying_Close-Grip_Barbell_Triceps_Press_To_Chin', 118:'Weighted_Bench_Dip', 119:'Triceps_Pushdown',
+  120:'Triceps_Pushdown', 121:'Reverse_Grip_Triceps_Pushdown', 122:'Tricep_Dumbbell_Kickback',
+  123:'Triceps_Pushdown', 124:'Triceps_Overhead_Extension_with_Rope', 125:'Tate_Press',
+  126:'Floor_Press', 127:'Bench_Dips', 128:'Triceps_Pushdown_With_V-Bar',
+  129:'Reverse_Grip_Triceps_Pushdown', 179:'Pushups_Close_Triceps_Position',
+  // JAMBES (130-144, 178)
+  130:'Front_Barbell_Squat', 131:'Goblet_Squat', 132:'Hack_Squat',
+  133:'Hack_Squat', 134:'Sissy_Squat', 135:'Leg_Extensions',
+  136:'Seated_Leg_Curl', 137:'Lying_Leg_Curls', 138:'Romanian_Deadlift',
+  139:'Reverse_Barbell_Lunge', 140:'Seated_Calf_Raise', 141:'Calf_Press',
+  142:'Dumbbell_Step_Ups', 143:'One-Legged_Squat', 144:'Box_Jump',
+  178:'Hip_Adductor_Machine',
+  // FESSIERS (145-152, 177)
+  145:'Barbell_Hip_Thrust', 146:'Reverse_Hyperextension', 147:'Glute_Pulls',
+  148:'Single-Leg_Hip_Bridge', 149:'High_Box_Step-Ups', 150:'Cable_Hip_Adduction',
+  151:'Frog_Sit-Ups', 152:'Wide_Stance_Barbell_Squat', 177:'Donkey_Calf_Raises',
+  // CORE (153-167)
+  153:'Crunches', 154:'V-Up', 155:'Bicycle_Crunch',
+  156:'Toe_Touchers', 157:'Weighted_Sit-Ups_-_With_Bands', 158:'Pallof_Press',
+  159:'Hollow_Hold', 160:'L-Sit', 161:'Hanging_Knee_Raises',
+  162:'Cable_Wood_Chops', 163:'Side_Bend', 164:'Reverse_Crunch',
+  165:'Copenhagen_Plank', 166:'Stability_Ball_Pike_Up', 167:'Plank_with_Shoulder_Taps',
+  // LOMBAIRES (168-173, 181-188)
+  168:'Jefferson_Curl', 169:'Reverse_Hyperextension', 170:'Stir_The_Pot',
+  171:'Weighted_Hyperextensions', 172:'Single_Leg_Romanian_Deadlift', 173:'Weighted_Dead_Bug',
+  181:'Kettlebell_Swing', 182:'Glute_Ham_Raise', 183:'Nordic_Hamstring_Curl',
+  184:'Sumo_Deadlift', 185:'Trap_Bar_Deadlift', 186:'Rack_Pull',
+  187:'Deficit_Deadlift', 188:'Single_Leg_Glute_Bridge',
 };
 
 // Mapping ID exercice → pattern d'animation
@@ -4283,7 +4365,10 @@ function renderLogger(exId){
     <div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px">
       Pour chaque série : poids × reps puis touche <strong>✓</strong> quand c'est fait. Bouton <strong>⏱</strong> pour lancer le chrono de la série${setDurationHelp?` (compte à rebours <strong>${setDurationHelp}s</strong>)`:''}. Le rest timer démarre auto après le ✓.
     </div>
-    ${suggestion ? `<div style="padding:10px 14px;background:var(--acc-dim);border:1px solid var(--acc);border-radius:8px;margin-bottom:10px;font-size:0.82rem">${suggestion.msg}</div>` : ''}`;
+    ${suggestion ? `<div style="padding:10px 14px;background:var(--acc-dim);border:1px solid var(--acc);border-radius:8px;margin-bottom:10px;font-size:0.82rem">${suggestion.msg}</div>` : ''}
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="copyFirstSetToAll('${exId}')" title="Copier poids/reps de la S1 vers toutes les séries">📋 Copier S1 → tout</button>
+    </div>`;
   for(let i=0;i<setCount;i++){
     const last = lastSets[i] || {};
     const lastHint = (last.weight && last.reps) ? `<small style="font-size:0.62rem;color:var(--muted);margin-left:8px">dernière: ${last.weight}×${last.reps}</small>` : '';
@@ -4473,6 +4558,31 @@ function prefillLastWeights(exId){
     row.querySelector('.logger-w').value = s.weight || '';
     row.querySelector('.logger-r').value = s.reps || '';
   });
+}
+
+// Copie les valeurs de la première série vers toutes les autres (logger principal OU workout mode)
+function copyFirstSetToAll(){
+  // Détermine quel container est actif
+  let container = document.querySelector('#workout-mode-logger') && document.getElementById('workout-mode-body-exo').style.display !== 'none'
+    ? document.getElementById('workout-mode-logger')
+    : document.getElementById('m-logger');
+  if(!container) return;
+  const rows = container.querySelectorAll('.logger-row');
+  if(!rows.length) return;
+  const firstW = rows[0].querySelector('.logger-w')?.value;
+  const firstR = rows[0].querySelector('.logger-r')?.value;
+  if(!firstW || !firstR){ toast('Entre poids et reps dans la S1 d\'abord','warn'); return; }
+  rows.forEach((row,i)=>{
+    if(i===0) return;
+    row.querySelector('.logger-w').value = firstW;
+    row.querySelector('.logger-r').value = firstR;
+  });
+  // Petite vibration de confirmation
+  if(navigator.vibrate) navigator.vibrate(40);
+  toast(`✓ Copié sur ${rows.length-1} série${rows.length>2?'s':''}`,'success', 1500);
+  // Recalculer le 1RM preview si présent
+  const exId = currentExId;
+  if(typeof updateLogger1RM === 'function' && exId) updateLogger1RM(exId);
 }
 
 function saveLogger(exId){
@@ -5517,9 +5627,22 @@ function workoutModeStart(dayIdx){
 }
 
 function workoutModeClose(){
-  // Sauve les éventuelles séries en cours sur l'exo courant
-  const cur = workoutMode.queue[workoutMode.idx];
-  if(cur) workoutModeSaveCurrent(false);
+  // Sauve les éventuelles séries en cours sur l'exo courant (sauf si on est en repos inter-exo)
+  if(document.getElementById('workout-mode-body-rest').style.display === 'none'){
+    const cur = workoutMode.queue[workoutMode.idx];
+    if(cur) workoutModeSaveCurrent(false);
+  }
+  // Stoppe le rest timer inter-exo
+  if(workoutRestState.intervalId){
+    clearInterval(workoutRestState.intervalId);
+    workoutRestState.intervalId = null;
+  }
+  // Reset visibilité des panneaux
+  document.getElementById('workout-mode-body-rest').style.display = 'none';
+  document.getElementById('workout-mode-body-exo').style.display = 'flex';
+  document.getElementById('workout-mode-details-btn').style.display = '';
+  document.getElementById('workout-mode-next').textContent = 'Suivant ⏭';
+
   document.getElementById('workout-mode-overlay').style.display = 'none';
   document.body.style.overflow = '';
   stopRestTimer(true);
@@ -5580,6 +5703,9 @@ function workoutModeRenderLogger(){
   if(suggestion){
     html += `<div style="padding:8px 12px;background:var(--acc-dim);border:1px solid var(--acc);border-radius:8px;margin-bottom:10px;font-size:0.78rem">${suggestion.msg}</div>`;
   }
+  if(setCount > 1){
+    html += `<div style="display:flex;gap:6px;margin-bottom:8px"><button class="btn btn-ghost btn-sm" onclick="copyFirstSetToAll()" title="Copier poids/reps de la S1 vers toutes les séries">📋 Copier S1 → tout</button></div>`;
+  }
   for(let i=0;i<setCount;i++){
     const last = lastSets[i] || {};
     const lastHint = (last.weight && last.reps) ? `<small style="font-size:0.6rem;color:var(--muted);margin-left:6px">prev: ${last.weight}×${last.reps}</small>` : '';
@@ -5627,7 +5753,7 @@ function workoutModeSaveCurrent(verbose=true){
 }
 
 function workoutModeNext(){
-  workoutModeSaveCurrent();
+  const saved = workoutModeSaveCurrent();
   stopAllSetChronos();
   if(workoutMode.idx >= workoutMode.queue.length - 1){
     // Fin de séance
@@ -5639,9 +5765,103 @@ function workoutModeNext(){
     if(document.getElementById('page-programme').classList.contains('active')) refreshProgramUI();
     return;
   }
+  // Pause inter-exos : durée recommandée (1-3 min) basée sur l'exo qu'on vient de finir
+  const cur = workoutMode.queue[workoutMode.idx];
+  const lastHeaviest = (()=>{
+    let max = 0;
+    document.querySelectorAll('#workout-mode-logger .logger-row').forEach(row=>{
+      const w = parseFloat(row.querySelector('.logger-w').value) || 0;
+      if(w > max) max = w;
+    });
+    return max;
+  })();
+  const restSec = cur ? getRecommendedRest(cur.exId, lastHeaviest || 0) : 90;
+  workoutRestStart(restSec);
+}
+
+// ── Repos inter-exercices (workout mode) ──
+let workoutRestState = { intervalId:null, secondsLeft:0, totalSec:0 };
+
+function workoutRestStart(seconds){
+  workoutRestState.totalSec = seconds;
+  workoutRestState.secondsLeft = seconds;
+  document.getElementById('workout-mode-body-exo').style.display = 'none';
+  document.getElementById('workout-mode-body-rest').style.display = 'flex';
+  document.getElementById('workout-mode-details-btn').style.display = 'none';
+  document.getElementById('workout-mode-next').textContent = '⏭ Passer le repos';
+  // Prochain exo
+  const next = workoutMode.queue[workoutMode.idx + 1];
+  if(next){
+    const ex = exById(next.exId);
+    document.getElementById('rest-next-name').textContent = ex?.name || '—';
+  }
+  // Update preset actif
+  document.querySelectorAll('.rest-preset').forEach(b=>{
+    b.classList.toggle('active', +b.dataset.sec === seconds);
+  });
+  workoutRestTick();
+  workoutRestState.intervalId = setInterval(workoutRestTick, 1000);
+}
+
+function workoutRestTick(){
+  const el = document.getElementById('rest-countdown');
+  if(!el) return;
+  if(workoutRestState.secondsLeft <= 0){
+    clearInterval(workoutRestState.intervalId);
+    workoutRestState.intervalId = null;
+    try{ playBeep(); }catch(e){}
+    if(navigator.vibrate) navigator.vibrate([200,100,200]);
+    workoutRestEnd();
+    return;
+  }
+  const sec = workoutRestState.secondsLeft;
+  const m = Math.floor(sec/60), s = sec%60;
+  el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('almost', sec<=10 && sec>3);
+  el.classList.toggle('done', sec<=3);
+  workoutRestState.secondsLeft--;
+}
+
+function workoutRestAdjust(delta){
+  workoutRestState.secondsLeft = Math.max(5, workoutRestState.secondsLeft + delta);
+  workoutRestState.totalSec = Math.max(workoutRestState.totalSec, workoutRestState.secondsLeft);
+  workoutRestTick();
+}
+
+function workoutRestSet(sec){
+  workoutRestState.totalSec = sec;
+  workoutRestState.secondsLeft = sec;
+  document.querySelectorAll('.rest-preset').forEach(b=>{
+    b.classList.toggle('active', +b.dataset.sec === sec);
+  });
+  workoutRestTick();
+}
+
+function workoutRestEnd(){
+  // Passe à l'exo suivant
   workoutMode.idx++;
+  document.getElementById('workout-mode-body-rest').style.display = 'none';
+  document.getElementById('workout-mode-body-exo').style.display = 'flex';
+  document.getElementById('workout-mode-details-btn').style.display = '';
   workoutModeRender();
-  document.querySelector('.workout-mode-body').scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('workout-mode-body-exo').scrollTo({top:0, behavior:'smooth'});
+}
+
+function workoutRestSkip(){
+  if(workoutRestState.intervalId){
+    clearInterval(workoutRestState.intervalId);
+    workoutRestState.intervalId = null;
+  }
+  workoutRestEnd();
+}
+
+// Wrapper du bouton Suivant : skip-rest si on est en repos, sinon next normal
+function workoutModeNextBtn(){
+  if(document.getElementById('workout-mode-body-rest').style.display !== 'none'){
+    workoutRestSkip();
+  } else {
+    workoutModeNext();
+  }
 }
 
 function workoutModePrev(){
@@ -5812,8 +6032,30 @@ function toggleRestDay(){
 // ══════════════════════════════════════════════
 // EXERCISES
 // ══════════════════════════════════════════════
+// ── FAVORIS ──
+function getFavorites(){
+  return new Set(LS('favorites_'+state.profile) || []);
+}
+function setFavorites(set){
+  SS('favorites_'+state.profile, [...set]);
+}
+function toggleFavorite(exId, event){
+  if(event){ event.stopPropagation(); }
+  const favs = getFavorites();
+  if(favs.has(exId)){
+    favs.delete(exId);
+  } else {
+    favs.add(exId);
+    if(navigator.vibrate) navigator.vibrate(30);
+  }
+  setFavorites(favs);
+  renderExercises();
+}
+
 function initExercises(){
-  const muscles = state.pid==='alexandra' ? MUSCLES_ALEX : MUSCLES_LUI;
+  // Tabs muscle + ⭐ Favoris en tête
+  const base = state.pid==='alexandra' ? MUSCLES_ALEX : MUSCLES_LUI;
+  const muscles = ['⭐ Favoris', ...base];
   document.getElementById('muscle-tabs').innerHTML = muscles.map(m=>`
     <div class="muscle-tab ${m===currentMuscle?'active':''}" onclick="filterByMuscle('${m}',this)">${m}</div>`).join('');
   document.getElementById('ex-profile-sub').textContent = state.pid==='alexandra'
@@ -5834,6 +6076,7 @@ function filterExercises(){ renderExercises(); }
 function renderExercises(){
   const search=(document.getElementById('ex-search')?.value||'').toLowerCase();
   const level=document.getElementById('ex-level-filter')?.value||'';
+  const favs = getFavorites();
   // Priorités par profil
   let pool = [...EXERCISES];
   if(state.pid==='alexandra') pool.sort((a,b)=>{
@@ -5844,14 +6087,24 @@ function renderExercises(){
     const p=['Dos','Grip','Épaules'];
     return (p.includes(b.muscle)?1:0)-(p.includes(a.muscle)?1:0);
   });
-  const exs=pool.filter(e=>{
-    const m=currentMuscle==='Tous'||e.muscle===currentMuscle;
-    const s=!search||e.name.toLowerCase().includes(search);
-    const l=!level||e.level===level;
-    return m&&s&&l;
+  // Tri : favoris en premier, puis le tri par profil
+  pool.sort((a,b)=>(favs.has(b.id)?1:0) - (favs.has(a.id)?1:0));
+  const isFavTab = currentMuscle === '⭐ Favoris';
+  const exs = pool.filter(e=>{
+    const m = isFavTab ? favs.has(e.id) : (currentMuscle==='Tous' || e.muscle===currentMuscle);
+    const s = !search || e.name.toLowerCase().includes(search);
+    const l = !level || e.level===level;
+    return m && s && l;
   });
-  document.getElementById('exercises-list').innerHTML=exs.length?exs.map((ex,i)=>`
-    <div class="ex-item" onclick="openExModal(${ex.id})">
+  if(!exs.length){
+    document.getElementById('exercises-list').innerHTML = isFavTab
+      ? '<div class="empty-state"><div class="icon">⭐</div><p>Aucun favori — touche l\'étoile sur un exercice pour le marquer</p></div>'
+      : '<div class="empty-state"><div class="icon">🔍</div><p>Aucun exercice</p></div>';
+    return;
+  }
+  document.getElementById('exercises-list').innerHTML = exs.map((ex,i)=>{
+    const isFav = favs.has(ex.id);
+    return `<div class="ex-item" onclick="openExModal(${ex.id})">
       <div class="ex-num">${i+1}</div>
       <div class="ex-body">
         <div class="ex-name">${ex.name}</div>
@@ -5860,7 +6113,9 @@ function renderExercises(){
         <div class="ex-sets">${ex.muscles_worked.map(m=>`<span class="set-badge">${m}</span>`).join('')}</div>
         <div class="open-hint">▶ Cliquez pour voir l'animation 3D + muscles ciblés</div>
       </div>
-    </div>`).join(''):'<div class="empty-state"><div class="icon">🔍</div><p>Aucun exercice</p></div>';
+      <button class="ex-fav-btn ${isFav?'is-fav':''}" onclick="toggleFavorite(${ex.id}, event)" title="${isFav?'Retirer des favoris':'Ajouter aux favoris'}">${isFav?'★':'☆'}</button>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════
