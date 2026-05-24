@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 26 — Système d'encouragement : bannière dashboard contextuelle + notif locale au load (1×/8h max)
-const CACHE_NAME = 'sportduo-cache-v26';
+// VERSION 27 — Fix GIFs flous (width:auto évite upscaling au-delà de la résolution native)
+const CACHE_NAME = 'sportduo-cache-v27';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {

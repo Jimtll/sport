@@ -203,8 +203,9 @@ input[type=range]:focus{border:none}
 .gainage-seg{flex:1;height:6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border)}
 .gainage-seg.done{background:var(--green);border-color:var(--green)}
 .gainage-seg.active{background:var(--acc);border-color:var(--acc);animation:chronoPulse 1.4s ease-in-out infinite}
-.gainage-gif-wrap{width:100%;max-width:340px;aspect-ratio:1;margin:0 auto 14px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
-.gainage-gif-wrap img{max-width:100%;max-height:100%;object-fit:contain}
+.gainage-gif-wrap{width:100%;max-width:360px;aspect-ratio:1;margin:0 auto 14px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+/* width:auto évite l'upscaling au-delà de la taille native (sources GIF font ~360px → upscale = flou) */
+.gainage-gif-wrap img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .gainage-gif-wrap .ph{font-size:5rem;opacity:0.4}
 .gainage-gif-wrap.rest-tint{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.3)}
 .gainage-gif-wrap.rest-tint .ph{font-size:5rem;opacity:0.8;color:var(--green)}
@@ -385,8 +386,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .workout-mode-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px;-webkit-overflow-scrolling:touch}
 .workout-mode-name{font-size:1.8rem;font-weight:800;text-align:center;letter-spacing:-0.02em;margin-top:8px;max-width:700px;line-height:1.15}
 .workout-mode-meta{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.workout-mode-gif{width:100%;max-width:480px;aspect-ratio:1;background:var(--surface2);border-radius:14px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
-.workout-mode-gif img{max-width:100%;max-height:100%;object-fit:contain}
+.workout-mode-gif{width:100%;max-width:400px;aspect-ratio:1;background:var(--surface2);border-radius:14px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+/* width:auto évite l'upscaling au-delà de la résolution native (GIFs ~360px) */
+.workout-mode-gif img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .workout-mode-gif .ph{font-size:5rem;opacity:0.4}
 .workout-mode-tip{font-size:0.88rem;color:var(--muted2);max-width:600px;text-align:center;line-height:1.45;padding:0 8px}
 .workout-mode-logger{width:100%;max-width:520px;background:var(--surface);padding:14px;border-radius:12px;border:1px solid var(--border)}
@@ -495,8 +497,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .set-chrono-display:empty{display:none}
 
 /* GIFs et photos d'exercices */
-.exercise-photo-wrap{position:relative;width:100%;height:100%;min-height:380px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);overflow:hidden;background:#fff}
-.ex-gif{max-width:100%;max-height:100%;object-fit:contain;border-radius:var(--radius-sm);opacity:0;transition:opacity 0.4s;filter:contrast(1.02)}
+.exercise-photo-wrap{position:relative;width:100%;max-width:420px;margin:0 auto;height:100%;min-height:340px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);overflow:hidden;background:#fff}
+/* width:auto évite l'upscaling. Les GIFs sources font ~360-400px max */
+.ex-gif{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border-radius:var(--radius-sm);opacity:0;transition:opacity 0.4s;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .ex-gif.loaded{opacity:1}
 .ex-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#666;font-size:0.78rem;letter-spacing:0.05em;animation:loadingPulse 1.4s ease-in-out infinite}
 .ex-gif.loaded ~ .ex-loading{display:none}
