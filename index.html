@@ -416,6 +416,20 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .encourage-title{font-weight:800;font-size:0.9rem;letter-spacing:-0.01em;margin-bottom:3px}
 .encourage-msg{font-size:0.78rem;color:var(--muted2);line-height:1.4}
 .encourage-notif-cta{display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(251,191,36,0.08);border:1px dashed rgba(251,191,36,0.4);border-radius:10px;font-size:0.74rem;color:var(--muted2)}
+
+/* ─── FAB flottant + menu ─── */
+.fab{position:fixed;bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 16px));right:18px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--acc) 0%,#ea580c 100%);box-shadow:0 6px 20px rgba(249,115,22,0.4),0 2px 6px rgba(0,0,0,0.3);z-index:150;border:none;color:#fff;font-size:1.7rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.2s,box-shadow 0.2s;line-height:1;padding:0}
+.fab:hover{transform:scale(1.08);box-shadow:0 8px 28px rgba(249,115,22,0.55),0 3px 8px rgba(0,0,0,0.4)}
+.fab:active{transform:scale(0.95)}
+.fab.is-open{background:linear-gradient(135deg,#475569,#334155);transform:rotate(45deg)}
+.fab-menu{position:fixed;bottom:max(86px,calc(env(safe-area-inset-bottom,0px) + 82px));right:18px;display:none;flex-direction:column;gap:6px;z-index:149;align-items:flex-end}
+.fab-menu.show{display:flex;animation:fabSlide 0.18s ease-out}
+@keyframes fabSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fab-item{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:10px;font-size:0.82rem;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.3);white-space:nowrap;transition:all 0.15s}
+.fab-item:hover{border-color:var(--acc);color:var(--acc);transform:translateX(-2px)}
+/* Cache le FAB sur les overlays plein écran */
+.workout-mode-overlay:not([style*='display: none']) ~ .fab,
+.workout-mode-overlay:not([style*='display: none']) ~ .fab-menu{display:none !important}
 .week-day.has-running{border-color:#3b82f6;box-shadow:inset 0 0 0 1px rgba(59,130,246,0.3)}
 .week-day.has-running.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3),inset 0 0 0 2px rgba(59,130,246,0.3)}
 .week-day.has-running .run-toggle{background:rgba(59,130,246,0.18);color:#60a5fa;font-weight:700}
@@ -1352,6 +1366,38 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
   </div>
 </div>
 
+<!-- ═══════ MOOD / ENERGIE modal ═══════ -->
+<div class="modal-overlay" id="mood-modal" onclick="if(event.target===this)closeMoodModal()">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeMoodModal()">✕</button>
+    <h3 id="mood-modal-title" style="margin:0 0 6px 0">🧘 Humeur & énergie</h3>
+    <p style="font-size:0.78rem;color:var(--muted);margin:0 0 14px">Évalue ton état du moment — utile pour corréler avec tes performances.</p>
+    <div class="field">
+      <label>⚡ Énergie · <strong id="mood-energy-val" style="color:var(--acc)">7</strong>/10</label>
+      <input type="range" id="mood-energy" min="1" max="10" value="7" oninput="document.getElementById('mood-energy-val').textContent=this.value">
+    </div>
+    <div class="field">
+      <label>😊 Humeur · <strong id="mood-feel-val" style="color:var(--acc)">7</strong>/10</label>
+      <input type="range" id="mood-feel" min="1" max="10" value="7" oninput="document.getElementById('mood-feel-val').textContent=this.value">
+    </div>
+    <div class="field"><label>Note rapide (optionnel)</label><input type="text" id="mood-note" placeholder="Ex: peu dormi, gros stress, super forme…"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-ghost btn-sm" onclick="closeMoodModal()" style="flex:1">Passer</button>
+      <button class="btn btn-primary btn-sm" onclick="saveMoodEntry()" style="flex:2">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ FAB (Floating Action Button) — accès rapide ═══════ -->
+<button class="fab" id="fab-btn" onclick="toggleFabMenu(event)" title="Actions rapides" aria-label="Actions rapides">+</button>
+<div class="fab-menu" id="fab-menu">
+  <button class="fab-item" onclick="fabAction('today')">🏋️ Lancer ma séance d'aujourd'hui</button>
+  <button class="fab-item" onclick="fabAction('mood')">🧘 Logger humeur / énergie</button>
+  <button class="fab-item" onclick="fabAction('gainage')">🧘 Routine gainage</button>
+  <button class="fab-item" onclick="fabAction('journal')">📓 Logger une séance manuelle</button>
+  <button class="fab-item" onclick="fabAction('calendrier')">📆 Planifier la semaine</button>
+</div>
+
 <!-- ═══════ WORKOUT MODE (overlay fullscreen) ═══════ -->
 <div class="workout-mode-overlay" id="workout-mode-overlay" style="display:none">
   <div class="workout-mode-header">
@@ -2206,6 +2252,9 @@ const MUSCLES_ALEX = ['Tous','Fessiers','Lombaires','Core','Dos','Jambes','Épau
 // Index O(1) pour lookup rapide (188 exos × nombreux .find() partout dans le code)
 const EXERCISES_BY_ID = new Map(EXERCISES.map(e=>[e.id, e]));
 function exById(id){ return EXERCISES_BY_ID.get(id); }
+
+// Cache memoïsé exerciseId → workouts[] (invalidé sur setWorkouts() + switchProfile)
+let _workoutsByExCache = null;
 
 // ══════════════════════════════════════════════
 // DÉTAILS EXERCICES — vidéos, muscles, étapes
@@ -3225,6 +3274,41 @@ function getDaySessions(day){
   return sessions;
 }
 
+// Estimation de durée d'une journée de séance (basée sur sets × (effort + rest))
+// Retourne un nombre de secondes. Tient compte des multi-sessions.
+function estimateDayDuration(day){
+  if(!day) return 0;
+  const sessions = getDaySessions(day);
+  let totalSec = 0;
+  sessions.forEach(sess=>{
+    sess.exercises.forEach(exId=>{
+      const ex = exById(exId);
+      if(!ex) return;
+      const setCount = parseSetCount(ex.sets);
+      const dur = parseSetDuration(ex.sets);
+      // Effort par série : durée si time-based, sinon 45s par défaut (10 reps × 4.5s)
+      const setTime = dur || 45;
+      // Repos entre séries selon le type d'exo (1-3 min)
+      const restTime = getRecommendedRest(exId, 0);
+      totalSec += setCount * setTime + Math.max(0, setCount - 1) * restTime;
+    });
+    // Repos inter-exos (120s par défaut)
+    totalSec += Math.max(0, sess.exercises.length - 1) * 120;
+  });
+  // Repos inter-sessions (pause plus longue entre 2 séances dans la même journée)
+  if(sessions.length > 1) totalSec += (sessions.length - 1) * 300;
+  return totalSec;
+}
+
+// Formatage humain (préfixe "~"). NB : ne pas confondre avec formatDuration() de la course (mm:ss)
+function formatEstDuration(sec){
+  if(sec < 60) return `~${Math.round(sec)}s`;
+  const m = Math.round(sec / 60);
+  if(m < 60) return `~${m} min`;
+  const h = Math.floor(m/60), mm = m%60;
+  return `~${h}h${String(mm).padStart(2,'0')}`;
+}
+
 // Helper : un plan a-t-il du contenu réel (séance non-rest OU exos OU extra-sessions) ?
 function hasPlanContent(plan){
   return !!(plan && plan.days?.some(d=>
@@ -3841,6 +3925,13 @@ function buildEncouragements(){
   } else if(target > 0 && weekSess === target-1){
     out.push({kind:'target_near', emoji:'🎯', color:'var(--acc)', title:`${weekSess}/${target} séances — plus qu'une !`, msg:'Une seule séance et c\'est plié pour ta semaine. Allez.', cta:{label:'Voir le programme', fn:()=>goPage('programme')}});
   }
+  // 5b) Déload conseillé ?
+  try {
+    const dl = suggestDeload();
+    if(dl){
+      out.push({kind:'deload', emoji:'💆', color:'#fbbf24', title:'Semaine de déload conseillée', msg:dl.conseil, cta:{label:'Voir mes records', fn:()=>goPage('records')}});
+    }
+  } catch(e){}
   // 5) Streak (jours consécutifs avec ≥1 séance)
   let streak = 0;
   const daysWithWorkouts = new Set(workouts.map(w=>w.date.slice(0,10)));
@@ -3887,6 +3978,111 @@ function renderEncouragementBanner(){
     </div>
   ` : '');
 }
+
+// ══════════════════════════════════════════════
+// MOOD / ÉNERGIE TRACKING
+// ══════════════════════════════════════════════
+let _moodContext = 'quick'; // 'quick' | 'before' | 'after'
+function getMoodLog(){ return LS('moodLog_'+state.profile) || []; }
+function setMoodLog(arr){ SS('moodLog_'+state.profile, arr); }
+
+function openMoodModal(context){
+  _moodContext = context || 'quick';
+  document.getElementById('mood-modal-title').textContent =
+    _moodContext === 'before' ? '🚀 Avant la séance' :
+    _moodContext === 'after'  ? '🎉 Après la séance' :
+                                '🧘 Humeur & énergie';
+  document.getElementById('mood-note').value = '';
+  // Pre-fill avec la dernière valeur
+  const log = getMoodLog();
+  const last = log[0];
+  document.getElementById('mood-energy').value = last?.energy || 7;
+  document.getElementById('mood-feel').value = last?.mood || 7;
+  document.getElementById('mood-energy-val').textContent = document.getElementById('mood-energy').value;
+  document.getElementById('mood-feel-val').textContent = document.getElementById('mood-feel').value;
+  document.getElementById('mood-modal').classList.add('show');
+}
+function closeMoodModal(){
+  document.getElementById('mood-modal').classList.remove('show');
+  // Si on était sur 'before', on poursuit le lancement
+  if(_moodContext === 'before' && _pendingWorkoutLaunch !== null){
+    const idx = _pendingWorkoutLaunch;
+    _pendingWorkoutLaunch = null;
+    workoutModeStart(idx);
+  }
+}
+function saveMoodEntry(){
+  const entry = {
+    date: new Date().toISOString(),
+    energy: parseInt(document.getElementById('mood-energy').value),
+    mood: parseInt(document.getElementById('mood-feel').value),
+    note: document.getElementById('mood-note').value.trim() || undefined,
+    context: _moodContext
+  };
+  const log = getMoodLog();
+  log.unshift(entry);
+  setMoodLog(log.slice(0, 200));
+  const lbl = _moodContext === 'before' ? 'avant séance' : _moodContext === 'after' ? 'après séance' : 'humeur';
+  toast(`✓ ${lbl} enregistré`,'success', 1800);
+  closeMoodModal();
+}
+
+// Wrapper : intercept launch pour afficher mood-before
+let _pendingWorkoutLaunch = null;
+const _originalWorkoutModeStart = typeof workoutModeStart === 'function' ? workoutModeStart : null;
+
+// ── FAB flottant : actions rapides ──
+function toggleFabMenu(event){
+  if(event) event.stopPropagation();
+  const menu = document.getElementById('fab-menu');
+  const btn = document.getElementById('fab-btn');
+  if(!menu || !btn) return;
+  const open = menu.classList.toggle('show');
+  btn.classList.toggle('is-open', open);
+  btn.textContent = open ? '×' : '+';
+}
+function closeFabMenu(){
+  const menu = document.getElementById('fab-menu');
+  const btn = document.getElementById('fab-btn');
+  if(menu) menu.classList.remove('show');
+  if(btn){ btn.classList.remove('is-open'); btn.textContent = '+'; }
+}
+function fabAction(action){
+  closeFabMenu();
+  if(action === 'today'){
+    // Lancer la séance d'aujourd'hui
+    const todayIdx = (new Date().getDay()+6)%7;
+    const weekKey = getISOWeek(new Date());
+    const plan = getWeekPlan(weekKey);
+    const day = plan?.days?.[todayIdx];
+    const sessions = day ? getDaySessions(day) : [];
+    if(sessions.length){
+      goPage('programme');
+      progWeekKey = null;
+      setTimeout(()=>launchSession(todayIdx), 200);
+    } else {
+      toast('Aucune séance planifiée pour aujourd\'hui — va dans le calendrier','warn',3500);
+      goPage('calendrier');
+    }
+  } else if(action === 'mood'){
+    openMoodModal('quick');
+  } else if(action === 'gainage'){
+    goPage('gainage');
+  } else if(action === 'journal'){
+    goPage('journal');
+  } else if(action === 'calendrier'){
+    goPage('calendrier');
+  }
+}
+// Ferme le menu si on clique ailleurs
+document.addEventListener('click', e=>{
+  const menu = document.getElementById('fab-menu');
+  const btn = document.getElementById('fab-btn');
+  if(!menu || !btn) return;
+  if(menu.classList.contains('show') && !menu.contains(e.target) && e.target !== btn){
+    closeFabMenu();
+  }
+});
 
 // Essaie d'envoyer une notif locale aux moments stratégiques (au load de l'app)
 function tryFireDailyEncouragement(){
@@ -4860,6 +5056,48 @@ function detectStagnation(minSessions=4, window=3){
   return stale;
 }
 
+// Détecte si une semaine de déload est conseillée
+// Signaux : stagnation sur >=2 exos + volume hebdo récent > moyenne + RPE/fatigue élevés
+function suggestDeload(){
+  const stale = detectStagnation(4, 3);
+  // Pas assez de signal de stagnation
+  if(stale.length < 2) return null;
+  // Volume trend des 4 dernières semaines
+  const vols = [];
+  const now = new Date();
+  for(let i=3; i>=0; i--){
+    const start = new Date(now); start.setDate(now.getDate() - (i+1)*7);
+    const end = new Date(now); end.setDate(now.getDate() - i*7);
+    const v = state.workouts.filter(w=>{
+      const d = new Date(w.date); return d>=start && d<end;
+    }).reduce((s,w)=>s+(w.volume||0), 0);
+    vols.push(v);
+  }
+  const currentWk = vols[3];
+  const avgPrev = vols.slice(0,3).reduce((s,v)=>s+v,0) / 3;
+  if(currentWk === 0 || avgPrev === 0) return null;
+  const trend = (currentWk - avgPrev) / avgPrev;
+  // Signal de fatigue : volume +10% AVEC stagnation
+  if(trend > 0.1){
+    // Bonus signal : mood/énergie en baisse ?
+    let moodSignal = '';
+    const moodLog = (LS('moodLog_'+state.profile) || []).slice(0, 8);
+    if(moodLog.length >= 3){
+      const recent3 = moodLog.slice(0,3);
+      const older = moodLog.slice(3);
+      const avgRec = recent3.reduce((s,m)=>s+m.energy,0)/recent3.length;
+      const avgOld = older.length ? older.reduce((s,m)=>s+m.energy,0)/older.length : avgRec;
+      if(avgRec < avgOld - 1) moodSignal = ' + énergie en baisse';
+    }
+    return {
+      severity: 'high',
+      reason: `${stale.length} exos en stagnation + volume +${Math.round(trend*100)}% vs moyenne 4 sem${moodSignal}`,
+      conseil: 'Semaine de déload conseillée : volume -30%, intensité -10%, 1-2 séances en moins. Ton corps va surcompenser.'
+    };
+  }
+  return null;
+}
+
 // Suggère la prochaine charge/reps pour un exo, basé sur la dernière séance
 // Stratégie : +2.5kg si tu as TOUTES les reps haut de fourchette, sinon mêmes poids/+1 rep
 function suggestNextProgression(exId){
@@ -5038,13 +5276,27 @@ function setCurrentPhase(phase){
 function renderRecordsPage(){
   const prs = computeAllPRs();
   const stale = detectStagnation();
+  const deload = suggestDeload();
   const cnt = document.getElementById('prs-count');
   if(cnt) cnt.textContent = `${prs.length} exo${prs.length>1?'s':''} suivis`;
 
-  // Alertes de stagnation
+  // Alertes de stagnation + déload
   const stalEl = document.getElementById('stagnation-alerts');
   if(stalEl){
-    stalEl.innerHTML = stale.length ? `
+    let html = '';
+    if(deload){
+      html += `<div class="card" style="background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.4);margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:1.6rem">💆</span>
+          <div style="flex:1">
+            <div style="font-weight:800;color:#fbbf24">Semaine de déload conseillée</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${deload.reason}</div>
+          </div>
+        </div>
+        <div style="font-size:0.82rem;line-height:1.4">${deload.conseil}</div>
+      </div>`;
+    }
+    html += stale.length ? `
       <div class="card" style="background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.3)">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
           <span style="font-size:1.5rem">⚠️</span>
@@ -5061,10 +5313,11 @@ function renderRecordsPage(){
               <span style="color:var(--muted);font-size:0.7rem">${s.sessionsTracked} séances</span>
             </div>`).join('')}
         </div>
-      </div>` : `
+      </div>` : (deload ? '' : `
       <div style="padding:14px 18px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:10px;font-size:0.85rem">
         ✅ Aucune stagnation détectée — tu progresses sur tous tes exos suivis !
-      </div>`;
+      </div>`);
+    stalEl.innerHTML = html;
   }
 
   // Liste PR
@@ -5265,9 +5518,8 @@ function getObjectiveTier(){
   return 'maintien';
 }
 
-// Aliases pour rétro-compatibilité (au cas où d'autres places les utilisent)
-const MEALS_LUI = MEALS.lui.maintien;
-const MEALS_ALEX = MEALS.alexandra.maintien;
+// (Anciens aliases MEALS_LUI/MEALS_ALEX retirés — plus utilisés depuis la suppression
+//  de la card Plan repas. Les data MEALS restent dispo pour usage futur via genMeals.)
 const FOODS = [
   {name:'Poulet (blanc)',kcal:165,prot:31,gl:0,lip:3.6},
   {name:'Thon (conserve)',kcal:132,prot:28,gl:0,lip:1.2},
@@ -5330,8 +5582,18 @@ let state = {
   setRmHistory(v){ SS('rmH_'+this.profile,v); },
   // Workouts: log de séries par exercice
   get workouts(){ return LS('workouts_'+this.profile)||[]; },
-  setWorkouts(v){ SS('workouts_'+this.profile,v); },
-  exerciseWorkouts(exId){ return this.workouts.filter(w=>w.exerciseId===exId); },
+  setWorkouts(v){ SS('workouts_'+this.profile,v); _workoutsByExCache = null; },
+  // Index mémoïsé exId → workouts[]. Invalidé sur setWorkouts() et switchProfile.
+  exerciseWorkouts(exId){
+    if(!_workoutsByExCache){
+      _workoutsByExCache = new Map();
+      this.workouts.forEach(w=>{
+        if(!_workoutsByExCache.has(w.exerciseId)) _workoutsByExCache.set(w.exerciseId, []);
+        _workoutsByExCache.get(w.exerciseId).push(w);
+      });
+    }
+    return _workoutsByExCache.get(exId) || [];
+  },
   totalVolume(){ return this.workouts.reduce((s,w)=>s+(w.volume||0),0); },
   weeklyVolume(){
     const now=new Date();
@@ -5397,6 +5659,7 @@ function switchProfile(pid){
   if(!pid) return;
   state.profile = pid;
   SS('profile', pid);
+  _workoutsByExCache = null; // invalide le cache des workouts indexés par exo
 
   // CSS theme selon le profil
   const p = getProfile(pid);
@@ -5728,6 +5991,8 @@ function refreshProgramUI(){
       if(d.climbing) subParts.push('🧗');
       if(d.running) subParts.push('🏃');
       if(d.gainage) subParts.push('🧘');
+      const estDur = estimateDayDuration(d);
+      if(estDur > 60) subParts.push(`⏱ ${formatEstDuration(estDur)}`);
       sub = subParts.length ? subParts.join(' · ') : 'Récupération';
       color = sessions[0] ? (SESSION_TYPES[sessions[0].type]?.color || 'var(--muted)') : 'var(--muted)';
       isRest = sessions.length===0 && !d.climbing && !d.running && !d.gainage;
@@ -5756,14 +6021,57 @@ function refreshProgramUI(){
 function launchSession(dayIdx){
   state.selectedDay = dayIdx;
   refreshProgramUI();
-  // Lance directement le Workout Mode plein écran
-  workoutModeStart(dayIdx);
+  // Mood "avant séance" (skip-able). Pré-stocke l'idx pour relancer après mood ou skip.
+  _pendingWorkoutLaunch = dayIdx;
+  openMoodModal('before');
 }
 
 // ══════════════════════════════════════════════
 // WORKOUT MODE — séance plein écran guidée
 // ══════════════════════════════════════════════
 let workoutMode = { dayIdx:null, queue:[], idx:0 };
+
+// Swipe gestures (workout mode + écran de repos)
+(function setupWorkoutSwipe(){
+  let startX = null, startY = null, startT = 0;
+  function attach(el){
+    if(!el) return;
+    el.addEventListener('touchstart', e=>{
+      if(e.touches.length !== 1) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startT = Date.now();
+    }, {passive:true});
+    el.addEventListener('touchend', e=>{
+      if(startX === null) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      const dt = Date.now() - startT;
+      startX = null;
+      // Ignore si trop vertical (= scroll), trop lent, ou dans un input/range/button
+      if(Math.abs(dy) > Math.abs(dx)) return;
+      if(Math.abs(dx) < 60) return;
+      if(dt > 600) return;
+      const tag = (e.target.tagName||'').toLowerCase();
+      if(['input','textarea','button','select'].includes(tag)) return;
+      // Bloque si on est dans le logger (sinon swipe = saisie cassée)
+      if(e.target.closest('.workout-mode-logger')) return;
+      e.preventDefault();
+      if(dx < 0) workoutModeNextBtn();
+      else workoutModePrev();
+    }, {passive:false});
+  }
+  // Attache après que les éléments soient prêts (init s'appelle au boot)
+  document.addEventListener('DOMContentLoaded', ()=>{
+    attach(document.getElementById('workout-mode-body-exo'));
+    attach(document.getElementById('workout-mode-body-rest'));
+  });
+  // Fallback : si DOMContentLoaded déjà passé
+  setTimeout(()=>{
+    attach(document.getElementById('workout-mode-body-exo'));
+    attach(document.getElementById('workout-mode-body-rest'));
+  }, 1000);
+})();
 
 function workoutModeStart(dayIdx){
   const weekKey = progGetWeekKey();
@@ -5925,6 +6233,8 @@ function workoutModeNext(){
     toast('🎉 Séance terminée — bien joué !', 'success', 4000);
     if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
     if(document.getElementById('page-programme').classList.contains('active')) refreshProgramUI();
+    // Mood "après séance" — léger délai pour laisser le toast respirer
+    setTimeout(()=>{ openMoodModal('after'); }, 600);
     return;
   }
   // Pause inter-exos : durée recommandée (1-3 min) basée sur l'exo qu'on vient de finir

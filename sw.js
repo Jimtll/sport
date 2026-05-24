@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 27 — Fix GIFs flous (width:auto évite upscaling au-delà de la résolution native)
-const CACHE_NAME = 'sportduo-cache-v27';
+// VERSION 28 — 7 améliorations : cache workouts O(1), cleanup MEALS, durée estimée, FAB flottant, swipe workout mode, mood/énergie tracking, auto-déload
+const CACHE_NAME = 'sportduo-cache-v28';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
