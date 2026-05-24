@@ -404,6 +404,16 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .rest-presets{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .rest-preset{padding:8px 14px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);font-size:0.82rem;font-weight:700;cursor:pointer;color:var(--muted2);transition:all 0.15s}
 .rest-preset:hover,.rest-preset.active{background:var(--acc-dim);border-color:var(--acc);color:var(--acc)}
+
+/* ─── Encouragement banner ─── */
+#encouragement-banner{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+#encouragement-banner:empty{display:none}
+.encourage-card{display:flex;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;align-items:flex-start}
+.encourage-emoji{font-size:1.5rem;line-height:1;flex-shrink:0;margin-top:2px}
+.encourage-body{flex:1;min-width:0}
+.encourage-title{font-weight:800;font-size:0.9rem;letter-spacing:-0.01em;margin-bottom:3px}
+.encourage-msg{font-size:0.78rem;color:var(--muted2);line-height:1.4}
+.encourage-notif-cta{display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(251,191,36,0.08);border:1px dashed rgba(251,191,36,0.4);border-radius:10px;font-size:0.74rem;color:var(--muted2)}
 .week-day.has-running{border-color:#3b82f6;box-shadow:inset 0 0 0 1px rgba(59,130,246,0.3)}
 .week-day.has-running.has-climbing{border-color:#84cc16;box-shadow:inset 0 0 0 1px rgba(132,204,22,0.3),inset 0 0 0 2px rgba(59,130,246,0.3)}
 .week-day.has-running .run-toggle{background:rgba(59,130,246,0.18);color:#60a5fa;font-weight:700}
@@ -985,6 +995,7 @@ window.dispatchEvent(new CustomEvent('bh-ready'));
 <div class="page active" id="page-dashboard">
   <h2 id="dash-title">Tableau de bord</h2>
   <p class="section-sub">Semaine du <span id="week-label"></span></p>
+  <div id="encouragement-banner"></div>
 
   <div class="goal-banner lui" id="goal-banner">
     <div class="goal-icon" id="goal-icon">🏋️</div>
@@ -3766,6 +3777,151 @@ async function ensureNotifPermission(){
   } catch(e){ return false; }
 }
 
+// ══════════════════════════════════════════════
+// SYSTÈME D'ENCOURAGEMENT — bannières + notifs locales contextuelles
+// ══════════════════════════════════════════════
+// Construit la liste de messages d'encouragement pertinents pour AUJOURD'HUI
+function buildEncouragements(){
+  const out = [];
+  const now = new Date();
+  const todayIdx = (now.getDay()+6)%7; // Lundi=0
+  const profile = state.prof;
+  const workouts = state.workouts || [];
+  // 1) Aujourd'hui est-il un jour planifié dans le calendrier ?
+  try {
+    const weekKey = getISOWeek(now);
+    const plan = getWeekPlan(weekKey);
+    const today = plan?.days?.[todayIdx];
+    const todaySessions = today ? getDaySessions(today) : [];
+    if(todaySessions.length){
+      const lbls = todaySessions.map(s=>{
+        const st = SESSION_TYPES[s.type]||SESSION_TYPES.custom;
+        return st.emoji+' '+st.label;
+      }).join(' + ');
+      const totalExos = todaySessions.reduce((s,sess)=>s+sess.exercises.length,0);
+      out.push({
+        kind:'today_planned',
+        emoji:'📅', color:'var(--acc)',
+        title:`Aujourd'hui c'est ${lbls}`,
+        msg:`${totalExos} exo${totalExos>1?'s':''} t'attend${totalExos>1?'ent':''}. Prêt·e à attaquer ?`,
+        cta:{label:'Lancer la séance', fn:()=>{ goPage('programme'); setTimeout(()=>launchSession(todayIdx), 200); }}
+      });
+    } else if(today?.gainage){
+      out.push({kind:'today_gainage', emoji:'🧘', color:'#a78bfa', title:'Gainage prévu aujourd\'hui', msg:'Allez, 10 min de core ça se trouve toujours.', cta:{label:'Aller au gainage', fn:()=>goPage('gainage')}});
+    }
+  } catch(e){}
+  // 2) Jours depuis la dernière séance
+  if(workouts.length){
+    const last = workouts[0];
+    const daysSince = Math.floor((now - new Date(last.date))/86400000);
+    if(daysSince >= 4){
+      out.push({kind:'long_absence', emoji:'💪', color:'#fbbf24', title:`${daysSince} jours sans séance`, msg:'C\'est le moment de remettre les baskets — même 30 min ça compte.', cta:{label:'Voir mon programme', fn:()=>goPage('programme')}});
+    } else if(daysSince >= 2){
+      out.push({kind:'short_absence', emoji:'🔥', color:'var(--acc)', title:`${daysSince} jours de récup`, msg:'Récup OK — bientôt le moment de retourner sous la barre.', cta:null});
+    }
+  } else {
+    out.push({kind:'first_session', emoji:'🚀', color:'var(--acc)', title:'Première séance !', msg:'Ton journal est vide — lance ta toute première séance pour commencer le suivi.', cta:{label:'Voir le programme', fn:()=>goPage('programme')}});
+  }
+  // 3) PR récent (7 derniers jours)
+  const sevenDays = now.getTime() - 7*86400000;
+  const recentPRs = workouts.filter(w=>w.prs && new Date(w.date).getTime() > sevenDays);
+  if(recentPRs.length){
+    out.push({kind:'recent_pr', emoji:'🏆', color:'#ef4444', title:`${recentPRs.length} PR cette semaine 🎉`, msg:'Tu es sur une belle progression — continue sur ta lancée !', cta:{label:'Voir mes records', fn:()=>goPage('records')}});
+  }
+  // 4) Séances cette semaine vs cible
+  const target = profile?.seancesTarget || 4;
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - ((now.getDay()+6)%7));
+  weekStart.setHours(0,0,0,0);
+  const weekSess = workouts.filter(w=>new Date(w.date) >= weekStart).length;
+  if(target > 0 && weekSess >= target){
+    out.push({kind:'target_hit', emoji:'✅', color:'var(--green)', title:`Objectif hebdo atteint (${weekSess}/${target}) 🎯`, msg:'Tu as fait ce que tu t\'étais promis cette semaine. Respect.', cta:null});
+  } else if(target > 0 && weekSess === target-1){
+    out.push({kind:'target_near', emoji:'🎯', color:'var(--acc)', title:`${weekSess}/${target} séances — plus qu'une !`, msg:'Une seule séance et c\'est plié pour ta semaine. Allez.', cta:{label:'Voir le programme', fn:()=>goPage('programme')}});
+  }
+  // 5) Streak (jours consécutifs avec ≥1 séance)
+  let streak = 0;
+  const daysWithWorkouts = new Set(workouts.map(w=>w.date.slice(0,10)));
+  for(let i=0;i<60;i++){
+    const d = new Date(now); d.setDate(now.getDate()-i);
+    if(daysWithWorkouts.has(d.toISOString().slice(0,10))) streak++;
+    else if(i>0) break;
+  }
+  if(streak >= 3){
+    out.push({kind:'streak', emoji:'🔥', color:'#f97316', title:`Streak ${streak} jours en cours`, msg:'Garde le rythme — la régularité bat l\'intensité.', cta:null});
+  }
+  return out;
+}
+
+// Affiche le bandeau d'encouragement sur le dashboard
+function renderEncouragementBanner(){
+  const container = document.getElementById('encouragement-banner');
+  if(!container) return;
+  const items = buildEncouragements();
+  // Filtre : ne montre PAS de "première séance" s'il y a un autre message plus pertinent
+  let toShow = items;
+  if(items.length > 1) toShow = items.filter(it=>it.kind !== 'first_session');
+  // Prend les 2 plus pertinents
+  toShow = toShow.slice(0, 2);
+  if(!toShow.length){ container.innerHTML = ''; return; }
+  // Inclus le statut "notifs" comme petite mention en fin
+  const notifStatus = ('Notification' in window) && Notification.permission === 'granted';
+  const showNotifBtn = ('Notification' in window) && Notification.permission !== 'granted' && Notification.permission !== 'denied';
+  // Stocke les CTA dans une window map (pour pouvoir les rappeler via onclick avec un index)
+  window._encourageCtas = toShow.map(it=>it.cta);
+  container.innerHTML = toShow.map((it, idx)=>`
+    <div class="encourage-card" style="border-left:4px solid ${it.color}">
+      <div class="encourage-emoji">${it.emoji}</div>
+      <div class="encourage-body">
+        <div class="encourage-title" style="color:${it.color}">${it.title}</div>
+        <div class="encourage-msg">${it.msg}</div>
+        ${it.cta ? `<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="(window._encourageCtas[${idx}]?.fn||(()=>{}))()">${it.cta.label} →</button>` : ''}
+      </div>
+    </div>
+  `).join('') + (showNotifBtn ? `
+    <div class="encourage-notif-cta">
+      🔔 Active les notifications pour recevoir ces encouragements même quand l'app est fermée
+      <button class="btn btn-ghost btn-sm" onclick="askNotifications()" style="margin-left:auto">Activer</button>
+    </div>
+  ` : '');
+}
+
+// Essaie d'envoyer une notif locale aux moments stratégiques (au load de l'app)
+function tryFireDailyEncouragement(){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  // Anti-spam : pas plus d'1 notif par tranche de 8h
+  const lastFired = parseInt(localStorage.getItem('sp_lastEncourageNotif')||'0');
+  if(Date.now() - lastFired < 8*3600*1000) return;
+  const items = buildEncouragements();
+  if(!items.length) return;
+  // Priorité : aujourd'hui_planifié > long_absence > target_near > streak
+  const priority = ['today_planned', 'long_absence', 'target_near', 'today_gainage', 'streak', 'recent_pr'];
+  let pick = null;
+  for(const k of priority){
+    pick = items.find(i=>i.kind===k);
+    if(pick) break;
+  }
+  if(!pick) pick = items[0];
+  const options = {
+    body: pick.msg,
+    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iI2Y5NzMxNiIgcng9IjQwIi8+PHRleHQgeD0iOTYiIHk9IjEzNSIgZm9udC1zaXplPSIxMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPvCfkqo8L3RleHQ+PC9zdmc+',
+    tag: 'sportduo-encouragement',
+    vibrate: [120, 60, 120],
+    silent: false
+  };
+  try {
+    if(navigator.serviceWorker?.ready){
+      navigator.serviceWorker.ready.then(reg=>{
+        reg.showNotification(`${pick.emoji} ${pick.title}`, options).catch(()=>{
+          try { new Notification(`${pick.emoji} ${pick.title}`, options); } catch(e){}
+        });
+      });
+    } else {
+      new Notification(`${pick.emoji} ${pick.title}`, options);
+    }
+    localStorage.setItem('sp_lastEncourageNotif', Date.now().toString());
+  } catch(e){ console.warn('Notif encouragement failed', e); }
+}
+
 function showRestDoneNotification(title, body){
   // Silence absolu : vibration + notif système (qui peut éventuellement jouer un son système)
   // On NE joue PAS de son JS
@@ -5328,6 +5484,9 @@ function renderDashboard(){
   const mon = new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
   const sun = new Date(mon); sun.setDate(mon.getDate()+6);
   document.getElementById('week-label').textContent = `${mon.getDate()}/${mon.getMonth()+1} — ${sun.getDate()}/${sun.getMonth()+1}`;
+
+  // Bandeau d'encouragement contextuel
+  if(typeof renderEncouragementBanner === 'function') renderEncouragementBanner();
 
   const p = state.prof;
 
@@ -7481,6 +7640,8 @@ async function autoBootstrapSync(){
     updateTimerDisplay();
     try { renderDashboard(); } catch(e){ console.warn('renderDashboard init:', e); }
     setTimeout(autoBootstrapSync, 800);
+    // Tentative de notif d'encouragement (anti-spam : 1 par 8h max)
+    setTimeout(()=>{ try { tryFireDailyEncouragement(); } catch(e){ console.warn('Encourage notif:', e); } }, 2500);
   } else {
     console.log('[Onboarding] En attente de configuration utilisateur');
   }
