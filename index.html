@@ -162,6 +162,14 @@ input[type=range]{padding:0;background:none;border:none;accent-color:var(--acc);
 input[type=range]:focus{border:none}
 .range-row{display:flex;align-items:center;gap:12px}
 .range-row input{flex:1}
+
+/* Range inputs — styling cross-browser pour que la barre soit toujours visible (iOS Safari l'effaçait) */
+input[type="range"]{-webkit-appearance:none;appearance:none;background:transparent;width:100%;height:32px;cursor:pointer;outline:none;padding:0;margin:0}
+input[type="range"]::-webkit-slider-runnable-track{height:6px;background:var(--surface3);border-radius:99px;border:1px solid var(--border)}
+input[type="range"]::-moz-range-track{height:6px;background:var(--surface3);border-radius:99px;border:1px solid var(--border)}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--acc);border:2px solid #fff;margin-top:-9px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4)}
+input[type="range"]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--acc);border:2px solid #fff;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.4)}
+input[type="range"]:focus::-webkit-slider-thumb{box-shadow:0 0 0 4px var(--acc-dim),0 2px 6px rgba(0,0,0,0.4)}
 .range-val{font-size:0.85rem;font-weight:700;color:var(--acc);min-width:50px;text-align:right}
 
 /* ── PROGRAMME ── */
@@ -350,6 +358,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 .week-ex-chip .chip-arrow{background:none;border:none;color:var(--muted);font-size:0.55rem;cursor:pointer;padding:0 1px;line-height:1;width:14px;flex-shrink:0}
 .week-ex-chip .chip-arrow:hover:not(:disabled){color:var(--acc)}
 .week-ex-chip .chip-arrow:disabled{opacity:0.2;cursor:not-allowed}
+.regen-btn{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.4);color:#a855f7;padding:3px 8px;border-radius:99px;font-size:0.62rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;letter-spacing:0.02em}
+.regen-btn:hover{background:rgba(168,85,247,0.25);transform:rotate(15deg)}
 .week-day-add{font-size:0.7rem;padding:4px;border:1px dashed var(--border2);border-radius:5px;background:none;color:var(--muted);cursor:pointer;margin-top:auto}
 .climb-toggle{display:inline-flex;align-items:center;gap:5px;font-size:0.7rem;cursor:pointer;padding:3px 8px;border-radius:99px;background:rgba(132,204,22,0.08);border:1px solid transparent;transition:all 0.15s;align-self:flex-start;white-space:nowrap}
 .climb-toggle:hover{background:rgba(132,204,22,0.15);border-color:rgba(132,204,22,0.3)}
@@ -2793,7 +2803,10 @@ function renderWeekEditor(){
         ${hasGainage?`<button class="gainage-log-btn" onclick="goPage('gainage')">📝 Lancer</button>`:''}
       </div>
       <div class="week-day-exercises">
-        ${day.type !== 'rest' ? `<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px">Séance 1 · ${SESSION_TYPES[day.type]?.label||day.type}</div>` : ''}
+        ${day.type !== 'rest' ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px">
+          <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Séance 1 · ${SESSION_TYPES[day.type]?.label||day.type}</div>
+          <button class="regen-btn" onclick="regenerateSession(${i})" title="Régénérer 4 exos aléatoires pour cette séance">✨ Régénérer</button>
+        </div>` : ''}
         ${(day.exercises||[]).map((exId, exIdx, arr)=>{
           const ex = exById(exId);
           if(!ex) return '';
@@ -2814,6 +2827,7 @@ function renderWeekEditor(){
         <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border)">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
             <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;flex:1">Séance ${ei+2}</div>
+            <button class="regen-btn" onclick="regenerateSession(${i},${ei})" title="Régénérer 4 exos aléatoires">✨</button>
             <button onclick="removeExtraSession(${i},${ei})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0 4px" title="Retirer cette séance">🗑</button>
           </div>
           <select onchange="setExtraSessionType(${i}, ${ei}, this.value)">
@@ -3202,9 +3216,10 @@ function mapDayLabelToType(label){
   return 'custom';
 }
 
-function exercisesForType(type, count=4){
+function exercisesForType(type, count=4, opts={}){
   // Renvoie `count` IDs d'exercices recommandés pour ce type de séance.
-  // Sélection équilibrée : 1 exo par muscle ciblé, niveau débutant/inter en priorité.
+  // opts.random  = sélection aléatoire dans le pool (pour générer / régénérer)
+  // opts.exclude = liste d'exIds à NE PAS reprendre (pour avoir des exos différents)
   const muscleMap = {
     push: ['Poitrine','Épaules','Triceps'],
     pull: ['Dos','Biceps','Grip'],
@@ -3224,32 +3239,54 @@ function exercisesForType(type, count=4){
   };
   const muscles = muscleMap[type] || [];
   if(!muscles.length) return [];
-  // Stratégie : prioriser les exos "essentiels" en mixant les niveaux
+  const exclude = new Set(opts.exclude || []);
+  const random = !!opts.random;
   const priority = ['inter','debut','avance'];
   const picked = [];
   const seenNames = new Set();
-  // Boucle : tour à tour sur chaque muscle ciblé, on ajoute le meilleur exo non encore pris
-  let safety = 0;
-  while(picked.length < count && safety < 50){
-    let added = false;
-    for(const muscle of muscles){
-      if(picked.length >= count) break;
-      const candidate = EXERCISES.find(e=>
-        e.muscle===muscle
-        && !picked.includes(e.id)
-        && !seenNames.has(e.name)
-        && priority.includes(e.level)
-      );
-      if(candidate){
-        picked.push(candidate.id);
-        seenNames.add(candidate.name);
+
+  if(random){
+    // Mode aléatoire : pour chaque muscle ciblé, prend 1 exo random (en évitant exclude)
+    // Boucle tour-à-tour : muscle1, muscle2, …, muscle1 (2e tour) … jusqu'à count
+    let safety = 0;
+    while(picked.length < count && safety < 30){
+      let added = false;
+      for(const muscle of muscles){
+        if(picked.length >= count) break;
+        const pool = EXERCISES.filter(e=>
+          e.muscle===muscle && !picked.includes(e.id) && !exclude.has(e.id) && !seenNames.has(e.name)
+        );
+        if(pool.length === 0) continue;
+        const pick = pool[Math.floor(Math.random()*pool.length)];
+        picked.push(pick.id);
+        seenNames.add(pick.name);
         added = true;
       }
+      if(!added) break;
+      safety++;
     }
-    if(!added) break;
-    safety++;
+  } else {
+    // Mode déterministe (le 1er match dans l'ordre des IDs)
+    let safety = 0;
+    while(picked.length < count && safety < 50){
+      let added = false;
+      for(const muscle of muscles){
+        if(picked.length >= count) break;
+        const candidate = EXERCISES.find(e=>
+          e.muscle===muscle && !picked.includes(e.id) && !exclude.has(e.id)
+          && !seenNames.has(e.name) && priority.includes(e.level)
+        );
+        if(candidate){
+          picked.push(candidate.id);
+          seenNames.add(candidate.name);
+          added = true;
+        }
+      }
+      if(!added) break;
+      safety++;
+    }
   }
-  // Compléter si pas assez
+  // Compléter si pas assez (relax la contrainte exclude pour ne pas renvoyer vide)
   if(picked.length < count){
     const remaining = EXERCISES
       .filter(e=>muscles.includes(e.muscle) && !picked.includes(e.id))
@@ -3258,6 +3295,27 @@ function exercisesForType(type, count=4){
     picked.push(...remaining);
   }
   return picked;
+}
+
+// Régénère les exos d'une séance (primaire OU extra) avec un nouveau tirage aléatoire
+// différent du contenu actuel.
+function regenerateSession(dayIdx, extraIdx){
+  const plan = getWeekPlan(selectedWeekKey);
+  const day = plan.days[dayIdx];
+  if(!day) return;
+  const sess = (typeof extraIdx === 'number') ? day.extraSessions?.[extraIdx] : day;
+  if(!sess || !sess.type || sess.type === 'rest') return;
+  const oldExos = [...(sess.exercises||[])];
+  const newExos = exercisesForType(sess.type, 4, { random:true, exclude:oldExos });
+  if(typeof extraIdx === 'number'){
+    day.extraSessions[extraIdx].exercises = newExos;
+  } else {
+    day.exercises = newExos;
+  }
+  saveWeekPlan(selectedWeekKey, plan);
+  toast(`✨ 4 nouveaux exos pour ${SESSION_TYPES[sess.type]?.label||sess.type}`,'success', 2000);
+  renderWeekEditor();
+  renderCalendar();
 }
 
 // Helper : sessions du jour (primaire + extras). Retourne un tableau unifié.
@@ -3328,6 +3386,9 @@ function generateWeek(){
   }
   const split = SPLITS[splitKey];
   if(!split) return;
+  // Récupère les exos déjà choisis cette semaine pour augmenter la diversité
+  // entre jours (évite Bench/Bench/Bench sur 3 push consécutifs).
+  const usedThisWeek = [];
   const plan = {days:[]};
   for(let i=0;i<7;i++){
     const d = split.days[i] || {l:'Repos',rest:true};
@@ -3335,10 +3396,14 @@ function generateWeek(){
       plan.days.push({type:'rest',exercises:[]});
     } else {
       const type = mapDayLabelToType(d.l);
-      plan.days.push({type, exercises: exercisesForType(type)});
+      // Aléatoire + évite les exos déjà mis dans la semaine
+      const exos = exercisesForType(type, 4, { random:true, exclude:usedThisWeek });
+      usedThisWeek.push(...exos);
+      plan.days.push({type, exercises: exos});
     }
   }
   saveWeekPlan(selectedWeekKey, plan);
+  toast('✨ Semaine régénérée avec un nouveau tirage','success', 2200);
   renderWeekEditor();
   renderCalendar();
 }

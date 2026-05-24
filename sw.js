@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 28 — 7 améliorations : cache workouts O(1), cleanup MEALS, durée estimée, FAB flottant, swipe workout mode, mood/énergie tracking, auto-déload
-const CACHE_NAME = 'sportduo-cache-v28';
+// VERSION 29 — 3 fixes : sliders mood visibles (iOS) + générer auto aléatoire + bouton ✨ Régénérer par séance
+const CACHE_NAME = 'sportduo-cache-v29';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
