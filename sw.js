@@ -1,7 +1,7 @@
 // Service Worker — network-first strategy
 // Garantit que l'utilisateur voit toujours la dernière version dès qu'il est en ligne
-// VERSION 30 — Fix rest timer caché en workout mode (z-index 300→2000) + 89 GIFs ajoutés pour nouveaux exos
-const CACHE_NAME = 'sportduo-cache-v30';
+// VERSION 31 — Audit complet visuels : 100% des 188 exos ont GIF + photo qui marchent (HEAD-vérifié, 0 404)
+const CACHE_NAME = 'sportduo-cache-v31';
 const NETWORK_TIMEOUT = 4000;
 
 self.addEventListener('install', e => {
